@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+        "module": "commonjs" /* Specify what module code is generated. */,
+        "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+        "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+        "strict": true /* Enable all strict type-checking options. */,
+        "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+        "outDir": "dist",
+        "experimentalDecorators": true,
+        "strictPropertyInitialization": false,
+        "emitDecoratorMetadata": true,
+        "paths": {
+            "@/*":["./src/*"]
+        }
+    },
+    "include": ["src/**/*", "types.d.ts", "test/user", "test/auth/service/user.service..ts", "test/auth/service/token.service.ts", "test/auth/dto/user.dto.ts", "test/category/service/categoryAttr.service.ts", "test/category/service/category.service.ts", "test/products/models/product.model.ts", "test/products/models/productAtt.model.ts", "test/products/service/productAtt.service.ts", "test/products/service/product.service.ts"]
+}
