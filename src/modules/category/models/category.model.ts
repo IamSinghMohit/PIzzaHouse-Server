@@ -22,5 +22,6 @@ export const CateogryModel = getModelForClass(Category);
 
 export type CategoryType = Pick<
     DocumentType<Category>,
-    "name" | "image" | "price_attributesId" | "_id" | "createdAt" | "updatedAt"
->;
+    "name" | "image" | "price_attributesId" | "createdAt" | "updatedAt" | "_id"
+>
+

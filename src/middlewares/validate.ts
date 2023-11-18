@@ -2,7 +2,6 @@ import { LoginSchema, SigninSchema } from "@/modules/auth/schema/auth.schema";
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import { UserType } from "@/modules/auth/models/user.model";
-import { ProductSchemaWithAttr } from "@/modules/products/schema/product.schema";
 import { TopingsSchema } from "@/modules/topings/topings.schema";
 
 class Validate {
@@ -44,33 +43,6 @@ class Validate {
         )(req, res, next);
     }
 
-    // static async updatePriceAttr(
-    //     req: Request,
-    //     res: Response,
-    //     next: NextFunction
-    // ) {
-    //     try {
-    //         await UpdateCatePriceAttSchema.parseAsync(req.body);
-    //         return next();
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
-
-    static async product(req: Request, res: Response, next: NextFunction) {
-        try {
-            const obj = {
-                ...req.body,
-                price_attributes: JSON.parse(req.body.price_attributes_json),
-                price: parseInt(req.body.price),
-            };
-            req.body = obj;
-            await ProductSchemaWithAttr.parseAsync(req.body);
-            next();
-        } catch (error) {
-            next(error);
-        }
-    }
 
     static async topings(req: Request, res: Response, next: NextFunction) {
         try {

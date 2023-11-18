@@ -7,7 +7,7 @@ import {
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { ProductAttr } from "./productAtt.model";
-import { ProductStatusEnum } from "../schema/product.schema";
+import { ProductStatusEnum } from "../schema/main";
 
 @modelOptions({ options: { allowMixed: 0 } })
 class Product extends TimeStamps {
@@ -21,13 +21,13 @@ class Product extends TimeStamps {
     category: string;
 
     @prop({ required: true ,type:String})
-    price: number;
-
-    @prop({ required: true ,type:String})
     description: string;
 
     @prop({ required: true, enum: ProductStatusEnum, default: "published" })
     status: ProductStatusEnum;
+
+    @prop({ required: true, type:Boolean,default:false})
+    featured:boolean;
 
     @prop({ required: true, ref: () => ProductAttr })
     price_attributesId: Ref<ProductAttr["_id"]>[];
@@ -38,7 +38,6 @@ export type ProductType = Pick<
     DocumentType<Product>,
     | "name"
     | "category"
-    | "price"
     | "price_attributesId"
     | "createdAt"
     | "updatedAt"

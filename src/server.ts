@@ -9,6 +9,8 @@ import mongoose from "mongoose";
 import errorHandler from "./middlewares/error-handler";
 import routes from "./modules"
 import morgan from "morgan";
+import http from "http";
+import SocketInitilizer from "./socket";
 const PORT = process.env.PORT;
 
 
@@ -24,10 +26,10 @@ app.use(express.json({limit:'8mb'}));
 app.use(morgan("common"));
 
 
-/* PASSPORT  */
+// PASSPORT  
 require("./passport");
 app.use(passport.initialize());
-/* -------------------------> */
+// -------------------------> 
 
 // Routes 
 app.use(routes)
@@ -38,13 +40,17 @@ app.get("/", (req, res) => {
 });
 
 
-/* ===== Error handler ===== */
+// ********* Error handler *********
 app.use(errorHandler);
+
+// initilizing socket.io and creating server
+const server = http.createServer(app)
+SocketInitilizer(server)
 
 mongoose
     .connect(process.env.MONGODB_URL as string)
     .then(() => {
-        app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+        server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
     })
     .catch((e) => {
         console.log(e);

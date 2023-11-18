@@ -1,10 +1,14 @@
-import { z } from "zod";
+import { z, TypeOf} from "zod";
 import { v4 as uuidV4 } from "uuid";
-import { CategoryName } from "./main";
 
-export const categorySchema = z
-    .object({
-        price_attributes: z.array(
+export const UpdateCategorySchema = z.object({
+    id:z.string(),
+    is_name_update: z.boolean(),
+    is_image_update: z.boolean(),
+    is_price_attributes_update: z.boolean(),
+    name: z.string().min(2).optional(),
+    price_attributes: z
+        .array(
             z.object({
                 id: z.string(),
                 attribute_title: z
@@ -20,8 +24,8 @@ export const categorySchema = z
                     })
                 ),
             })
-        ),
-    })
-    .merge(CategoryName);
+        )
+        .optional(),
+});
 
-export type CategorySchemaType = z.TypeOf<typeof categorySchema>;
+export type UpdateCategorySchemaType = TypeOf<typeof UpdateCategorySchema>

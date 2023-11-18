@@ -5,7 +5,7 @@ import {
     modelOptions,
 } from "@typegoose/typegoose";
 import { Base } from "@typegoose/typegoose/lib/defaultClasses";
-import { AttributeSchemaType} from "../schema/productAttr.schema";
+import { ProductAttributeSchemaType } from "../schema/main";
 
 export interface ProductAttr extends Base {}
 @modelOptions({ options: { allowMixed: 0 } })
@@ -14,7 +14,7 @@ export class ProductAttr {
     attribute_title: string;
 
     @prop({ required: true, type: [Object] })
-    attributes: AttributeSchemaType;
+    attributes: ProductAttributeSchemaType 
 }
 
 export const ProductAttrModel = getModelForClass(ProductAttr);
