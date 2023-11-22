@@ -1,14 +1,14 @@
-import { CategoryAttrType } from "../models/categoryAttr.model";
+import { CategoryAttributeType } from "../models/categoryAttributes";
 class CategoryAttrDto {
     id;
     attribute_title;
     categoryId;
     attributes;
 
-    constructor(priceAttr: CategoryAttrType) {
+    constructor(priceAttr: CategoryAttributeType ) {
         this.id = priceAttr._id;
         this.attribute_title = priceAttr.attribute_title;
-        this.categoryId = priceAttr.categoryId;
+        this.categoryId = priceAttr.category_id;
         this.attributes = priceAttr.attributes;
     }
 }

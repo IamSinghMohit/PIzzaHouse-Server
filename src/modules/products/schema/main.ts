@@ -4,7 +4,7 @@ export enum ProductStatusEnum {
     DRAFT = "Draft",
     PUBLISHED = "Published",
 }
-// --->
+
 const ProductSubAttributeSchema = z.array(
     z.object({
         title: z.string(),
@@ -15,29 +15,34 @@ export const ProductAttributeSchema = z.object({
     attribute_title: z.string(),
     attributes: ProductSubAttributeSchema,
 });
-// ---> product attributes schema 
 
-export const ProductStatus = z.object({
+export const ProductStatusSchema = z.object({
     status: z.enum([ProductStatusEnum.DRAFT, ProductStatusEnum.PUBLISHED], {
         errorMap: (issue, ctx) => ({ message: "enum is not valid" }),
     }),
 });
-export const ProductName = z.object({
+export const ProductNameSchema = z.object({
     name: z.string(),
 });
-export const ProductCategory = z.object({
+export const ProductCategorySchema = z.object({
     category: z.string(),
 });
-
-export const ProductDescription = z.object({
+export const ProductDescriptionSchema = z.object({
     description: z.string(),
 });
-export const ProductCategoryId = z.object({
-    categoryId: z.string(),
-});
-export const ProductPriceAttribute = z.object({
+export const ProductPriceAttributeSchema = z.object({
     price_attributes: z.array(ProductAttributeSchema),
 });
+export const ProductFeaturedSchema = z.object({
+    featured: z.boolean(),
+});
+export const ProductPriceSchema = z.object({
+    price: z.string().transform((data) => parseInt(data)),
+});
+export const ProductDefaultPriceSchema = z.object({
+    default_prices : z.record(z.string()),
+});
 
-
-export type ProductAttributeSchemaType = TypeOf<typeof ProductAttributeSchema>;
+export type ProductSubAttributeSchemaType = TypeOf<
+    typeof ProductSubAttributeSchema
+>;

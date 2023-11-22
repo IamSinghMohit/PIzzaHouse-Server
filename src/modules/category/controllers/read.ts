@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import CategoryService from "../service/category.service";
-import CategoryAttrService from "../service/categoryAttr.service";
+import CategoryAttributeService from "../service/categoryAttributes.service";
 import { ResponseService } from "@/services";
 import {
     GetAttributeSchemaType,
@@ -52,8 +52,8 @@ class CategoryRead {
         res: Response,
         next: NextFunction
     ) {
-        const priceAtt = await CategoryAttrService.getAttribute({
-            categoryId: req.params.id,
+        const priceAtt = await CategoryAttributeService .getAttribute({
+            category_id: req.params.id,
         });
         ResponseService.sendResWithData(res, 202,priceAtt);
     }

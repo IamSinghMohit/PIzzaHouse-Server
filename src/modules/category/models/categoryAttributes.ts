@@ -11,21 +11,21 @@ export interface Attributes {
     title: string;
 }
 
-export interface CategoryAttr extends Base {}
-@modelOptions({options:{allowMixed:0}})
-export class CategoryAttr {
+export interface CategoryAttribute extends Base {}
+@modelOptions({ options: { allowMixed: 0 } })
+export class CategoryAttribute {
     @prop({ required: true, type: String })
     attribute_title: string;
 
-    @prop({ required: true, type:String})
-    categoryId: string;
+    @prop({ required: true, type: String })
+    category_id: string;
 
     @prop({ required: true, type: [Object] }) // Use type [Object] to store plain objects
     attributes: Attributes[];
 }
 
-export const CategoryAttrModel = getModelForClass(CategoryAttr );
-export type CategoryAttrType = Pick<
-    DocumentType<CategoryAttr>,
-    "id" | "attribute_title" | "attributes" | "categoryId"|"_id"
+export const CategoryAttributeModel = getModelForClass(CategoryAttribute);
+export type CategoryAttributeType = Pick<
+    DocumentType<CategoryAttribute>,
+    "id" | "attribute_title" | "attributes" | "category_id" | "_id"
 >;

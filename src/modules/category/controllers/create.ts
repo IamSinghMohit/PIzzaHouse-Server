@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { CreateCategorySchemaType } from "../schema/create";
 import CategoryService from "../service/category.service";
-import CategoryAttrService from "../service/categoryAttr.service";
+import CategoryAttributeService from "../service/categoryAttributes.service";
 import { ImageService } from "@/services";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import CategoryDto from "../dto/category.dto";
-import { Types } from "mongoose";
 
 class CategoryCreate {
     static async createCategory(
@@ -15,6 +14,8 @@ class CategoryCreate {
         next: NextFunction
     ) {
         const { name, price_attributes } = req.body;
+        console.log(req.body);
+        
         const isExist = await CategoryService.findCategory(
             { name: { $regex: new RegExp(name, "i") } },
             "FINDONE"
@@ -25,11 +26,13 @@ class CategoryCreate {
         }
 
         const category = CategoryService.getInstance({ name });
-        const AttributeArray: Types.ObjectId[] = [];
+        const AttributeArray: string[] = [];
 
         const processedImage = await ImageService.compressImageToBuffer(req);
         // Uploading image to cloudinary and creating category
+        const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`;
         ImageService.uploadImageWithBuffer(
+            folder,
             processedImage,
             async (error, result) => {
                 if (error) {
@@ -39,18 +42,18 @@ class CategoryCreate {
                 }
                 price_attributes.forEach(
                     async ({ attribute_title, attributes }) => {
-                        const price_att = CategoryAttrService.getInstance({
-                            categoryId: category.id,
+                        const price_att = CategoryAttributeService.getInstance({
+                            category_id: category.id,
                             attribute_title,
                             attributes: attributes,
                         });
 
-                        AttributeArray.push(price_att._id);
+                        AttributeArray.push(price_att._id.toString());
                         price_att.save();
                     }
                 );
 
-                category.price_attributesId = AttributeArray;
+                category.price_attributes_id = AttributeArray;
                 if (result && result.url) {
                     category.image = result.url;
                 }

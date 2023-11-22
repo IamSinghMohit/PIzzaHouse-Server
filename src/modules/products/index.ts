@@ -1,4 +1,4 @@
-import {  upload } from "@/middlewares";
+import { upload } from "@/middlewares";
 import { Router } from "express";
 import ProductValidator from "./product.validator";
 import ProductController from "./controller";
@@ -9,6 +9,12 @@ router.post(
     upload.single("image"),
     ProductValidator.createProduct,
     ProductController.createProduct
+);
+router.get("/", ProductValidator.getProducts, ProductController.getProducts);
+router.get(
+    "attributes/:id",
+    ProductValidator.getProductAttributes,
+    ProductController.getProductAttributes
 );
 
 export default router;

@@ -88,5 +88,6 @@ class CategoryService {
             .limit(limit)
             .then((res) => res.map((r) => new CategoryDto(r)));
     }
+
 }
 export default CategoryService;

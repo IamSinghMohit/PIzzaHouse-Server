@@ -4,33 +4,43 @@ import {
     modelOptions,
     prop,
     Ref,
+    index,
 } from "@typegoose/typegoose";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { ProductAttr } from "./productAtt.model";
+import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { ProductStatusEnum } from "../schema/main";
+import { ProductAttribute } from "./productAttribute.model.ts";
+import { ProductDefaultPrice } from "./productDefaultPrice.model";
 
+export interface Product extends Base {}
 @modelOptions({ options: { allowMixed: 0 } })
-class Product extends TimeStamps {
-    @prop({ required: true ,type:String})
+@index({name:1},{unique:true})
+export class Product extends TimeStamps {
+    @prop({ required: true, type: String })
     name: string;
 
-    @prop({ required: true ,type:String})
+    @prop({ required: true, type: String })
     image: string;
 
-    @prop({ required: true ,type:String})
+    @prop({ required: true, type: String })
     category: string;
 
-    @prop({ required: true ,type:String})
+    @prop({ required: true, type: String })
     description: string;
 
     @prop({ required: true, enum: ProductStatusEnum, default: "published" })
     status: ProductStatusEnum;
 
-    @prop({ required: true, type:Boolean,default:false})
-    featured:boolean;
+    @prop({ required: true, type: Number })
+    price: number;
 
-    @prop({ required: true, ref: () => ProductAttr })
-    price_attributesId: Ref<ProductAttr["_id"]>[];
+    @prop({ required: true, type: Boolean, default: false })
+    featured: boolean;
+
+    @prop({ required: true, ref:() => ProductAttribute })
+    price_attributes_id: Ref<ProductAttribute>[] ;
+
+    @prop({ required: true, ref:() =>ProductDefaultPrice })
+    default_prices_id: Ref<ProductDefaultPrice >;
 }
 
 export const ProductModel = getModelForClass(Product);
@@ -38,10 +48,14 @@ export type ProductType = Pick<
     DocumentType<Product>,
     | "name"
     | "category"
-    | "price_attributesId"
+    | "price_attributes_id"
     | "createdAt"
     | "updatedAt"
-    | '_id'
-    |'status'
-    | 'description'
+    | "_id"
+    | "status"
+    | "price"
+    | "description"
+    | "default_prices_id"
+    | "featured"
+    | "image"
 >;

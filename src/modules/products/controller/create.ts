@@ -4,8 +4,9 @@ import ProductService from "../service/product.service";
 import { ErrorResponse } from "@/utils";
 import { ImageService, ResponseService } from "@/services";
 import { ProductDto } from "../dto/product.dto";
+import ProductAttributeService from "../service/productAttribute.service";
+import ProductDefaultPriceSerivice from "../service/productDefaultPrice.service";
 import CategoryService from "@/modules/category/service/category.service";
-import ProductAttrService from "../service/productAtt.service";
 import { Types } from "mongoose";
 
 class ProductCreate {
@@ -17,17 +18,26 @@ class ProductCreate {
         const {
             name,
             price_attributes,
-            categoryId,
+            category,
             description,
             status,
+            featured,
+            default_prices,
+            price,
         } = req.body;
 
         if (!req.file?.buffer)
             return next(new ErrorResponse("image is required", 422));
-        const isExist = await ProductService.findProduct({ name }, "FINDONE");
+        const isExist = await ProductService.find({ name }, "FINDONE");
         if (isExist) {
             return next(new ErrorResponse("product already exist", 403));
         }
+        const isCategoryExists = await CategoryService.findCategory(
+            { name: { $regex: new RegExp(category, "i") } },
+            "FINDONE"
+        );
+        if (!isCategoryExists)
+            return next(new ErrorResponse("category not  found", 404));
 
         const product = ProductService.getInstance({
             name,
@@ -35,16 +45,10 @@ class ProductCreate {
             status,
         });
         const AttributeArray: Types.ObjectId[] = [];
-        const fetchedCategory = await CategoryService.findCategory(
-            { _id: categoryId },
-            "FINDONE"
-        );
-        if (!fetchedCategory) {
-            return next(new ErrorResponse("category does not exist", 404));
-        }
         const processedImage = await ImageService.compressImageToBuffer(req);
-
+        const folder = `${process.env.CLOUDINARY_PRODUCT_FOLDER}`;
         await ImageService.uploadImageWithBuffer(
+            folder,
             processedImage,
             async (error, result) => {
                 if (error) {
@@ -58,16 +62,28 @@ class ProductCreate {
                 }
                 // saving product price attributes in the database
                 price_attributes.forEach(({ attribute_title, attributes }) => {
-                    const patt = ProductAttrService.getInstance({
+                    const patt = ProductAttributeService.getInstance({
                         attribute_title,
-                        attributes,
+                        attributes: attributes,
+                        category: category,
                     });
                     AttributeArray.push(patt._id);
                     patt.save();
                 });
-                // saving image of product
-                product.price_attributesId = AttributeArray;
-                product.category = fetchedCategory.name;
+                // creating product_default_price document
+                const productDefaultPrice =
+                    await ProductDefaultPriceSerivice.create({
+                        category: category,
+                        default_prices: default_prices,
+                    });
+                // savving the product with other releated fields
+                productDefaultPrice.save();
+                product.price_attributes_id = AttributeArray;
+                product.category = category;
+                product.featured = featured;
+                product.price = price;
+                product.default_prices_id = productDefaultPrice._id
+
                 const ProductResult = await product.save();
                 ResponseService.sendResWithData(
                     res,

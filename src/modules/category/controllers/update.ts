@@ -4,7 +4,7 @@ import { ErrorResponse } from "@/utils";
 import { UploadApiErrorResponse } from "cloudinary";
 import { UpdateCategorySchemaType } from "../schema/update";
 import CategoryService from "../service/category.service";
-import CategoryAttrService from "../service/categoryAttr.service";
+import CategoryAttrService from "../service/categoryAttributes.service";
 
 class CategoryUpdate {
     private static async updateCategoryWithId(
@@ -18,12 +18,12 @@ class CategoryUpdate {
         id: string,
         price_attributes: UpdateCategorySchemaType["price_attributes"]
     ) {
-        await CategoryAttrService.deleteMany({ categoryId: id });
+        await CategoryAttrService.deleteMany({ category_id: id });
         price_attributes?.forEach(async (att) => {
             await CategoryAttrService.create({
                 attribute_title: att.attribute_title,
                 attributes: att.attributes,
-                categoryId: id,
+                category_id: id,
             });
         });
     }
@@ -86,7 +86,9 @@ class CategoryUpdate {
             const processedImage = await ImageService.compressImageToBuffer(
                 req
             );
+            const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`
             ImageService.uploadImageWithBuffer(
+                folder,
                 processedImage,
                 async (error, result) => {
                     if (error) {

@@ -1,12 +1,12 @@
 import {
     DocumentType,
     getModelForClass,
+    index,
     prop,
-    Ref,
 } from "@typegoose/typegoose";
-import { CategoryAttr } from "./categoryAttr.model";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
+@index({name:1},{unique:true})
 export class Category extends TimeStamps{
     @prop({ required: true })
     name: string;
@@ -14,14 +14,14 @@ export class Category extends TimeStamps{
     @prop({ required: true })
     image: string;
 
-    @prop({ required: true, ref: () => CategoryAttr })
-    price_attributesId: Ref<CategoryAttr["_id"]>[];
+    @prop({ required: true, type: [String]})
+    price_attributes_id: string[];
 }
 
 export const CateogryModel = getModelForClass(Category);
 
 export type CategoryType = Pick<
     DocumentType<Category>,
-    "name" | "image" | "price_attributesId" | "createdAt" | "updatedAt" | "_id"
+    "name" | "image" | "price_attributes_id" | "createdAt" | "updatedAt" | "_id"
 >
 

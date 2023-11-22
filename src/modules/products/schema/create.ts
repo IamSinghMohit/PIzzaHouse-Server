@@ -1,18 +1,24 @@
 import { z, TypeOf } from "zod";
 import {
-    ProductCategoryId,
-    ProductDescription,
-    ProductName,
-    ProductPriceAttribute,
-    ProductStatus,
+    ProductCategorySchema,
+    ProductDefaultPriceSchema,
+    ProductDescriptionSchema,
+    ProductFeaturedSchema,
+    ProductNameSchema,
+    ProductPriceAttributeSchema,
+    ProductPriceSchema,
+    ProductStatusSchema,
 } from "./main";
 
 export const CreateProductSchema = z
     .object({})
-    .merge(ProductName)
-    .merge(ProductCategoryId)
-    .merge(ProductPriceAttribute)
-    .merge(ProductStatus)
-    .merge(ProductDescription);
+    .merge(ProductNameSchema)
+    .merge(ProductCategorySchema)
+    .merge(ProductStatusSchema)
+    .merge(ProductDescriptionSchema)
+    .merge(ProductPriceAttributeSchema)
+    .merge(ProductFeaturedSchema)
+    .merge(ProductPriceSchema)
+    .merge(ProductDefaultPriceSchema)
 
 export type CreateProductSchemaType = TypeOf<typeof CreateProductSchema>;

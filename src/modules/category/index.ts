@@ -11,7 +11,11 @@ router.post(
     CategoryController.createCategory
 );
 
-router.get("/", CategoryValidator.getCategories,CategoryController.getCategories);
+router.get(
+    "/",
+    CategoryValidator.getCategories,
+    CategoryController.getCategories
+);
 
 router.delete(
     "/delete/:id",
@@ -31,5 +35,5 @@ router.put(
     CategoryController.updateCategory
 );
 
-router.get("/attributes/:id",CategoryController.getAttributes)
+router.get("/attributes/:id", CategoryController.getAttributes);
 export default router;

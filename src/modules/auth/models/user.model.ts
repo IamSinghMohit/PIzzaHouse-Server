@@ -25,24 +25,32 @@ import { UserRole } from "../schema/auth.schema";
 class User extends TimeStamps {
     @prop({ required: false })
     googleId?: string;
+
     @prop({ required: true })
     name: string;
+
     @prop({ required: true })
     lastname: string;
+
     @prop({ required: false })
     avatar: string;
+
     @prop({ unique: true, required: true })
     email: string;
+
     @prop({ required: true })
     password: string;
+
     @prop({ enum: UserRole, required: false })
     role: UserRole;
+
     async comparePassword(this: DocumentType<User>, candidatePassword: string) {
         return bcrypt
             .compare(candidatePassword, this.password)
             .catch(() => false);
     }
 }
+
 export const UserModel = getModelForClass(User);
 
 export type UserType = Pick<

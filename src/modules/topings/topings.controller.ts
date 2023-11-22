@@ -27,27 +27,27 @@ class TopingsController {
 
         const processedImage = await ImageService.compressImageToBuffer(req);
 
-        await ImageService.uploadImageWithBuffer(
-            processedImage,
-            async (error, result) => {
-                if (error) {
-                    return next(
-                        new ErrorResponse("Error while uploading image", 500)
-                    );
-                }
+    //     await ImageService.uploadImageWithBuffer(
+    //         processedImage,
+    //         async (error, result) => {
+    //             if (error) {
+    //                 return next(
+    //                     new ErrorResponse("Error while uploading image", 500)
+    //                 );
+    //             }
 
-                if (result && result.url) {
-                    toping.image = result.url;
-                }
-                const topingResult = await toping.save();
+    //             if (result && result.url) {
+    //                 toping.image = result.url;
+    //             }
+    //             const topingResult = await toping.save();
 
-                ResponseService.sendResWithData(
-                    res,
-                    202,
-                    new TopingDto(topingResult)
-                );
-            }
-        );
+    //             ResponseService.sendResWithData(
+    //                 res,
+    //                 202,
+    //                 new TopingDto(topingResult)
+    //             );
+    //         }
+    //     );
 
     }
 

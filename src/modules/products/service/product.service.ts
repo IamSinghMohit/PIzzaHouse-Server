@@ -1,13 +1,17 @@
 import { ProductDto } from "../dto/product.dto";
 import { ProductModel, ProductType } from "../models/product.model";
 
+type opts = Partial<ProductType>;
 type FindType = "FINDONE" | "FIND";
 
 class ProductService {
-    static async findProduct<
-        T,
+    static async find<
+        T extends FindType,
         Treturn = T extends "FINDONE" ? ProductDto | null : ProductDto[] | null
-    >(opts: Partial<ProductType>, type: FindType): Promise<Treturn> {
+    >(
+        opts: Partial<Record<keyof ProductType, any>>,
+        type: T
+    ): Promise<Treturn> {
         if (type == "FIND") {
             return (await ProductModel.find(opts).then((res) =>
                 res.map((r) => new ProductDto(r))
@@ -24,18 +28,30 @@ class ProductService {
     }
 
     static async UpdateMany(
-        condition: Partial<ProductType>,
-        updatedData: Partial<ProductType>
-    ) {
-        return await ProductModel.updateMany(condition, updatedData);
+        condition: opts,
+        updatedData: opts,
+        projection?: Array<keyof opts>
+    ): Promise<any> {
+        let query = ProductModel.updateMany(condition, updatedData);
+
+        if (projection) {
+            const projectionString = projection.join(" ");
+            // Use `lean()` to cast the document to a plain JavaScript object
+            query = query.select(projectionString) as any;
+        }
+
+        return await query;
     }
 
-    static async createProdut(opts: Partial<ProductType>) {
+    static async createProdut(opts: opts) {
         return await ProductModel.create(opts);
     }
 
-    static getInstance(opts: Partial<ProductType>) {
+    static getInstance(opts: opts) {
         return new ProductModel(opts);
+    }
+    static async count() {
+        return await ProductModel.estimatedDocumentCount();
     }
 }
 export default ProductService;

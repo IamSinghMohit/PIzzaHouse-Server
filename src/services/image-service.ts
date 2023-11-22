@@ -15,6 +15,7 @@ class ImageService {
     }
 
     static async uploadImageWithBuffer(
+        foldername:string,
         processedImage: Buffer,
         cb: (
             error: UploadApiErrorResponse | undefined,
@@ -24,7 +25,7 @@ class ImageService {
         const stream = new Readable();
         stream.push(processedImage);
 
-        const upload = cloudinary.uploader.upload_stream((error, result) =>
+        const upload = cloudinary.uploader.upload_stream({folder:foldername},(error, result) =>
             cb(error, result)
         );
 
