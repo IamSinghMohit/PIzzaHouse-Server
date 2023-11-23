@@ -27,21 +27,10 @@ class ProductService {
         }
     }
 
-    static async UpdateMany(
-        condition: opts,
-        updatedData: any,
-        projection?: Array<keyof opts>
-    ): Promise<any> {
-        let query = ProductModel.updateMany(condition, updatedData, {
+    static async UpdateMany(condition: opts, updatedData: any): Promise<any> {
+        await ProductModel.updateMany(condition, updatedData, {
             new: true,
         });
-
-        if (projection) {
-            const projectionString = projection.join(" ");
-            query = query.select(projectionString) as any;
-        }
-
-        return await query.exec();
     }
 
     static async createProdut(opts: opts) {

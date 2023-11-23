@@ -5,6 +5,7 @@ import {
     prop,
     Ref,
     index,
+    pre,
 } from "@typegoose/typegoose";
 import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { ProductStatusEnum } from "../schema/main";
@@ -37,10 +38,10 @@ export class Product extends TimeStamps {
     featured: boolean;
 
     @prop({ required: true, ref:() => ProductAttribute })
-    price_attributes_id: Ref<ProductAttribute>[] ;
+    price_attributes: Ref<ProductAttribute>[] ;
 
     @prop({ required: true, ref:() =>ProductDefaultPrice })
-    default_prices_id: Ref<ProductDefaultPrice >;
+    default_prices: Ref<ProductDefaultPrice >;
 }
 
 export const ProductModel = getModelForClass(Product);
@@ -48,14 +49,14 @@ export type ProductType = Pick<
     DocumentType<Product>,
     | "name"
     | "category"
-    | "price_attributes_id"
+    | "price_attributes"
     | "createdAt"
     | "updatedAt"
     | "_id"
     | "status"
     | "price"
     | "description"
-    | "default_prices_id"
+    | "default_prices"
     | "featured"
     | "image"
 >;

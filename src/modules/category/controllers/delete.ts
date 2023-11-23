@@ -8,7 +8,6 @@ import CategoryAttrService from "../service/categoryAttributes.service";
 import ProductDefaultPriceSerivice from "@/modules/products/service/productDefaultPrice.service";
 import ProductAttributeService from "@/modules/products/service/productAttribute.service";
 import { ErrorResponse } from "@/utils";
-import { ProductModel } from "@/modules/products/models/product.model";
 
 class CategoryDelete {
     static async deleteCategory(
@@ -30,26 +29,19 @@ class CategoryDelete {
         }`;
         ImageService.deleteImage(image, async () => {
                 // deleting data releated cateogry
-                // CategoryService.deleteCategory(id);
-                // CategoryAttrService.deleteAttribute(id);
-                // deleting data releated category in product
-                // const results = await ProductService.UpdateMany(
-                //     { category: category.name },
-                //     { $set:{
-                //         category: "others" 
-                //     }},
-                //     ['price_attributes_id','default_prices_id']
-                // );
-                const results = ProductModel.updateMany(
+                CategoryService.deleteCategory(id);
+                CategoryAttrService.deleteAttribute(id);
+                // updating the product
+                 await ProductService.UpdateMany(
                     { category: category.name },
                     { $set:{
-                        category: "others" 
+                        category: "Others" 
                     }},
-                    {
-                        new:true
-                    }
-                ).select('price_attributes_id default_prices_id')
-                console.log(results)
+                );
+                // delting the product data releated to category
+                ProductDefaultPriceSerivice.deleteMany({category:category.name})
+                ProductAttributeService.deleteMany({category:category.name})
+
                 ResponseService.sendResWithData(res, 200, {
                     data: "Category deleted",
                 });

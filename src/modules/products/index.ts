@@ -12,7 +12,7 @@ router.post(
 );
 router.get("/", ProductValidator.getProducts, ProductController.getProducts);
 router.get(
-    "attributes/:id",
+    "/attributes/:id",
     ProductValidator.getProductAttributes,
     ProductController.getProductAttributes
 );

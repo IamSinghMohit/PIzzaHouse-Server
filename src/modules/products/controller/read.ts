@@ -32,7 +32,6 @@ class ProductRead {
         });
     }
 
-
     static async getProductAttributes(
         req: Request<GetProductAttributesType, {}, {}, {}>,
         res: Response,
@@ -46,24 +45,20 @@ class ProductRead {
         if (!isProductExists)
             return next(new ErrorResponse("product not found", 404));
 
-        // const attribute = ProductAttributeService.find(
-        //     {
-        //         product_id: id,
-        //     },
-        //     "FINDONE"
-        // );
-        // const defaultPriceAttribute = ProductDefaultPriceSerivice.find(
-        //     {
-        //         product_id: id,
-        //     },
-        //     "FINDONE"
-        // );
+        const attribute = await ProductAttributeService.findMany({
+            product_id: id,
+        });
+        const defaultPriceAttribute = await ProductDefaultPriceSerivice.find(
+            {
+                product_id: id,
+            },
+            "FINDONE"
+        );
 
         ResponseService.sendResWithData(res, 200, {
             data: {
-                // product_attributes: attribute,
-                // default_price_attributes: defaultPriceAttribute,
-                data:'hello world fix here in product read'
+                attributes: attribute,
+                default_prices: defaultPriceAttribute?.default_prices,
             },
         });
     }

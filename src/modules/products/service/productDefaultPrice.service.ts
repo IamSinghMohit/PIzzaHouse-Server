@@ -13,13 +13,13 @@ class ProductDefaultPriceSerivice {
         Treturn = T extends "FINDONE"
             ? ProductDefaultPriceDto | null
             : ProductDefaultPriceDto[] | null
-    >(opts: opts, type: T): Promise<Treturn> {
+    >(obj: opts, type: T): Promise<Treturn> {
         if (type == "FIND") {
-            return (await ProductDefaultPriceModel.find(opts).then((res) =>
+            return (await ProductDefaultPriceModel.find(obj).then((res) =>
                 res.map((r) => new ProductDefaultPriceDto(r))
             )) as any;
         } else {
-            return (await ProductDefaultPriceModel.findOne(opts).then((res) => {
+            return (await ProductDefaultPriceModel.findOne(obj).then((res) => {
                 if (res) {
                     return new ProductDefaultPriceDto(res);
                 } else {

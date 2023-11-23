@@ -11,6 +11,12 @@ export interface ProductAttribute extends Base {}
 @modelOptions({ options: { allowMixed: 0 } })
 export class ProductAttribute {
     @prop({ required: true, type: String })
+    category: string;
+
+    @prop({ required: true, type: String })
+    product_id: string;
+
+    @prop({ required: true, type: String })
     attribute_title: string;
 
     @prop({ required: true, type: [Object] })
@@ -20,5 +26,5 @@ export class ProductAttribute {
 export const ProductAttributeModel = getModelForClass(ProductAttribute);
 export type ProductAttributeType = Pick<
     DocumentType<ProductAttribute>,
-    "_id" | "attribute_title" | "attributes"
+    "_id" | "attribute_title" | "attributes" | "category" | "product_id"
 >;
