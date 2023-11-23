@@ -65,7 +65,6 @@ class ProductCreate {
                     const patt = ProductAttributeService.getInstance({
                         attribute_title,
                         attributes: attributes,
-                        category: category,
                     });
                     AttributeArray.push(patt._id);
                     patt.save();
@@ -73,7 +72,6 @@ class ProductCreate {
                 // creating product_default_price document
                 const productDefaultPrice =
                     await ProductDefaultPriceSerivice.create({
-                        category: category,
                         default_prices: default_prices,
                     });
                 // savving the product with other releated fields

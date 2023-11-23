@@ -29,18 +29,19 @@ class ProductService {
 
     static async UpdateMany(
         condition: opts,
-        updatedData: opts,
+        updatedData: any,
         projection?: Array<keyof opts>
     ): Promise<any> {
-        let query = ProductModel.updateMany(condition, updatedData);
+        let query = ProductModel.updateMany(condition, updatedData, {
+            new: true,
+        });
 
         if (projection) {
             const projectionString = projection.join(" ");
-            // Use `lean()` to cast the document to a plain JavaScript object
             query = query.select(projectionString) as any;
         }
 
-        return await query;
+        return await query.exec();
     }
 
     static async createProdut(opts: opts) {
