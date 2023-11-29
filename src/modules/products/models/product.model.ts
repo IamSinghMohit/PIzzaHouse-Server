@@ -14,7 +14,7 @@ import { ProductDefaultPrice } from "./productDefaultPrice.model";
 
 export interface Product extends Base {}
 @modelOptions({ options: { allowMixed: 0 } })
-@index({name:1},{unique:true})
+@index({ name: 1 }, { unique: true })
 export class Product extends TimeStamps {
     @prop({ required: true, type: String })
     name: string;
@@ -37,11 +37,11 @@ export class Product extends TimeStamps {
     @prop({ required: true, type: Boolean, default: false })
     featured: boolean;
 
-    @prop({ required: true, ref:() => ProductAttribute })
-    price_attributes: Ref<ProductAttribute>[] ;
+    @prop({ required: true, type: [String] })
+    price_attributes: string[];
 
-    @prop({ required: true, ref:() =>ProductDefaultPrice })
-    default_prices: Ref<ProductDefaultPrice >;
+    @prop({ required: true, type: String })
+    default_prices: string;
 }
 
 export const ProductModel = getModelForClass(Product);

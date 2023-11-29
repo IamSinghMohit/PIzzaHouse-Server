@@ -4,8 +4,9 @@ import {
     pre,
     DocumentType,
     getModelForClass,
+    index,
 } from "@typegoose/typegoose";
-import { TimeStamps, Base } from "@typegoose/typegoose/lib/defaultClasses";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { UserRole } from "../schema/auth.schema";
 
 @pre<User>("save", async function (next) {
@@ -22,6 +23,7 @@ import { UserRole } from "../schema/auth.schema";
 
     return next();
 })
+@index({ email: 1 }, { unique: true })
 class User extends TimeStamps {
     @prop({ required: false })
     googleId?: string;
@@ -29,19 +31,16 @@ class User extends TimeStamps {
     @prop({ required: true })
     name: string;
 
-    @prop({ required: true })
-    lastname: string;
-
     @prop({ required: false })
     avatar: string;
 
     @prop({ unique: true, required: true })
     email: string;
 
-    @prop({ required: true })
+    @prop({ required: false })
     password: string;
 
-    @prop({ enum: UserRole, required: false })
+    @prop({ enum: UserRole, required: false, default: "normal" })
     role: UserRole;
 
     async comparePassword(this: DocumentType<User>, candidatePassword: string) {
@@ -56,7 +55,6 @@ export const UserModel = getModelForClass(User);
 export type UserType = Pick<
     DocumentType<User>,
     | "avatar"
-    | "lastname"
     | "email"
     | "password"
     | "role"

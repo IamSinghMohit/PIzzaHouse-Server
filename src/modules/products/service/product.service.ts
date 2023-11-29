@@ -43,5 +43,8 @@ class ProductService {
     static async count() {
         return await ProductModel.estimatedDocumentCount();
     }
+    static async delete(opts:opts){
+        return await ProductModel.deleteOne(opts)
+    }
 }
 export default ProductService;

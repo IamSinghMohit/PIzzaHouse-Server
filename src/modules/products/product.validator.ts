@@ -1,6 +1,7 @@
 import { CreateProductSchema } from "./schema/create";
 import Validator from "@/utils/validatorWrapper.";
 import { GetProductAttributes, GetProductsSchema } from "./schema/read";
+import { DeleteProduct } from "./schema/delete";
 
 class ProductValidator {
     static createProduct = Validator.ReqBody(CreateProductSchema, (req) => {
@@ -21,5 +22,6 @@ class ProductValidator {
     });
 
     static getProductAttributes = Validator.ReqParams(GetProductAttributes);
+    static deleteProduct = Validator.ReqParams(DeleteProduct)
 }
 export default ProductValidator;

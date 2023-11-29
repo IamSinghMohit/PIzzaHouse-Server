@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { LoginType,SigninType } from "./schema/auth.schema";
 import { ErrorResponse } from "@/utils";
 import TokenService from "./service/token.service";
-import UserService from "./service/user.service.";
+import UserService from "./service/user.service";
 import { ResponseService } from "@/services";
 import UserDto from "./dto/user.dto";
 

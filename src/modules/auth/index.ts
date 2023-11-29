@@ -9,16 +9,19 @@ router.get(
     "/login/google",
     passport.authenticate("google", {
         scope: ["profile", "email"],
-        session: false,
     })
 );
 
 router.get(
     "/google/callback",
     passport.authenticate("google", {
+        session:false,
         failureMessage: "Cannot login",
+        failureRedirect:'http://localhost:3000'
     }),
-    (req, res) => {}
+    (req, res) => {
+        res.redirect('http://localhost:3000')
+    }
 );
 
 router.post(

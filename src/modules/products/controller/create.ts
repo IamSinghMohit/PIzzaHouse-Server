@@ -45,7 +45,7 @@ class ProductCreate {
             description,
             status,
         });
-        const AttributeArray: Types.ObjectId[] = [];
+        const AttributeArray: string[] = [];
         const processedImage = await ImageService.compressImageToBuffer(req);
         const folder = `${process.env.CLOUDINARY_PRODUCT_FOLDER}`;
         await ImageService.uploadImageWithBuffer(
@@ -69,7 +69,7 @@ class ProductCreate {
                         attribute_title,
                         attributes: attributes,
                     });
-                    AttributeArray.push(patt._id);
+                    AttributeArray.push(patt._id.toString());
                     patt.save();
                 });
                 // creating product_default_price document
@@ -85,7 +85,7 @@ class ProductCreate {
                 product.category = category;
                 product.featured = featured;
                 product.price = price;
-                product.default_prices = productDefaultPrice._id
+                product.default_prices = productDefaultPrice._id.toString()
 
                 const ProductResult = await product.save();
                 ResponseService.sendResWithData(

@@ -33,6 +33,7 @@ class Validator {
         ) => Record<string, string | number | boolean | object>
     ) {
         return async (req: Request, res: Response, next: NextFunction) => {
+            console.log('inside validator')
             try {
                 let data: any = req.params;
                 if (modify) {

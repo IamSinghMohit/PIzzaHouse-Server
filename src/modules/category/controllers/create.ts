@@ -53,7 +53,7 @@ class CategoryCreate {
                     }
                 );
 
-                category.price_attributes_id = AttributeArray;
+                category.price_attributes = AttributeArray;
                 if (result && result.url) {
                     category.image = result.url;
                 }

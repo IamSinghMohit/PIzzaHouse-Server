@@ -3,6 +3,7 @@ import {
     getModelForClass,
     prop,
     modelOptions,
+    index,
 } from "@typegoose/typegoose";
 import { Base } from "@typegoose/typegoose/lib/defaultClasses";
 
@@ -13,6 +14,7 @@ export interface Attributes {
 
 export interface CategoryAttribute extends Base {}
 @modelOptions({ options: { allowMixed: 0 } })
+@index({ category_id: 1 }, { unique: true })
 export class CategoryAttribute {
     @prop({ required: true, type: String })
     attribute_title: string;

@@ -1,6 +1,7 @@
 import { asyncHandler } from "@/middlewares";
 import ProductCreate from "./create";
 import ProductRead from "./read";
+import ProductDelete from "./delete";
 
 class ProductController {
     private static ControllerWrapper = asyncHandler;
@@ -12,6 +13,9 @@ class ProductController {
     );
     static getProductAttributes = ProductController.ControllerWrapper(
         ProductRead.getProductAttributes
+    );
+    static deleteProduct = ProductController.ControllerWrapper(
+        ProductDelete.delete
     );
 }
 export default ProductController;

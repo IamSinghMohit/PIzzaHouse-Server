@@ -26,8 +26,7 @@ export class CategoryValidator {
 
     static updateCategory = Validator.ReqBody(UpdateCategorySchema, (req) => {
         return {
-            id: req.body.id,
-            name: req.body.name,
+            ...req.body,
             price_attributes: [...JSON.parse(req.body.json)],
             is_name_update: req.body.is_name_update == "true",
             is_image_update: req.body.is_image_update == "true",

@@ -15,13 +15,13 @@ export class Category extends TimeStamps{
     image: string;
 
     @prop({ required: true, type: [String]})
-    price_attributes_id: string[];
+    price_attributes: string[];
 }
 
 export const CateogryModel = getModelForClass(Category);
 
 export type CategoryType = Pick<
     DocumentType<Category>,
-    "name" | "image" | "price_attributes_id" | "createdAt" | "updatedAt" | "_id"
+    "name" | "image" | "price_attributes" | "createdAt" | "updatedAt" | "_id"
 >
 

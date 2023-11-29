@@ -32,14 +32,14 @@ class CategoryDelete {
                 CategoryService.deleteCategory(id);
                 CategoryAttrService.deleteAttribute(id);
                 // updating the product
-                 await ProductService.UpdateMany(
+                ProductService.UpdateMany(
                     { category: category.name },
                     { $set:{
                         category: "Others" 
                     }},
                 );
                 // delting the product data releated to category
-                ProductDefaultPriceSerivice.deleteMany({category:category.name})
+                ProductDefaultPriceSerivice.deleteOne({category:category.name})
                 ProductAttributeService.deleteMany({category:category.name})
 
                 ResponseService.sendResWithData(res, 200, {

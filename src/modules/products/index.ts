@@ -16,5 +16,10 @@ router.get(
     ProductValidator.getProductAttributes,
     ProductController.getProductAttributes
 );
+router.delete(
+    "/:id",
+    ProductValidator.deleteProduct,
+    ProductController.deleteProduct
+);
 
 export default router;

@@ -12,7 +12,7 @@ class CategoryDto {
         this.id = category._id;
         this.image = category.image;
         this.name = category.name;
-        this.price_attributes = category.price_attributes_id;
+        this.price_attributes = category.price_attributes;
         this.created_at = category.createdAt
         this.updated_at = category.updatedAt
     }

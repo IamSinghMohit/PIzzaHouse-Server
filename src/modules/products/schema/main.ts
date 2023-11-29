@@ -42,6 +42,9 @@ export const ProductPriceSchema = z.object({
 export const ProductDefaultPriceSchema = z.object({
     default_prices : z.record(z.string()),
 });
+export const Id = z.object({
+    id:z.string(),
+})
 
 export type ProductSubAttributeSchemaType = TypeOf<
     typeof ProductSubAttributeSchema

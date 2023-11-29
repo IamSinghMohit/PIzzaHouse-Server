@@ -1,7 +1,7 @@
 import { Request } from "express";
 import passport from "passport";
 import passportJWT from "passport-jwt";
-import UserService from "./modules/auth/service/user.service.";
+import UserService from "./modules/auth/service/user.service";
 import PassportGoogle from "passport-google-oauth20";
 import UserDto from "./modules/auth/dto/user.dto";
 import ErrorResponse from "./utils/error-response";
@@ -29,7 +29,7 @@ passport.use(
             if (Date.now() > exp * 1000) {
                 done("Unauthorized", false);
             }
-            let user = await UserService.findUser({ _id});
+            let user = await UserService.findUser({ _id });
             if (user) {
                 return done(null, new UserDto(user));
             }
@@ -51,15 +51,20 @@ passport.use(
             accessToken: string,
             refreshToken: string,
             profile: any,
-            cb: () => void
+            cb: PassportGoogle.VerifyCallback
         ) => {
             const defaultUser = {
-                name: profile.givenName,
-                email: profile.email[0].value,
-                avatar: profile.photos[0].value,
-                googleId: profile.id,
+                name: profile._json.name,
+                email: profile._json.email,
+                avatar: profile._json.picture,
+                googleId: profile._json.id,
             };
             /* LOGING HERE  */
+            const user = UserService.findOrCreate(
+                { email: defaultUser.email },
+                defaultUser
+            ).catch((e) => cb(e ));
+            return cb(null, user);
         }
     )
 );

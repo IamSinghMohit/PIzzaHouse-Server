@@ -34,8 +34,8 @@ class ProductDefaultPriceSerivice {
     static async create(opts: opts) {
         return await ProductDefaultPriceModel.create(opts);
     }
-    static async deleteMany(opts: opts) {
-        return await ProductDefaultPriceModel.deleteMany(opts);
+    static async deleteOne(opts: opts) {
+        return await ProductDefaultPriceModel.deleteOne(opts);
     }
 }
 export default ProductDefaultPriceSerivice;

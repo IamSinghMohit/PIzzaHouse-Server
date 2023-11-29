@@ -6,8 +6,16 @@ class UserService {
     }
 
     static async createUser(data: Record<string, string>) {
-        const user =  new UserModel(data);
-        return await user.save();
+        return await UserModel.create(data);
+    }
+    static async findOrCreate(
+        condition: Record<string, any>,
+        data: Record<string, string>
+    ) {
+        return await UserModel.findOneAndUpdate(condition, data, {
+            new: true,
+            upsert: true,
+        });
     }
 }
 
