@@ -3,6 +3,7 @@ import { Request,Response,NextFunction,ErrorRequestHandler } from "express";
 
 const errorHandler = (err:any, req:Request, res:Response, next:NextFunction) => {
     console.log(JSON.stringify(err));
+    console.log('inside error handler')
     let error = { ...err };
 
     error.message = err.message;

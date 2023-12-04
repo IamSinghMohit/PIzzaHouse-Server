@@ -1,9 +1,9 @@
 import { Router } from "express";
-import  passport from "passport";
-import { asyncHandler,Validate } from "@/middlewares";
+import passport from "passport";
+import { asyncHandler, Validate } from "@/middlewares";
 import AuthController from "./auth.controller";
 
-const router = Router()
+const router = Router();
 
 router.get(
     "/login/google",
@@ -15,27 +15,19 @@ router.get(
 router.get(
     "/google/callback",
     passport.authenticate("google", {
-        session:false,
+        session: false,
         failureMessage: "Cannot login",
-        failureRedirect:'http://localhost:3000'
     }),
-    (req, res) => {
-        res.redirect('http://localhost:3000')
-    }
+    asyncHandler(AuthController.google)
 );
 
-router.post(
-    "/signin",
-    Validate.signin,
-    asyncHandler(AuthController.signin)
-);
+router.post("/signin", Validate.signin, asyncHandler(AuthController.signin));
 router.post("/login", Validate.login, asyncHandler(AuthController.login));
+
+router.get("/logout",asyncHandler(AuthController.logout));
 router.get("/refresh", asyncHandler(AuthController.refresh));
-router.get(
-    "/me",
-    Validate.passport,
-    (req, res) => {
-        res.json({user:req.user});
-    }
-);
-export default router
+
+router.get("/me", Validate.passport, (req, res) => {
+    res.json(req.user);
+});
+export default router;

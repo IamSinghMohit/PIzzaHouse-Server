@@ -60,11 +60,11 @@ passport.use(
                 googleId: profile._json.id,
             };
             /* LOGING HERE  */
-            const user = UserService.findOrCreate(
+            const user = await UserService.findOrCreate(
                 { email: defaultUser.email },
                 defaultUser
-            ).catch((e) => cb(e ));
-            return cb(null, user);
+            )
+            return cb(null, new UserDto(user));
         }
     )
 );

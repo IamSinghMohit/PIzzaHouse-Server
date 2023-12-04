@@ -10,6 +10,7 @@ declare namespace NodeJS {
         CLOUDINARY_API_SECRET: string;
         CLOUDINARY_CAEGORY_FOLDER: string;
         CLOUDINARY_PRODUCT_FOLDER: string;
+        CLOUDINARY_TOPING_FOLDER: string;
         CLOUDINARY_KEY: string;
     }
 }

@@ -42,7 +42,7 @@ export const ProductPriceSchema = z.object({
 export const ProductDefaultPriceSchema = z.object({
     default_prices : z.record(z.string()),
 });
-export const Id = z.object({
+export const ProductId = z.object({
     id:z.string(),
 })
 

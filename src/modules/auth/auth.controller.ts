@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { LoginType,SigninType } from "./schema/auth.schema";
+import { LoginType, SigninType } from "./schema/auth.schema";
 import { ErrorResponse } from "@/utils";
 import TokenService from "./service/token.service";
 import UserService from "./service/user.service";
@@ -22,7 +22,7 @@ class AuthController {
         const { refreshToken, accessToken } = TokenService.generateTokens({
             _id: user._id,
         });
-        
+
         ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
         ResponseService.sendResWithData(res, 201, new UserDto(user));
     }
@@ -57,8 +57,9 @@ class AuthController {
     static async refresh(req: Request, res: Response, next: NextFunction) {
         // get refresh token from cookie
         const { refreshToken: refreshTokenFromCookie } = req.cookies;
+
         if (!refreshTokenFromCookie) {
-            return next(new ErrorResponse("invalid token", 404));
+            return next(new ErrorResponse("token not found", 404));
         }
         // check if token is valid
         const userData = await TokenService.verifyRefreshToken(
@@ -72,11 +73,11 @@ class AuthController {
         );
 
         if (!token) {
-            return next(new ErrorResponse("invalid token", 404));
+            res.redirect("/auth/logout");
         }
 
         // check if valid user
-        const validateUser = await UserService.findUser({_id:userData._id})
+        const validateUser = await UserService.findUser({ _id: userData._id });
 
         if (!validateUser) {
             return next(new ErrorResponse("User doesh not exist", 404));
@@ -88,14 +89,32 @@ class AuthController {
         });
         // Update refresh token
 
-        await TokenService.CreateOrUpdateRefreshToken(validateUser._id,refreshToken);
+        await TokenService.CreateOrUpdateRefreshToken(
+            validateUser._id,
+            refreshToken
+        );
         // put in cookie
 
         await ResponseService.sendCookiesAsTokens(res, {
             accessToken,
             refreshToken,
         });
-        await ResponseService.sendResWithData(res,200,{success:true})
+        await ResponseService.sendResWithData(res, 200, { success: true });
+    }
+
+    static async google(req: Request, res: Response, next: NextFunction) {
+        const { refreshToken, accessToken } = TokenService.generateTokens({
+            //@ts-expect-error
+            _id: req.user.id,
+        });
+        ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
+        res.redirect("http://localhost:3000");
+    }
+
+    static async logout(req: Request, res: Response, next: NextFunction) {
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+        res.status(200).json('logout successfull')
     }
 }
 export default AuthController;

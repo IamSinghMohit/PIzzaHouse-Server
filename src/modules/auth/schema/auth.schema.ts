@@ -5,7 +5,6 @@ export enum UserRole {
 }
 export const SigninSchema = z.object({
     name: z.string(),
-    lastname: z.string(),
     email: z.string().email("Invalid email format"),
     password: z.string(),
     role: z

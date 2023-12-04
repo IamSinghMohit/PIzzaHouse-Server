@@ -27,7 +27,6 @@ app.use(morgan("common"));
 // PASSPORT
 require("./passport");
 app.use(passport.initialize());
-passport.session()
 // ------------------------->
 
 // Routes

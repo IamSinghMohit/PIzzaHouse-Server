@@ -1,3 +1,4 @@
+import UserDto from "../dto/user.dto";
 import { UserModel } from "../models/user.model";
 class UserService {
     static async findUser(filter: Record<string, string>) {
@@ -15,7 +16,7 @@ class UserService {
         return await UserModel.findOneAndUpdate(condition, data, {
             new: true,
             upsert: true,
-        });
+        })
     }
 }
 

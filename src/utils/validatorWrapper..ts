@@ -33,7 +33,6 @@ class Validator {
         ) => Record<string, string | number | boolean | object>
     ) {
         return async (req: Request, res: Response, next: NextFunction) => {
-            console.log('inside validator')
             try {
                 let data: any = req.params;
                 if (modify) {
@@ -43,7 +42,7 @@ class Validator {
                         return next(new ErrorResponse("invalid input", 422));
                     }
                 }
-                req.params = schema.parse(req.params);
+                req.params = schema.parse(data);
                 next();
             } catch (error) {
                 next(error);

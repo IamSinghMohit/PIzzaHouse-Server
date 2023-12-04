@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import {
+    GetFormatedProductsSchemaType,
     GetProductAttributesType,
+    GetProductType,
     GetProductsSchemaType,
 } from "../schema/read";
 import ProductService from "../service/product.service";
@@ -61,6 +63,25 @@ class ProductRead {
                 default_prices: defaultPriceAttribute?.default_prices,
             },
         });
+    }
+    static async getFromatedProducts(
+        req: Request<{}, {}, {}, GetFormatedProductsSchemaType>,
+        res: Response,
+        next: NextFunction
+    ) {
+        const products = await ProductService.getFormatedProducts(
+            req.query.productLimit || 4,
+            req.query.categoryLimit || 4
+        );
+        ResponseService.sendResWithData(res, 200, products);
+    }
+    static async getProduct(
+        req: Request<GetProductType>,
+        res: Response,
+        next: NextFunction
+    ) {
+        const product = await ProductService.find({ _id: req.params.id }, "FINDONE");
+        ResponseService.sendResWithData(res, 200, product);
     }
 }
 export default ProductRead;

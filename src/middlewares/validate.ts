@@ -2,7 +2,6 @@ import { LoginSchema, SigninSchema } from "@/modules/auth/schema/auth.schema";
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import { UserType } from "@/modules/auth/models/user.model";
-import { TopingsSchema } from "@/modules/topings/topings.schema";
 
 class Validate {
     static async signin(req: Request, res: Response, next: NextFunction) {
@@ -41,16 +40,6 @@ class Validate {
                 return next();
             }
         )(req, res, next);
-    }
-
-
-    static async topings(req: Request, res: Response, next: NextFunction) {
-        try {
-            await TopingsSchema.parseAsync(req.body);
-            next();
-        } catch (error) {
-            next(error);
-        }
     }
 }
 export default Validate;

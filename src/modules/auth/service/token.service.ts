@@ -8,10 +8,10 @@ import { Types } from "mongoose";
 class TokenService {
     static generateTokens(payload: JwtInput) {
         const accessToken = jwt.sign(payload, accessTokenSecret, {
-            expiresIn: "50m",
+            expiresIn: "1h",
         });
         const refreshToken = jwt.sign(payload, refreshTokenSecret, {
-            expiresIn: "50m",
+            expiresIn: "15d",
         });
         return { accessToken, refreshToken };
     }

@@ -17,5 +17,11 @@ class ProductController {
     static deleteProduct = ProductController.ControllerWrapper(
         ProductDelete.delete
     );
+    static getFromatedProducts = ProductController.ControllerWrapper(
+        ProductRead.getFromatedProducts
+    );
+    static getProduct = ProductController.ControllerWrapper(
+        ProductRead.getProduct
+    );
 }
 export default ProductController;

@@ -4,15 +4,15 @@ class UserDto {
     name;
     avatar;
     role;
-    createdAt;
-    updatedAt;
+    created_at;
+    updated_at;
 
     constructor(user: UserType) {
         this.id = user._id;
         this.name = user.name;
         this.avatar = user.avatar || "";
-        this.createdAt = user.createdAt;
-        this.updatedAt = user.updatedAt;
+        this.created_at = user.createdAt;
+        this.updated_at = user.updatedAt;
         this.role = user.role;
     }
 }

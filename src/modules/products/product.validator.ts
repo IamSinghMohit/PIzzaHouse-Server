@@ -1,6 +1,11 @@
 import { CreateProductSchema } from "./schema/create";
 import Validator from "@/utils/validatorWrapper.";
-import { GetProductAttributes, GetProductsSchema } from "./schema/read";
+import {
+    GetFormatedProductsSchema,
+    GetProduct,
+    GetProductAttributes,
+    GetProductsSchema,
+} from "./schema/read";
 import { DeleteProduct } from "./schema/delete";
 
 class ProductValidator {
@@ -22,6 +27,16 @@ class ProductValidator {
     });
 
     static getProductAttributes = Validator.ReqParams(GetProductAttributes);
-    static deleteProduct = Validator.ReqParams(DeleteProduct)
+    static deleteProduct = Validator.ReqParams(DeleteProduct);
+    static getFromatedProducts = Validator.ReqQuery(
+        GetFormatedProductsSchema,
+        (req) => {
+            return {
+                productLimit: parseInt(req.query.productLimit) || 4,
+                categoryLimit: parseInt(req.query.categoryLimit) || 4,
+            };
+        }
+    );
+    static getProduct = Validator.ReqParams(GetProduct);
 }
 export default ProductValidator;

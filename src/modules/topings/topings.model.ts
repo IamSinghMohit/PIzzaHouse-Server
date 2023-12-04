@@ -1,5 +1,6 @@
-import { getModelForClass, prop, DocumentType } from "@typegoose/typegoose";
+import { getModelForClass, prop, DocumentType, index } from "@typegoose/typegoose";
 
+@index({category:1})
 export class Topings {
     @prop({ required: true, type: String })
     name: string;
