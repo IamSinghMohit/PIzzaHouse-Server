@@ -6,16 +6,15 @@ import { Request } from "express";
 
 class ImageService {
     static async compressImageToBuffer(req: Request) {
-        const compressedImage = sharp(req.file?.buffer)
-            .resize({ width: 480, withoutEnlargement: true })
+        let compressedImage = sharp(req.file?.buffer)
             .toFormat("webp")
-            .webp({ quality: 80 });
+            .webp({ quality: 85 });
 
         return await compressedImage.toBuffer();
     }
 
     static async uploadImageWithBuffer(
-        foldername:string,
+        foldername: string,
         processedImage: Buffer,
         cb: (
             error: UploadApiErrorResponse | undefined,
@@ -25,8 +24,9 @@ class ImageService {
         const stream = new Readable();
         stream.push(processedImage);
 
-        const upload = cloudinary.uploader.upload_stream({folder:foldername},(error, result) =>
-            cb(error, result)
+        const upload = cloudinary.uploader.upload_stream(
+            { folder: foldername },
+            (error, result) => cb(error, result)
         );
 
         stream.pipe(upload);

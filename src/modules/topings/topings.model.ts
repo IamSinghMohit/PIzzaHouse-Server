@@ -2,6 +2,8 @@ import { getModelForClass, prop, DocumentType, index } from "@typegoose/typegoos
 
 @index({category:1})
 export class Topings {
+    _id:string;
+
     @prop({ required: true, type: String })
     name: string;
 
@@ -16,8 +18,7 @@ export class Topings {
 }
 
 export const TopingsModel = getModelForClass(Topings);
-export interface TopingsType
-    extends Pick<
+export type TopingsType = Pick<
         DocumentType<Topings>,
         "name" | "image" | "category" | "_id" | "price"
     > {}

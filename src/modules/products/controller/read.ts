@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import {
-    GetFormatedProductsSchemaType,
-    GetProductAttributesType,
-    GetProductType,
-    GetProductsSchemaType,
+    TGetFromatedProductsSchema,
+    TGetProductAttributesSchema,
+    TGetProductSchema,
+    TGetProductsSchema,
 } from "../schema/read";
 import ProductService from "../service/product.service";
 import { ResponseService } from "@/services";
@@ -13,29 +13,35 @@ import { ErrorResponse } from "@/utils";
 
 class ProductRead {
     static async getProducts(
-        req: Request<{}, {}, {}, GetProductsSchemaType>,
+        req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
         next: NextFunction
     ) {
         const { category, status, min, max, featured, name } = req.query;
 
-        const products = await ProductService.find(
-            {
-                ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
-                ...(category ? { category } : {}),
-                ...(status ? { status } : {}),
-                ...(featured ? { featured } : {}),
-                price: { $gte: min, $lte: max },
-            },
-            "FIND"
-        );
+        const query: Record<string, any> = {
+            ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
+            ...(category ? { category } : {}),
+            ...(status ? { status } : {}),
+            ...(featured ? { featured } : {}),
+        };
+
+        if (min && max) {
+            query.price = { $gte: min, $lte: max };
+        } else if (min) {
+            query.price = { $gte: min };
+        } else if (max) {
+            query.price = { $lte: max };
+        }
+
+        const products = await ProductService.find(query, "FIND");
         ResponseService.sendResWithData(res, 202, {
             data: products,
         });
     }
 
     static async getProductAttributes(
-        req: Request<GetProductAttributesType, {}, {}, {}>,
+        req: Request<TGetProductAttributesSchema, {}, {}, {}>,
         res: Response,
         next: NextFunction
     ) {
@@ -58,14 +64,13 @@ class ProductRead {
         );
 
         ResponseService.sendResWithData(res, 200, {
-            data: {
-                attributes: attribute,
-                default_prices: defaultPriceAttribute?.default_prices,
-            },
+            attributes: attribute,
+            default_prices: defaultPriceAttribute?.default_prices,
         });
     }
+
     static async getFromatedProducts(
-        req: Request<{}, {}, {}, GetFormatedProductsSchemaType>,
+        req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
         res: Response,
         next: NextFunction
     ) {
@@ -75,12 +80,16 @@ class ProductRead {
         );
         ResponseService.sendResWithData(res, 200, products);
     }
+
     static async getProduct(
-        req: Request<GetProductType>,
+        req: Request<TGetProductSchema>,
         res: Response,
         next: NextFunction
     ) {
-        const product = await ProductService.find({ _id: req.params.id }, "FINDONE");
+        const product = await ProductService.find(
+            { _id: req.params.id },
+            "FINDONE"
+        );
         ResponseService.sendResWithData(res, 200, product);
     }
 }

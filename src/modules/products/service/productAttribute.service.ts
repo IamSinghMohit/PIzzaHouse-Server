@@ -1,4 +1,3 @@
-import ProductAttributeDto from "../dto/attributes.dto";
 import {
     ProductAttributeModel,
     ProductAttributeType,
@@ -9,9 +8,7 @@ type FindType = "FINDONE" | "FIND";
 
 class ProductAttributeService {
     static async findMany(opts: opts) {
-        return await ProductAttributeModel.find(opts).then((res) =>
-            res.map((r) => new ProductAttributeDto(r))
-        );
+        return await ProductAttributeModel.find(opts)
     }
     static async createProductAttr(opts: opts) {
         return await ProductAttributeModel.create(opts);

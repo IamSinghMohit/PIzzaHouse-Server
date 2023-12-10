@@ -3,11 +3,10 @@ import { CreateProductSchemaType } from "../schema/create";
 import ProductService from "../service/product.service";
 import { ErrorResponse } from "@/utils";
 import { ImageService, ResponseService } from "@/services";
-import { ProductDto } from "../dto/product.dto";
 import ProductAttributeService from "../service/productAttribute.service";
 import ProductDefaultPriceSerivice from "../service/productDefaultPrice.service";
 import CategoryService from "@/modules/category/service/category.service";
-import { Types } from "mongoose";
+import AdminProductDto from "../dto/product/admin";
 
 class ProductCreate {
     static async createProduct(
@@ -91,7 +90,7 @@ class ProductCreate {
                 ResponseService.sendResWithData(
                     res,
                     202,
-                    new ProductDto(ProductResult)
+                    new AdminProductDto(ProductResult)
                 );
             }
         );

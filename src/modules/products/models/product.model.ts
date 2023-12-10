@@ -3,19 +3,21 @@ import {
     getModelForClass,
     modelOptions,
     prop,
-    Ref,
     index,
-    pre,
 } from "@typegoose/typegoose";
-import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { ProductStatusEnum } from "../schema/main";
-import { ProductAttribute } from "./productAttribute.model.ts";
-import { ProductDefaultPrice } from "./productDefaultPrice.model";
 
-export interface Product extends Base {}
-@modelOptions({ options: { allowMixed: 0 } })
+@modelOptions({
+    options: { allowMixed: 0 },
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 @index({ name: 1 }, { unique: true })
-export class Product extends TimeStamps {
+export class Product extends TimeStamps{
+    _id:string
+
     @prop({ required: true, type: String })
     name: string;
 
@@ -45,7 +47,7 @@ export class Product extends TimeStamps {
 }
 
 export const ProductModel = getModelForClass(Product);
-export type ProductType = Pick<
+export type TProduct = Pick<
     DocumentType<Product>,
     | "name"
     | "category"

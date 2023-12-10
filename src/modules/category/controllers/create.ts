@@ -14,7 +14,6 @@ class CategoryCreate {
         next: NextFunction
     ) {
         const { name, price_attributes } = req.body;
-        console.log(req.body);
         
         const isExist = await CategoryService.findCategory(
             { name: { $regex: new RegExp(name, "i") } },

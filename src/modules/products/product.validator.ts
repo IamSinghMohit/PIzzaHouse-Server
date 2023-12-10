@@ -17,14 +17,7 @@ class ProductValidator {
             featured: req.body.featured === "true",
         };
     });
-    static getProducts = Validator.ReqQuery(GetProductsSchema, (req) => {
-        return {
-            ...req.query,
-            min: parseInt(req.query.min),
-            max: parseInt(req.query.max),
-            featured: req.query.featured === "true",
-        };
-    });
+    static getProducts = Validator.ReqQuery(GetProductsSchema);
 
     static getProductAttributes = Validator.ReqParams(GetProductAttributes);
     static deleteProduct = Validator.ReqParams(DeleteProduct);

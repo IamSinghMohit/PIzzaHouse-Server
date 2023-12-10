@@ -1,29 +1,17 @@
-import { ProductDto } from "../dto/product.dto";
-import { ProductModel, ProductType } from "../models/product.model";
+import { ProductModel, TProduct } from "../models/product.model";
 
-type opts = Partial<ProductType>;
+type opts = Partial<TProduct>;
 type FindType = "FINDONE" | "FIND";
 
 class ProductService {
-    static async find<
-        T extends FindType,
-        Treturn = T extends "FINDONE" ? ProductDto | null : ProductDto[] | null
-    >(
-        opts: Partial<Record<keyof ProductType, any>>,
-        type: T
-    ): Promise<Treturn> {
+    static async find(
+        opts: Partial<Record<keyof TProduct, any>>,
+        type: FindType
+    ) {
         if (type == "FIND") {
-            return (await ProductModel.find(opts).then((res) =>
-                res.map((r) => new ProductDto(r))
-            )) as any;
+            return await ProductModel.find(opts);
         } else {
-            return await ProductModel.findOne(opts).then((res) => {
-                if (res) {
-                    return new ProductDto(res) as any;
-                } else {
-                    return null;
-                }
-            });
+            return await ProductModel.findOne(opts);
         }
     }
 
