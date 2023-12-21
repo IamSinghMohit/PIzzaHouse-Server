@@ -1,38 +1,39 @@
 import { Request, Response, NextFunction } from "express";
-import { CreateProductSchemaType } from "../schema/create";
+import { TCreateProductSchema } from "../schema/create";
 import ProductService from "../service/product.service";
 import { ErrorResponse } from "@/utils";
 import { ImageService, ResponseService } from "@/services";
-import ProductAttributeService from "../service/productAttribute.service";
-import ProductDefaultPriceSerivice from "../service/productDefaultPrice.service";
+import UtilService from "@/modules/utilities/utility.servervice";
 import CategoryService from "@/modules/category/service/category.service";
 import AdminProductDto from "../dto/product/admin";
+import { UtilEnum } from "@/modules/utilities/util.enum";
+import ProductPriceSectionService from "../service/productPriceSection";
+import ProductDefaultPriceAttributeService from "../service/productDefaultAttribute.service";
 
 class ProductCreate {
     static async createProduct(
-        req: Request<{}, {}, CreateProductSchemaType>,
+        req: Request<{}, {}, TCreateProductSchema>,
         res: Response,
         next: NextFunction
     ) {
         const {
             name,
-            price_attributes,
+            sections,
             category,
             description,
             status,
             featured,
-            default_prices,
+            default_attributes,
             price,
         } = req.body;
 
-        if (!req.file)
-            return next(new ErrorResponse("image is required", 422));
+        if (!req.file) return next(new ErrorResponse("image is required", 422));
 
         const isExist = await ProductService.find({ name }, "FINDONE");
         if (isExist) {
             return next(new ErrorResponse("product already exist", 403));
         }
-        const isCategoryExists = await CategoryService.findCategory(
+        const isCategoryExists = await CategoryService.find(
             { name: { $regex: new RegExp(category, "i") } },
             "FINDONE"
         );
@@ -61,11 +62,11 @@ class ProductCreate {
                     product.image = result.url;
                 }
                 // saving product price attributes in the database
-                price_attributes.forEach(({ attribute_title, attributes }) => {
-                    const patt = ProductAttributeService.getInstance({
-                        product_id:product._id.toString(),
-                        category:category,
-                        attribute_title,
+                sections.forEach(({ title, attributes }) => {
+                    const patt = ProductPriceSectionService.getInstance({
+                        product_id: product._id.toString(),
+                        category: category,
+                        title,
                         attributes: attributes,
                     });
                     AttributeArray.push(patt._id.toString());
@@ -73,23 +74,33 @@ class ProductCreate {
                 });
                 // creating product_default_price document
                 const productDefaultPrice =
-                    await ProductDefaultPriceSerivice.create({
-                        product_id:product._id.toString(),
-                        category:category,
-                        default_prices: default_prices,
+                    await ProductDefaultPriceAttributeService.create({
+                        product_id: product._id.toString(),
+                        category: category,
+                        attribute: default_attributes,
                     });
                 // savving the product with other releated fields
                 productDefaultPrice.save();
-                product.price_attributes = AttributeArray;
+                product.sections = AttributeArray;
                 product.category = category;
                 product.featured = featured;
                 product.price = price;
-                product.default_prices = productDefaultPrice._id.toString()
+                product.default_attribute = productDefaultPrice._id;
 
                 const ProductResult = await product.save();
-                ResponseService.sendResWithData(
+                const previousUtil = await UtilService.findOne({
+                    title: UtilEnum.product,
+                });
+                UtilService.createOne({
+                    title: UtilEnum.product,
+                    data: {
+                        product_count: 1 + previousUtil?.product_count || 0,
+                    },
+                });
+                ResponseService.sendResponse(
                     res,
                     202,
+                    true,
                     new AdminProductDto(ProductResult)
                 );
             }

@@ -1,25 +1,23 @@
 import { NextFunction, Request, Response } from "express";
-import { DeleteCategorySchemaType } from "../schema/delete";
+import { TDeleteCategorySchema } from "../schema/delete";
 import { ImageService } from "@/services";
 import CategoryService from "../service/category.service";
 import ProductService from "@/modules/products/service/product.service";
 import { ResponseService } from "@/services";
-import CategoryAttrService from "../service/categoryAttributes.service";
-import ProductDefaultPriceSerivice from "@/modules/products/service/productDefaultPrice.service";
-import ProductAttributeService from "@/modules/products/service/productAttribute.service";
+import CategoryAttrService from "../service/categoryPriceSection.service";
 import { ErrorResponse } from "@/utils";
+import ProductDefaultPriceAttributeService from "@/modules/products/service/productDefaultAttribute.service";
+import ProductPriceSectionService from "@/modules/products/service/productPriceSection";
 
 class CategoryDelete {
     static async deleteCategory(
-        req: Request<DeleteCategorySchemaType, {}, {}>,
+        req: Request<TDeleteCategorySchema, {}, {}>,
         res: Response,
         next: NextFunction
     ) {
         const { id } = req.params;
-        const category = await CategoryService.findCategory(
-            { _id: id },
-            "FINDONE"
-        );
+        const category = await CategoryService.find({ _id: id }, "FINDONE");
+
         if (!category) {
             return new ErrorResponse("category not found", 404);
         }
@@ -28,23 +26,23 @@ class CategoryDelete {
             url[url.length - 1].split(".")[0]
         }`;
         ImageService.deleteImage(image, async () => {
-                // deleting data releated cateogry
-                CategoryService.deleteCategory(id);
-                CategoryAttrService.deleteAttribute(id);
-                // updating the product
-                ProductService.UpdateMany(
-                    { category: category.name },
-                    { $set:{
-                        category: "Others" 
-                    }},
-                );
-                // delting the product data releated to category
-                ProductDefaultPriceSerivice.deleteOne({category:category.name})
-                ProductAttributeService.deleteMany({category:category.name})
+            // deleting data releated cateogry
+            CategoryService.deleteCategory(id);
+            CategoryAttrService.deleteAttribute(id);
+            // updating the product
+            ProductService.UpdateMany(
+                { category: category.name },
+                {
+                    $set: {
+                        category: "Others",
+                    },
+                }
+            );
+            // delting the product data releated to category
+            ProductDefaultPriceAttributeService.deleteOne({ category: category.name });
+            ProductPriceSectionService.deleteMany({ category: category.name });
 
-                ResponseService.sendResWithData(res, 200, {
-                    data: "Category deleted",
-                });
+            ResponseService.sendResponse(res, 200, true, "Category deleted");
         });
     }
 }

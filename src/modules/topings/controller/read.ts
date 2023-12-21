@@ -6,7 +6,7 @@ import { TGetTopingWithCategorySchema } from "../schema/read";
 class TopingRead {
     static async getAllToping(req: Request, res: Response, next: NextFunction) {
         const topings = await TopingService.findToping({}, "FIND");
-        ResponseService.sendResWithData(res, 200, { data: topings });
+        ResponseService.sendResponse(res, 200, true, topings);
     }
     static async getTopingWithCategory(
         req: Request<TGetTopingWithCategorySchema>,
@@ -14,10 +14,10 @@ class TopingRead {
         next: NextFunction
     ) {
         const topings = await TopingService.findToping(
-            { category: req.params.category},
+            { category: req.params.category },
             "FIND"
         );
-        ResponseService.sendResWithData(res, 200, { data: topings });
+        ResponseService.sendResponse(res, 200, true,topings);
     }
 }
 export default TopingRead;

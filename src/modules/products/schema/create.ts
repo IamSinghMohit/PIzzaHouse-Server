@@ -1,13 +1,13 @@
 import { z, TypeOf } from "zod";
 import {
     ProductCategorySchema,
-    ProductDefaultPriceSchema,
     ProductDescriptionSchema,
     ProductFeaturedSchema,
     ProductNameSchema,
-    ProductPriceAttributeSchema,
+    ProductSectionSchema,
     ProductPriceSchema,
     ProductStatusSchema,
+    ProductDefaultAttributeSchema,
 } from "./main";
 
 export const CreateProductSchema = z
@@ -16,9 +16,9 @@ export const CreateProductSchema = z
     .merge(ProductCategorySchema)
     .merge(ProductStatusSchema)
     .merge(ProductDescriptionSchema)
-    .merge(ProductPriceAttributeSchema)
+    .merge(ProductSectionSchema)
     .merge(ProductFeaturedSchema)
     .merge(ProductPriceSchema)
-    .merge(ProductDefaultPriceSchema)
+    .merge(ProductDefaultAttributeSchema)
 
-export type CreateProductSchemaType = TypeOf<typeof CreateProductSchema>;
+export type TCreateProductSchema= TypeOf<typeof CreateProductSchema>;

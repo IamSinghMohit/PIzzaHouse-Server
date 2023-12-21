@@ -1,43 +1,28 @@
-import { CategoryType, CateogryModel } from "../models/category.model";
-import CategoryDto from "../dto/category.dto";
+import { TCategory, CateogryModel } from "../models/category.model";
+import { DocumentType } from "@typegoose/typegoose";
 
-type FindType = "FINDONE" | "FIND";
-type CategoryGeneralType = Partial<
-    Omit<CategoryType, "_id"> & {
-        _id: string;
-    }
->;
+type Tfind = "FINDONE" | "FIND";
+type options = Partial<TCategory>;
 
 class CategoryService {
-    static async findCategory<
-        T extends FindType,
+    static async find<
+        T extends Tfind,
         Treturn = T extends "FINDONE"
-            ? CategoryDto | null
-            : CategoryDto[] | null
-    >(
-        obj: Partial<Record<keyof CategoryType, any>>,
-        type: T
-    ): Promise<Treturn> {
+            ? DocumentType<TCategory> | null
+            : DocumentType<TCategory>[]
+    >(obj: Partial<Record<keyof TCategory, any>>, type: T): Promise<Treturn> {
         if (type == "FIND") {
-            return (await CateogryModel.find(obj).then((res) =>
-                res.map((r) => new CategoryDto(r))
-            )) as any;
+            return (await CateogryModel.find(obj)) as any;
         } else {
-            return (await CateogryModel.findOne(obj).then((res) => {
-                if (res) {
-                    return new CategoryDto(res);
-                } else {
-                    return null;
-                }
-            })) as any;
+            return (await CateogryModel.findOne(obj)) as any;
         }
     }
 
-    static async createCategory(obj: CategoryType) {
-        return await CateogryModel.create(obj);
+    static async createCategory(opts: options) {
+        return await CateogryModel.create(opts);
     }
 
-    static getInstance(opts: Partial<CategoryType>) {
+    static getInstance(opts: options) {
         return new CateogryModel(opts);
     }
 
@@ -49,10 +34,7 @@ class CategoryService {
         return await CateogryModel.deleteOne({ _id: id });
     }
 
-    static async findOneAndUpdate(
-        condition: CategoryGeneralType,
-        update: Partial<CategoryType>
-    ) {
+    static async findOneAndUpdate(condition: options, update: options) {
         return await CateogryModel.findOneAndUpdate(condition, update, {
             new: true,
         });
@@ -63,13 +45,12 @@ class CategoryService {
     }
 
     static async findPaginatedCategory(
-        obj: Partial<Record<keyof CategoryType, any>>,
+        obj: Partial<Record<keyof TCategory, any>>,
         limitSkip: { limit: number; skip: number }
     ) {
         return await CateogryModel.find(obj)
             .limit(limitSkip.limit)
-            .skip(limitSkip.skip)
-            .then((res) => res.map((r) => new CategoryDto(r)));
+            .skip(limitSkip.skip);
     }
 
     static async searchCategory(
@@ -79,15 +60,13 @@ class CategoryService {
     ) {
         return await CateogryModel.find({
             name: {
-                // $regex: { nameString, $options: "i" },
                 $regex: new RegExp(nameString, "i"),
             },
             ...(cursor ? { _id: { $lt: cursor } } : {}),
         })
             .sort({ _id: -1 })
             .limit(limit)
-            .then((res) => res.map((r) => new CategoryDto(r)));
+            .select("-__v");
     }
-
 }
 export default CategoryService;

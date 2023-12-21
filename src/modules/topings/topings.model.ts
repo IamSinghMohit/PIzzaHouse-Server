@@ -1,8 +1,13 @@
-import { getModelForClass, prop, DocumentType, index } from "@typegoose/typegoose";
+import {
+    getModelForClass,
+    prop,
+    DocumentType,
+    index,
+} from "@typegoose/typegoose";
 
-@index({category:1})
+@index({ category: 1 })
 export class Topings {
-    _id:string;
+    _id: string;
 
     @prop({ required: true, type: String })
     name: string;
@@ -19,6 +24,6 @@ export class Topings {
 
 export const TopingsModel = getModelForClass(Topings);
 export type TopingsType = Pick<
-        DocumentType<Topings>,
-        "name" | "image" | "category" | "_id" | "price"
-    > {}
+    DocumentType<Topings>,
+    "name" | "image" | "category" | "_id" | "price"
+>;

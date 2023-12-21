@@ -20,17 +20,13 @@ class ResponseService {
         res.status(status).json(data);
     }
 
-    static async sendResponse(
-        res: Response,
-        status: number,
-        data: any,            // there will be only one payload error or data 
-        success: boolean,
-        error: { code: number; message: string }
-    ) {
+    static async sendResponse<
+        T extends boolean,
+        TReturn = T extends true ? any : { code: number; message: string }
+    >(res: Response, status: number, success: T, payload: TReturn) {
         res.status(status).json({
             success,
-            data,
-            error,
+            ...(success ? { data: payload } : { error: payload }),
         });
     }
 }

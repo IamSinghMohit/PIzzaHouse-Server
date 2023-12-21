@@ -1,39 +1,42 @@
 import { NextFunction, Request, Response } from "express";
 import CategoryService from "../service/category.service";
-import CategoryAttributeService from "../service/categoryAttributes.service";
+import CategoryAttributeService from "../service/categoryPriceSection.service";
 import { ResponseService } from "@/services";
 import {
-    GetAttributeSchemaType,
-    SearchCategorySchemaType,
-    getCategoriesSchemaType,
+    TSearchCategorySchema,
+    TGetCategoriesSchema,
+    TGetCategorySectionsShchema,
 } from "../schema/read";
+import AdminCategoryDto from "../dto/category/admin";
+import AdminCategoryPriceSectionDto from "../dto/categoryPriceSection.dto";
 
 class CategoryRead {
     static async getCategories(
-        req: Request<{}, {}, {}, getCategoriesSchemaType>,
+        req: Request<{}, {}, {}, TGetCategoriesSchema>,
         res: Response,
         next: NextFunction
     ) {
         const totalDocument = await CategoryService.count();
-        const { limit } = req.query;
+        const { limit, name } = req.query;
         const page = req.query.page;
 
         const categories = await CategoryService.findPaginatedCategory(
-            {},
+            { ...(name ? { name: new RegExp(name, "i") } : {}) },
             {
                 limit,
                 skip: (page - 1) * limit,
             }
         );
-        ResponseService.sendResWithData(res, 202, {
+
+        ResponseService.sendResponse(res, 202, true, {
             page,
             pages: Math.ceil(totalDocument / limit),
-            data: categories,
+            categories: categories.map((cat) => new AdminCategoryDto(cat)), // don't mess up here, this must remain unchanged
         });
     }
 
     static async searchCategory(
-        req: Request<{}, {}, {}, SearchCategorySchemaType>,
+        req: Request<{}, {}, {}, TSearchCategorySchema>,
         res: Response,
         next: NextFunction
     ) {
@@ -42,20 +45,32 @@ class CategoryRead {
             req.query.limit,
             req.query.cursor
         );
-        ResponseService.sendResWithData(res, 200, {
-            data: categories,
-        });
+        ResponseService.sendResponse(res, 200, true, categories.map((cat) => new AdminCategoryDto(cat)));
     }
 
-    static async getAttributes(
-        req: Request<GetAttributeSchemaType, {}, {}>,
+    static async getSections(
+        req: Request<TGetCategorySectionsShchema, {}, {}>,
         res: Response,
         next: NextFunction
     ) {
-        const priceAtt = await CategoryAttributeService .getAttribute({
+        const priceAtt = await CategoryAttributeService.getAttribute({
             category_id: req.params.id,
         });
-        ResponseService.sendResWithData(res, 202,priceAtt);
+        ResponseService.sendResponse(
+            res,
+            202,
+            true,
+            priceAtt.map((at) => new AdminCategoryPriceSectionDto(at))
+        );
+    }
+
+    static async getCategoriesAdmin(
+        req: Request<{}, {}, {}, TSearchCategorySchema>,
+        res: Response,
+        next: NextFunction
+    ) {
+        const categories = await CategoryService.find({}, "FIND");
+        ResponseService.sendResponse(res, 200, true, categories.map((cat) => new AdminCategoryDto(cat)));
     }
 }
 export default CategoryRead;

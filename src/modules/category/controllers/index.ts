@@ -21,8 +21,8 @@ class CategoryController {
     static updateCategory = CategoryController.controllerWrapper(
         CategoryUpdate.updateCategory
     );
-    static getAttributes = CategoryController.controllerWrapper(
-        CategoryRead.getAttributes
+    static getSections = CategoryController.controllerWrapper(
+        CategoryRead.getSections
     );
 }
 export default CategoryController;

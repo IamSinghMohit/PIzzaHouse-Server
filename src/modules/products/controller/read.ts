@@ -1,18 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import {
     TGetFromatedProductsSchema,
-    TGetProductAttributesSchema,
+    TGetProductPriceSectionSchema,
     TGetProductSchema,
     TGetProductsSchema,
 } from "../schema/read";
 import ProductService from "../service/product.service";
 import { ResponseService } from "@/services";
-import ProductDefaultPriceSerivice from "../service/productDefaultPrice.service";
-import ProductAttributeService from "../service/productAttribute.service";
 import { ErrorResponse } from "@/utils";
+import AdminProductDto from "../dto/product/admin";
+import ProductPriceSectionService from "../service/productPriceSection";
+import ProductDefaultPriceAttributeSerivice from "../service/productDefaultAttribute.service";
+import ProductPriceSectionDto from "../dto/productPriceSection.dto";
 
 class ProductRead {
-    static async getProducts(
+    static async products(
         req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
         next: NextFunction
@@ -35,13 +37,16 @@ class ProductRead {
         }
 
         const products = await ProductService.find(query, "FIND");
-        ResponseService.sendResWithData(res, 202, {
-            data: products,
-        });
+        ResponseService.sendResponse(
+            res,
+            202,
+            true,
+            products.map((product) => new AdminProductDto(product))
+        );
     }
 
-    static async getProductAttributes(
-        req: Request<TGetProductAttributesSchema, {}, {}, {}>,
+    static async productPriceSection(
+        req: Request<TGetProductPriceSectionSchema, {}, {}, {}>,
         res: Response,
         next: NextFunction
     ) {
@@ -53,23 +58,21 @@ class ProductRead {
         if (!isProductExists)
             return next(new ErrorResponse("product not found", 404));
 
-        const attribute = await ProductAttributeService.findMany({
+        const sections = await ProductPriceSectionService.findMany({
             product_id: id,
         });
-        const defaultPriceAttribute = await ProductDefaultPriceSerivice.find(
-            {
+        const defaultPriceAttribute =
+            await ProductDefaultPriceAttributeSerivice.findOne({
                 product_id: id,
-            },
-            "FINDONE"
-        );
+            });
 
-        ResponseService.sendResWithData(res, 200, {
-            attributes: attribute,
-            default_prices: defaultPriceAttribute?.default_prices,
+        ResponseService.sendResponse(res, 200, true, {
+            sections: sections.map((sec) => new ProductPriceSectionDto(sec)),
+            default_attributes: defaultPriceAttribute?.attribute,
         });
     }
 
-    static async getFromatedProducts(
+    static async fromatedProducts(
         req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
         res: Response,
         next: NextFunction
@@ -78,10 +81,10 @@ class ProductRead {
             req.query.productLimit || 4,
             req.query.categoryLimit || 4
         );
-        ResponseService.sendResWithData(res, 200, products);
+        ResponseService.sendResponse(res, 200, true, products);
     }
 
-    static async getProduct(
+    static async product(
         req: Request<TGetProductSchema>,
         res: Response,
         next: NextFunction
@@ -90,7 +93,7 @@ class ProductRead {
             { _id: req.params.id },
             "FINDONE"
         );
-        ResponseService.sendResWithData(res, 200, product);
+        ResponseService.sendResponse(res, 200, true, product);
     }
 }
 export default ProductRead;

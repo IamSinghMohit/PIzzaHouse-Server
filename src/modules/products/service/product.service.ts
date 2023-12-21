@@ -1,17 +1,20 @@
+import { DocumentType } from "@typegoose/typegoose";
 import { ProductModel, TProduct } from "../models/product.model";
 
 type opts = Partial<TProduct>;
 type FindType = "FINDONE" | "FIND";
 
 class ProductService {
-    static async find(
-        opts: Partial<Record<keyof TProduct, any>>,
-        type: FindType
-    ) {
+    static async find<
+        T extends FindType,
+        Treturn = T extends "FINDONE"
+            ? DocumentType<TProduct> | null
+            : DocumentType<TProduct>[]
+    >(opts: opts, type: T): Promise<Treturn> {
         if (type == "FIND") {
-            return await ProductModel.find(opts);
+            return (await ProductModel.find(opts).select('-__v')) as any;
         } else {
-            return await ProductModel.findOne(opts);
+            return (await ProductModel.findOne(opts).select('-__v')) as any;
         }
     }
 

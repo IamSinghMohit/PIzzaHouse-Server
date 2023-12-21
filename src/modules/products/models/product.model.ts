@@ -40,10 +40,10 @@ export class Product extends TimeStamps{
     featured: boolean;
 
     @prop({ required: true, type: [String] })
-    price_attributes: string[];
+    sections: string[];
 
     @prop({ required: true, type: String })
-    default_prices: string;
+    default_attribute: string;
 }
 
 export const ProductModel = getModelForClass(Product);
@@ -51,14 +51,14 @@ export type TProduct = Pick<
     DocumentType<Product>,
     | "name"
     | "category"
-    | "price_attributes"
+    | "sections"
     | "createdAt"
     | "updatedAt"
     | "_id"
     | "status"
     | "price"
     | "description"
-    | "default_prices"
+    | "default_attribute"
     | "featured"
     | "image"
 >;

@@ -9,19 +9,19 @@ class ProductController {
         ProductCreate.createProduct
     );
     static getProducts = ProductController.ControllerWrapper(
-        ProductRead.getProducts
+        ProductRead.products
     );
-    static getProductAttributes = ProductController.ControllerWrapper(
-        ProductRead.getProductAttributes
+    static getProductPriceSection = ProductController.ControllerWrapper(
+        ProductRead.productPriceSection
     );
     static deleteProduct = ProductController.ControllerWrapper(
         ProductDelete.delete
     );
     static getFromatedProducts = ProductController.ControllerWrapper(
-        ProductRead.getFromatedProducts
+        ProductRead.fromatedProducts
     );
     static getProduct = ProductController.ControllerWrapper(
-        ProductRead.getProduct
+        ProductRead.product
     );
 }
 export default ProductController;

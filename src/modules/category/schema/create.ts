@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { CategoryName, CategoryAttrSchema } from "./main";
+import { CategoryNameSchema, CategoryPriceSectionSchema } from "./main";
 
 export const CreateCategorySchema = z
     .object({})
-    .merge(CategoryAttrSchema)
-    .merge(CategoryName);
+    .merge(CategoryPriceSectionSchema)
+    .merge(CategoryNameSchema);
 
-export type CreateCategorySchemaType =  z.TypeOf<typeof CreateCategorySchema>
+export type TCreateCategorySchema = z.TypeOf<typeof CreateCategorySchema>;

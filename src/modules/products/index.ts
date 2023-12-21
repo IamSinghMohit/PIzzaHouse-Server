@@ -5,27 +5,27 @@ import ProductController from "./controller";
 const router = Router();
 
 router.post(
-    "/create",
+    "/admin/create",
     upload.single("image"),
     ProductValidator.createProduct,
     ProductController.createProduct
 );
-router.get("/all", ProductValidator.getProducts, ProductController.getProducts);
+router.get("/admin/all", ProductValidator.getProducts, ProductController.getProducts);
 router.get(
-    "/attributes/:id",
-    ProductValidator.getProductAttributes,
-    ProductController.getProductAttributes
+    "/sections/:id",
+    ProductValidator.getProductPriceSections,
+    ProductController.getProductPriceSection
 );
 router.delete(
-    "/:id",
+    "/admin/:id",
     ProductValidator.deleteProduct,
     ProductController.deleteProduct
 );
 router.get(
-    "/formated/",
+    "/formated",
     ProductValidator.getFromatedProducts,
     ProductController.getFromatedProducts
 );
-router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
+// router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
 
 export default router;

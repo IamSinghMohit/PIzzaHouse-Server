@@ -1,8 +1,8 @@
 import { CreateCategorySchema } from "./schema/create";
-import { deleteCategorySchema } from "./schema/delete";
+import { DeleteCategorySchema } from "./schema/delete";
 import Validator from "@/utils/validatorWrapper.";
 import {
-    getAttributeSchema,
+    GetSectionsSchema,
     getCategoriesSchema,
     searchCategorySchema,
 } from "./schema/read";
@@ -12,26 +12,25 @@ export class CategoryValidator {
     static createCategory = Validator.ReqBody(CreateCategorySchema, (req) => {
         return {
             name: req.body.name,
-            price_attributes: [...JSON.parse(req.body.json)],
+            sections: [...JSON.parse(req.body.json)],
         };
     });
 
-    static deleteCategory = Validator.ReqParams(deleteCategorySchema);
+    static deleteCategory = Validator.ReqParams(DeleteCategorySchema);
 
     static searchCategory = Validator.ReqQuery(searchCategorySchema);
 
     static getCategories = Validator.ReqQuery(getCategoriesSchema);
 
-    static getAttributes = Validator.ReqParams(getAttributeSchema);
+    static getSections = Validator.ReqParams(GetSectionsSchema);
 
     static updateCategory = Validator.ReqBody(UpdateCategorySchema, (req) => {
         return {
             ...req.body,
-            price_attributes: [...JSON.parse(req.body.json)],
-            is_name_update: req.body.is_name_update == "true",
-            is_image_update: req.body.is_image_update == "true",
-            is_price_attributes_update:
-                req.body.is_price_attributes_update == "true",
+            sections: [...JSON.parse(req.body.json)],
+            is_name_updated: req.body.is_name_update == "true",
+            is_image_updated: req.body.is_image_update == "true",
+            is_sections_updated: req.body.is_sections_updated == "true",
         };
     });
 }

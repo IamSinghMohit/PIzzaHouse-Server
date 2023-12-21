@@ -12,13 +12,13 @@ router.post(
 );
 
 router.get(
-    "/",
+    "/admin",
     CategoryValidator.getCategories,
     CategoryController.getCategories
 );
 
 router.delete(
-    "/delete/:id",
+    "/admin/delete/:id",
     CategoryValidator.deleteCategory,
     CategoryController.deleteCategory
 );
@@ -35,5 +35,9 @@ router.put(
     CategoryController.updateCategory
 );
 
-router.get("/attributes/:id", CategoryController.getAttributes);
+router.get(
+    "/sections/:id",
+    CategoryValidator.getSections,
+    CategoryController.getSections
+);
 export default router;

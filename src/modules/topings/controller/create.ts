@@ -41,9 +41,10 @@ class TopingsCreate {
                 }
                 const topingResult = await toping.save();
 
-                ResponseService.sendResWithData(
+                ResponseService.sendResponse(
                     res,
                     202,
+                    true,
                     new TopingDto(topingResult)
                 );
             }

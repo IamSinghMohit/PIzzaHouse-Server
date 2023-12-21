@@ -4,7 +4,7 @@ import { ErrorResponse } from "@/utils";
 import { UploadApiErrorResponse } from "cloudinary";
 import { UpdateCategorySchemaType } from "../schema/update";
 import CategoryService from "../service/category.service";
-import CategoryAttrService from "../service/categoryAttributes.service";
+import CategoryPriceSectionService from "../service/categoryPriceSection.service";
 
 class CategoryUpdate {
     private static async updateCategoryWithId(
@@ -14,24 +14,29 @@ class CategoryUpdate {
         return await CategoryService.findOneAndUpdate({ _id: id }, opts);
     }
 
-    private static async deleteAndCreateAttr(
+    private static async deleteAndCreatePriceSection(
         id: string,
-        price_attributes: UpdateCategorySchemaType["price_attributes"]
+        sections: UpdateCategorySchemaType["sections"]
     ) {
-        await CategoryAttrService.deleteMany({ category_id: id });
-        price_attributes?.forEach(async (att) => {
-            await CategoryAttrService.create({
-                attribute_title: att.attribute_title,
-                attributes: att.attributes,
-                category_id: id,
-            });
+        await CategoryPriceSectionService.deleteMany({ category_id: id });
+        const payload = sections.map((sec) => ({
+            title: sec.title,
+            attributes: sec.attributes,
+            category_id: id,
+        }));
+        await CategoryPriceSectionService.create({
+            type: "MANY",
+            payload,
         });
     }
 
     private static response(res: Response) {
-        return ResponseService.sendResWithData(res, 200, {
-            data: "Category updated successfully",
-        });
+        return ResponseService.sendResponse(
+            res,
+            200,
+            true,
+            "Category updated successfully"
+        );
     }
 
     static async updateCategory(
@@ -40,17 +45,17 @@ class CategoryUpdate {
         next: NextFunction
     ) {
         const {
-            is_image_update,
-            is_name_update,
-            is_price_attributes_update,
+            is_image_updated,
+            is_name_updated,
+            is_sections_updated,
             id,
             name,
-            price_attributes,
+            sections,
         } = req.body;
-        if (is_image_update) {
+        if (is_image_updated) {
             let setImage: Function = () => {};
 
-            if (is_name_update && !is_price_attributes_update) {
+            if (is_name_updated && !is_sections_updated) {
                 // if only name should be updated
                 setImage = async (result: UploadApiErrorResponse) => {
                     await CategoryUpdate.updateCategoryWithId(id, {
@@ -58,23 +63,23 @@ class CategoryUpdate {
                         name,
                     });
                 };
-            } else if (is_price_attributes_update && !is_name_update) {
+            } else if (is_sections_updated && !is_name_updated) {
                 // if only price_attributes should be updated
                 setImage = async (result: UploadApiErrorResponse) => {
-                    await CategoryUpdate.deleteAndCreateAttr(
+                    await CategoryUpdate.deleteAndCreatePriceSection(
                         id,
-                        price_attributes
+                        sections
                     );
                     await CategoryUpdate.updateCategoryWithId(id, {
                         image: result?.url,
                     });
                 };
-            } else if (is_name_update && is_price_attributes_update) {
+            } else if (is_name_updated && is_sections_updated) {
                 // if price attributes and name both should be updated
                 setImage = async (result: UploadApiErrorResponse) => {
-                    await CategoryUpdate.deleteAndCreateAttr(
+                    await CategoryUpdate.deleteAndCreatePriceSection(
                         id,
-                        price_attributes
+                        sections
                     );
                     await CategoryUpdate.updateCategoryWithId(id, {
                         image: result?.url,
@@ -86,7 +91,7 @@ class CategoryUpdate {
             const processedImage = await ImageService.compressImageToBuffer(
                 req
             );
-            const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`
+            const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`;
             ImageService.uploadImageWithBuffer(
                 folder,
                 processedImage,
@@ -105,13 +110,13 @@ class CategoryUpdate {
             );
             return;
         }
-        if (is_name_update && !is_image_update) {
+        if (is_name_updated && !is_image_updated) {
             await CategoryUpdate.updateCategoryWithId(id, { name });
         }
-        if (is_price_attributes_update && !is_image_update) {
-            await CategoryUpdate.deleteAndCreateAttr(id, price_attributes);
+        if (is_sections_updated && !is_image_updated) {
+            await CategoryUpdate.deleteAndCreatePriceSection(id, sections);
         }
-        CategoryUpdate.response(res)
+        CategoryUpdate.response(res);
     }
 }
 export default CategoryUpdate;

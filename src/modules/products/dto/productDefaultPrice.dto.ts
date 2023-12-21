@@ -1,4 +1,4 @@
-import { ProductDefaultPriceType } from "../models/productDefaultPrice.model";
+import { ProductDefaultPriceType } from "../models/productDefaultAttribute.model";
 
 class ProductDefaultPriceDto {
     default_prices;

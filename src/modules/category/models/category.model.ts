@@ -2,26 +2,33 @@ import {
     DocumentType,
     getModelForClass,
     index,
+    modelOptions,
     prop,
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
-@index({name:1},{unique:true})
-export class Category extends TimeStamps{
+@index({ name: 1 }, { unique: true })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
+export class Category extends TimeStamps {
+    _id:string
+
     @prop({ required: true })
     name: string;
 
     @prop({ required: true })
     image: string;
 
-    @prop({ required: true, type: [String]})
-    price_attributes: string[];
+    @prop({ required: true, type: [String] })
+    sections: string[];
 }
 
 export const CateogryModel = getModelForClass(Category);
 
-export type CategoryType = Pick<
+export type TCategory = Pick<
     DocumentType<Category>,
-    "name" | "image" | "price_attributes" | "createdAt" | "updatedAt" | "_id"
->
-
+    "name" | "image" | "sections" | "createdAt" | "updatedAt" | "_id"
+>;

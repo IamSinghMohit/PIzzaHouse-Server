@@ -38,7 +38,7 @@ export type TGetFromatedProductsSchema = TypeOf<
 export const GetProductSchema  = z.object({}).merge(ProductId);
 export type TGetProductSchema = TypeOf<typeof GetProductSchema>;
 
-export const GetProductAttributesSchema = ProductId;
-export type TGetProductAttributesSchema = TypeOf<typeof GetProductAttributesSchema>;
+export const GetProductPriceSectionSchema = ProductId;
+export type TGetProductPriceSectionSchema  = TypeOf<typeof GetProductPriceSectionSchema>;
 
 

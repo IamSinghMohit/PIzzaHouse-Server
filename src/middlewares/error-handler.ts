@@ -1,9 +1,14 @@
 import { ErrorResponse } from "@/utils";
-import { Request,Response,NextFunction,ErrorRequestHandler } from "express";
+import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 
-const errorHandler = (err:any, req:Request, res:Response, next:NextFunction) => {
+const errorHandler = (
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     console.log(JSON.stringify(err));
-    console.log('inside error handler')
+    console.log("inside error handler");
     let error = { ...err };
 
     error.message = err.message;
@@ -20,14 +25,14 @@ const errorHandler = (err:any, req:Request, res:Response, next:NextFunction) => 
 
     if (err.name === "ValidationError") {
         const message = Object.values(err.errors)
-            .map((error:any) => error.message)
+            .map((error: any) => error.message)
             .join(", ");
         error = new ErrorResponse(message, 422);
     }
 
     if (err.name === "ZodError") {
         const message = Object.values(err.errors)
-            .map((error:any) => `${error.path[0]} ${error.message}`)
+            .map((error: any) => `${error.path[0]} ${error.message}`)
             .join(", ");
         error = new ErrorResponse(message, 422);
     }
@@ -42,10 +47,13 @@ const errorHandler = (err:any, req:Request, res:Response, next:NextFunction) => 
         error = new ErrorResponse(message, 404);
     }
 
-
     res.status(error.statusCode || 500).json({
-        error: error.message || "Server Error",
+        success: false,
+        data: {
+            code: error.statusCode || 500,
+            message: error.message || "Server Error",
+        },
     });
 };
 
-export default errorHandler
+export default errorHandler;

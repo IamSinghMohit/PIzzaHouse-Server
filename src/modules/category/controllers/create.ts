@@ -1,21 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import { CreateCategorySchemaType } from "../schema/create";
+import { TCreateCategorySchema } from "../schema/create";
 import CategoryService from "../service/category.service";
-import CategoryAttributeService from "../service/categoryAttributes.service";
+import CategoryAttributeService from "../service/categoryPriceSection.service";
 import { ImageService } from "@/services";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
-import CategoryDto from "../dto/category.dto";
+import AdminCategoryDto from "../dto/category/admin";
 
 class CategoryCreate {
     static async createCategory(
-        req: Request<{}, {}, CreateCategorySchemaType>,
+        req: Request<{}, {}, TCreateCategorySchema>,
         res: Response,
         next: NextFunction
     ) {
-        const { name, price_attributes } = req.body;
-        
-        const isExist = await CategoryService.findCategory(
+        const { name, sections } = req.body;
+        console.log(req.body)
+
+        const isExist = await CategoryService.find(
             { name: { $regex: new RegExp(name, "i") } },
             "FINDONE"
         );
@@ -39,27 +40,28 @@ class CategoryCreate {
                         new ErrorResponse("Error while uploading image", 500)
                     );
                 }
-                price_attributes.forEach(
-                    async ({ attribute_title, attributes }) => {
-                        const price_att = CategoryAttributeService.getInstance({
-                            category_id: category.id,
-                            attribute_title,
-                            attributes: attributes,
-                        });
+                sections.forEach(async ({ title, attributes }) => {
+                    const section = CategoryAttributeService.getInstance({
+                        category_id: category.id,
+                        name,
+                        attributes: attributes,
+                    });
 
-                        AttributeArray.push(price_att._id.toString());
-                        price_att.save();
-                    }
-                );
+                    AttributeArray.push(section._id.toString());
+                    section.save();
+                });
 
-                category.price_attributes = AttributeArray;
+                category.sections = AttributeArray;
                 if (result && result.url) {
                     category.image = result.url;
                 }
                 const CatResult = await category.save();
-                ResponseService.sendResWithData(res, 202, {
-                    data: new CategoryDto(CatResult),
-                });
+                ResponseService.sendResponse(
+                    res,
+                    202,
+                    true,
+                    new AdminCategoryDto(CatResult)
+                );
             }
         );
     }

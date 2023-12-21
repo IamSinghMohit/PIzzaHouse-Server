@@ -7,14 +7,15 @@ export const searchCategorySchema = z.object({
 });
 
 export const getCategoriesSchema = z.object({
+    name:z.string(),
     page: z.string().transform((data) => parseInt(data)),
     limit: z.string().transform((data) => parseInt(data)),
 });
 
-export const getAttributeSchema = z.object({
+export const GetSectionsSchema = z.object({
     id: z.string(),
 });
 
-export type SearchCategorySchemaType = z.TypeOf<typeof searchCategorySchema>;
-export type getCategoriesSchemaType = z.TypeOf<typeof getCategoriesSchema>;
-export type GetAttributeSchemaType = z.TypeOf<typeof getAttributeSchema>;
+export type TSearchCategorySchema = z.TypeOf<typeof searchCategorySchema>;
+export type TGetCategoriesSchema = z.TypeOf<typeof getCategoriesSchema>;
+export type TGetCategorySectionsShchema = z.TypeOf<typeof GetSectionsSchema>;

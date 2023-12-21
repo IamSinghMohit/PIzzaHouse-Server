@@ -24,7 +24,7 @@ class AuthController {
         });
 
         ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
-        ResponseService.sendResWithData(res, 201, new UserDto(user));
+        ResponseService.sendResponse(res, 201, true, new UserDto(user));
     }
 
     static async login(
@@ -48,7 +48,7 @@ class AuthController {
                 accessToken,
                 refreshToken,
             });
-            ResponseService.sendResWithData(res, 201, new UserDto(user));
+            ResponseService.sendResponse(res, 201, true, new UserDto(user));
         } else {
             return next(new ErrorResponse("Invalid credentials", 404));
         }
@@ -99,7 +99,7 @@ class AuthController {
             accessToken,
             refreshToken,
         });
-        await ResponseService.sendResWithData(res, 200, { success: true });
+        await ResponseService.sendResponse(res, 200, true, "Token refreshed");
     }
 
     static async google(req: Request, res: Response, next: NextFunction) {
@@ -114,7 +114,7 @@ class AuthController {
     static async logout(req: Request, res: Response, next: NextFunction) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
-        res.status(200).json('logout successfull')
+        res.status(200).json("logout successfull");
     }
 }
 export default AuthController;

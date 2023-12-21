@@ -1,31 +1,18 @@
-import { z, TypeOf} from "zod";
-import { v4 as uuidV4 } from "uuid";
+import { z, TypeOf } from "zod";
+import {
+    CategoryIdSchema,
+    CategoryNameSchema,
+    CategoryPriceSectionSchema,
+} from "./main";
 
-export const UpdateCategorySchema = z.object({
-    id:z.string(),
-    is_name_update: z.boolean(),
-    is_image_update: z.boolean(),
-    is_price_attributes_update: z.boolean(),
-    name: z.string().min(2).optional(),
-    price_attributes: z
-        .array(
-            z.object({
-                id: z.string(),
-                attribute_title: z
-                    .string()
-                    .min(2)
-                    .transform((data) => data.toUpperCase()),
-                attributes: z.array(
-                    z.object({
-                        id: z.string().transform(() => uuidV4().toString()),
-                        title: z
-                            .string()
-                            .transform((data) => data.toUpperCase()),
-                    })
-                ),
-            })
-        )
-        .optional(),
-});
+export const UpdateCategorySchema = z
+    .object({
+        is_name_updated: z.boolean(),
+        is_image_updated: z.boolean(),
+        is_sections_updated: z.boolean(),
+    })
+    .merge(CategoryIdSchema)
+    .merge(CategoryNameSchema)
+    .merge(CategoryPriceSectionSchema);
 
-export type UpdateCategorySchemaType = TypeOf<typeof UpdateCategorySchema>
+export type UpdateCategorySchemaType = TypeOf<typeof UpdateCategorySchema>;
