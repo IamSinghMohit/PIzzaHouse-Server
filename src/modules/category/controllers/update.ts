@@ -99,7 +99,6 @@ class CategoryUpdate {
             );
             setImage(result);
             CategoryUpdate.response(res);
-            return;
         }
         if (is_name_updated && !is_image_updated) {
             await CategoryUpdate.updateCategoryWithId(id, { name });

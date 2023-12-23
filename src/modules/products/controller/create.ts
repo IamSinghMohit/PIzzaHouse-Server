@@ -28,8 +28,7 @@ class ProductCreate {
         } = req.body;
 
         if (!req.file) return next(new ErrorResponse("image is required", 422));
-        console.log(JSON.stringify(req.body))
-        return res.json('hello world')
+        console.log(JSON.stringify(req.body));
         const isExist = await ProductService.find({ name }, "FINDONE");
         if (isExist) {
             return next(new ErrorResponse("product already exist", 403));

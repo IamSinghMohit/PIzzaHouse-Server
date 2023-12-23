@@ -5,6 +5,6 @@ class Refresh  {
     token:string;
 
     @prop({required:true,unique:true})
-    userId:string;
+    user_id:string;
 }
 export const  RefreshModel = getModelForClass(Refresh)

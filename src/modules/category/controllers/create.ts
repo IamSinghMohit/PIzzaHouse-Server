@@ -11,13 +11,14 @@ class CategoryCreate {
     static async createCategory(
         req: Request<{}, {}, TCreateCategorySchema>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const { name, sections } = req.body;
+        console.log(req.body)
 
         const isExist = await CategoryService.find(
             { name: { $regex: new RegExp(name, "i") } },
-            "FINDONE",
+            "FINDONE"
         );
 
         if (isExist) {
@@ -30,6 +31,7 @@ class CategoryCreate {
         const processedImage = await ImageService.compressImageToBuffer(req);
         // Uploading image to cloudinary and creating category
         const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`;
+<<<<<<< HEAD
 
         const result = await ImageService.uploadImageWithBuffer(
             folder,
@@ -57,6 +59,40 @@ class CategoryCreate {
             202,
             true,
             new AdminCategoryDto(CatResult),
+=======
+        ImageService.uploadImageWithBuffer(
+            folder,
+            processedImage,
+            async (error, result) => {
+                if (error) {
+                    return next(
+                        new ErrorResponse("Error while uploading image", 500)
+                    );
+                }
+                sections.forEach(async ({ title, attributes }) => {
+                    const section = CategoryAttributeService.getInstance({
+                        category_id: category.id,
+                        name,
+                        attributes: attributes,
+                    });
+
+                    AttributeArray.push(section._id.toString());
+                    section.save();
+                });
+
+                category.sections = AttributeArray;
+                if (result && result.url) {
+                    category.image = result.url;
+                }
+                const CatResult = await category.save();
+                ResponseService.sendResponse(
+                    res,
+                    202,
+                    true,
+                    new AdminCategoryDto(CatResult)
+                );
+            }
+>>>>>>> origin/main
         );
     }
 }

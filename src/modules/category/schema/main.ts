@@ -15,7 +15,11 @@ export const CategoryPriceSectionSchema = z.object({
     sections: z.array(
         z.object({
             id: z.string(),
+<<<<<<< HEAD
             name: z
+=======
+            title: z
+>>>>>>> origin/main
                 .string()
                 .min(2)
                 .transform((data) => data.toUpperCase()),

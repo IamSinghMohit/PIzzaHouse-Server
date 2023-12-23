@@ -1,7 +1,7 @@
 import cloudinary from "../helper/cloudinary";
 import { Readable } from "stream";
 import sharp from "sharp";
-import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
+import {  UploadApiResponse } from "cloudinary";
 import { Request } from "express";
 
 class ImageService {
@@ -9,6 +9,7 @@ class ImageService {
         let compressedImage = sharp(req.file?.buffer)
             .toFormat("webp")
             .webp({ quality: 85 });
+
         return await compressedImage.toBuffer();
     }
 
@@ -16,29 +17,24 @@ class ImageService {
         foldername: string,
         processedImage: Buffer,
     ): Promise<UploadApiResponse> {
-        return new Promise(
-            (
-                resolve,
-                reject,
-            ) => {
-                const stream = new Readable();
-                stream.push(processedImage);
+        return new Promise((resolve, reject) => {
+            const stream = new Readable();
+            stream.push(processedImage);
 
-                const upload = cloudinary.uploader.upload_stream(
-                    { folder: foldername },
-                    (error, result) => {
-                        if (error) {
-                            reject(error);
-                        } else if (result) {
-                            resolve(result);
-                        }
-                    },
-                );
+            const upload = cloudinary.uploader.upload_stream(
+                { folder: foldername },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else if (result) {
+                        resolve(result);
+                    }
+                },
+            );
 
-                stream.pipe(upload);
-                stream.push(null);
-            },
-        );
+            stream.pipe(upload);
+            stream.push(null);
+        });
     }
 
     static async deleteImage(id: string, cb: () => void) {
