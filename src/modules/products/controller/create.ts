@@ -3,12 +3,11 @@ import { TCreateProductSchema } from "../schema/create";
 import ProductService from "../service/product.service";
 import { ErrorResponse } from "@/utils";
 import { ImageService, ResponseService } from "@/services";
-import UtilService from "@/modules/utilities/utility.servervice";
 import CategoryService from "@/modules/category/service/category.service";
 import AdminProductDto from "../dto/product/admin";
-import { UtilEnum } from "@/modules/utilities/util.enum";
 import ProductPriceSectionService from "../service/productPriceSection";
 import ProductDefaultPriceAttributeService from "../service/productDefaultAttribute.service";
+import ProductUtilityDocument from "@/modules/utilities/utilities/product";
 
 class ProductCreate {
     static async createProduct(
@@ -26,7 +25,6 @@ class ProductCreate {
             default_attributes,
             price,
         } = req.body;
-
         if (!req.file) return next(new ErrorResponse("image is required", 422));
         console.log(JSON.stringify(req.body));
         const isExist = await ProductService.find({ name }, "FINDONE");
@@ -82,17 +80,14 @@ class ProductCreate {
         product.featured = featured;
         product.price = price;
         product.default_attribute = productDefaultPrice._id;
+        
+        const ProductResult = await product.save()
 
-        const ProductResult = await product.save();
-        const previousUtil = await UtilService.findOne({
-            title: UtilEnum.product,
-        });
-        UtilService.createOne({
-            title: UtilEnum.product,
-            data: {
-                product_count: 1 + previousUtil?.product_count || 0,
-            },
-        });
+        // saving product information in utility class 
+        const productUtility = new ProductUtilityDocument()
+        await productUtility.Initialize()
+        productUtility.IncProductCount().saveChanges()
+
         ResponseService.sendResponse(
             res,
             202,

@@ -6,7 +6,7 @@ class ProductPriceSectionDto {
     attributes;
     constructor(attribute: TProductPriceSection) {
         this.id = attribute._id  
-        this.name = attribute.title;
+        this.name = attribute.name;
         this.attributes = attribute.attributes;
     }
 }

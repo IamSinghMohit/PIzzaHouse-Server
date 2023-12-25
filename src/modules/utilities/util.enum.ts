@@ -1,5 +1,5 @@
 export enum UtilEnum {
-    product = "PRODUCT",
-    category = "CATEGORY",
-    topings = "TOPINGS",
+    PRODUCT = "product",
+    CATEGORY = "category",
+    TOPINGS = "topings",
 }

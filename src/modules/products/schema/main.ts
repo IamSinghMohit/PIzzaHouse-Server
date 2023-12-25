@@ -1,5 +1,4 @@
 import { z, TypeOf } from "zod";
-import { v4 as uuidV4 } from "uuid";
 
 export enum ProductStatusEnum {
     DRAFT = "Draft",
@@ -8,8 +7,8 @@ export enum ProductStatusEnum {
 
 const ProductAttributeSchema = z.array(
     z.object({
-        id: z.string().transform(() => uuidV4()),
-        attribute_name: z.string(),
+        id: z.string(),
+        name: z.string(),
         value: z.number(),
     })
 );
