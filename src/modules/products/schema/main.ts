@@ -51,7 +51,7 @@ export const ProductDefaultAttributeSchema = z.object({
         })
     ),
 });
-export const ProductId = z.object({
+export const ProductIdSchema = z.object({
     id: z.string(),
 });
 

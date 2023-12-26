@@ -26,6 +26,9 @@ router.get(
     ProductValidator.getFromatedProducts,
     ProductController.getFromatedProducts
 );
+router.put('/admin/:id',
+)
+
 // router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
 
 export default router;

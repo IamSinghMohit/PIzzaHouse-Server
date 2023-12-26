@@ -6,6 +6,7 @@ import {
     GetProductsSchema,
 } from "./schema/read";
 import { DeleteProduct } from "./schema/delete";
+import { ProductIdSchema } from "./schema/main";
 
 class ProductValidator {
     static createProduct = Validator.ReqBody(CreateProductSchema, (req) => {
@@ -32,6 +33,7 @@ class ProductValidator {
             };
         }
     );
+    static validateIdInParams = Validator.ReqParams(ProductIdSchema)
     // static getProduct = Validator.ReqParams(GetProduct);
 }
 export default ProductValidator;
