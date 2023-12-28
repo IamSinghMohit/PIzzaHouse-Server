@@ -1,5 +1,5 @@
 import { z, TypeOf } from "zod";
-import { ProductId, ProductStatusEnum } from "./main";
+import { ProductIdSchema, ProductStatusEnum } from "./main";
 
 export const GetProductsSchema = z.object({
     name: z.string().optional(),
@@ -23,7 +23,7 @@ export const GetProductsSchema = z.object({
             errorMap: (issue, ctx) => ({ message: "enum is not valid" }),
         })
         .optional(),
-    featured: z.string().transform((data) => data === "true")
+    featured: z.string().transform((data) => data === "true"),
 });
 export type TGetProductsSchema = TypeOf<typeof GetProductsSchema>;
 
@@ -35,10 +35,10 @@ export type TGetFromatedProductsSchema = TypeOf<
     typeof GetFormatedProductsSchema
 >;
 
-export const GetProductSchema  = z.object({}).merge(ProductId);
+export const GetProductSchema = z.object({}).merge(ProductIdSchema);
 export type TGetProductSchema = TypeOf<typeof GetProductSchema>;
 
-export const GetProductPriceSectionSchema = ProductId;
-export type TGetProductPriceSectionSchema  = TypeOf<typeof GetProductPriceSectionSchema>;
-
-
+export const GetProductPriceSectionSchema = ProductIdSchema;
+export type TGetProductPriceSectionSchema = TypeOf<
+    typeof GetProductPriceSectionSchema
+>;

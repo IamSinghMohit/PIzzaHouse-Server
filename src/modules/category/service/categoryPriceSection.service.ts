@@ -36,7 +36,7 @@ class CategoryPriceSectionService {
         return new CategoryPriceSectionModel(opt);
     }
 
-    static async getAttribute(opt: options) {
+    static async getSections(opt: options) {
         return await CategoryPriceSectionModel.find(opt).select(
             "-__v -category_id"
         );
@@ -65,8 +65,5 @@ class CategoryPriceSectionService {
         );
     }
 
-    static async deleteAttribute(id: string) {
-        return await CategoryPriceSectionModel.deleteMany({ categoryId: id });
-    }
 }
 export default CategoryPriceSectionService;

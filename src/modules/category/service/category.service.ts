@@ -9,7 +9,7 @@ class CategoryService {
         T extends Tfind,
         Treturn = T extends "FINDONE"
             ? DocumentType<TCategory> | null
-            : DocumentType<TCategory>[]
+            : DocumentType<TCategory>[],
     >(obj: Partial<Record<keyof TCategory, any>>, type: T): Promise<Treturn> {
         if (type == "FIND") {
             return (await CateogryModel.find(obj)) as any;
@@ -29,9 +29,8 @@ class CategoryService {
     static async updateCategoryById(id: string) {
         return await CateogryModel.findByIdAndUpdate(id);
     }
-
-    static async deleteCategory(id: string) {
-        return await CateogryModel.deleteOne({ _id: id });
+    static async delete(opts: options) {
+        return await CateogryModel.deleteOne(opts);
     }
 
     static async findOneAndUpdate(condition: options, update: options) {
@@ -46,7 +45,7 @@ class CategoryService {
 
     static async findPaginatedCategory(
         obj: Partial<Record<keyof TCategory, any>>,
-        limitSkip: { limit: number; skip: number }
+        limitSkip: { limit: number; skip: number },
     ) {
         return await CateogryModel.find(obj)
             .limit(limitSkip.limit)
@@ -56,7 +55,7 @@ class CategoryService {
     static async searchCategory(
         nameString: string,
         limit: number,
-        cursor?: string
+        cursor?: string,
     ) {
         return await CateogryModel.find({
             name: {

@@ -1,8 +1,9 @@
 import cloudinary from "../helper/cloudinary";
 import { Readable } from "stream";
 import sharp from "sharp";
-import {  UploadApiResponse } from "cloudinary";
+import { UploadApiResponse } from "cloudinary";
 import { Request } from "express";
+import { resolve } from "path";
 
 class ImageService {
     static async compressImageToBuffer(req: Request) {
@@ -28,6 +29,8 @@ class ImageService {
                         reject(error);
                     } else if (result) {
                         resolve(result);
+                    } else {
+                        reject(new Error("Error while uploading image"));
                     }
                 },
             );
@@ -37,9 +40,17 @@ class ImageService {
         });
     }
 
-    static async deleteImage(id: string, cb: () => void) {
-        await cloudinary.uploader.destroy(id, () => {
-            cb();
+    static async deleteImage(id: string) {
+        return new Promise((resolve, reject) => {
+            cloudinary.uploader.destroy(id, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else if (result) {
+                    resolve(result);
+                } else {
+                    reject(new Error("Error while uploading image"));
+                }
+            });
         });
     }
 }

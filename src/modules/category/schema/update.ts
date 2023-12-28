@@ -16,3 +16,4 @@ export const UpdateCategorySchema = z
     .merge(CategoryPriceSectionSchema);
 
 export type UpdateCategorySchemaType = TypeOf<typeof UpdateCategorySchema>;
+

@@ -17,7 +17,7 @@ export class ProductDefaultPriceAttributes {
     product_id: string;
 
     @prop({ required: true, type: Array })
-    attribute: TProductDefaultAttributeSchema['default_attributes'];
+    attributes: TProductDefaultAttributeSchema['default_attributes'];
 }
 
 export const ProductDefaultPriceAttributModel = getModelForClass(
@@ -25,5 +25,5 @@ export const ProductDefaultPriceAttributModel = getModelForClass(
 );
 export type TProductDefaultPriceAttribute = Pick<
     DocumentType<ProductDefaultPriceAttributes>,
-    "_id" | "attribute" | "category" | "product_id"
+    "_id" | "attributes" | "category" | "product_id"
 >;

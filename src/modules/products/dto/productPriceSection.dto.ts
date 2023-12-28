@@ -1,4 +1,4 @@
-import { TProductPriceSection } from "../models/productPriceSection.model.ts.js";
+import { TProductPriceSection } from "../models/productPriceSection.model.ts";
 
 class ProductPriceSectionDto {
     id;

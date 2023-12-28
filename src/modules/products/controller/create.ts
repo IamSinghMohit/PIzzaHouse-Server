@@ -25,8 +25,9 @@ class ProductCreate {
             default_attributes,
             price,
         } = req.body;
+
         if (!req.file) return next(new ErrorResponse("image is required", 422));
-        console.log(JSON.stringify(req.body));
+
         const isExist = await ProductService.find({ name }, "FINDONE");
         if (isExist) {
             return next(new ErrorResponse("product already exist", 403));
@@ -68,10 +69,10 @@ class ProductCreate {
         });
         // creating product_default_price document
         const productDefaultPrice =
-            await ProductDefaultPriceAttributeService.create({
+            await ProductDefaultPriceAttributeService.createOne({
                 product_id: product._id.toString(),
                 category: category,
-                attribute: default_attributes,
+                attributes: default_attributes,
             });
         // savving the product with other releated fields
         productDefaultPrice.save();

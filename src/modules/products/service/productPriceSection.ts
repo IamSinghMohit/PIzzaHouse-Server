@@ -10,7 +10,7 @@ class ProductPriceSectionService {
     static async findMany(opts: opts) {
         return await ProductPriceSectionModel.find(opts).select("-__v -category -produt_id")
     }
-    static async createProductAttr(opts: opts) {
+    static async create(opts: opts) {
         return await ProductPriceSectionModel.create(opts);
     }
 

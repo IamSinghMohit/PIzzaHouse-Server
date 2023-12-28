@@ -1,27 +1,38 @@
 import { DocumentType } from "@typegoose/typegoose";
 import { ProductModel, TProduct } from "../models/product.model";
+import { UpdateWriteOpResult } from "mongoose";
 
 type opts = Partial<TProduct>;
 type FindType = "FINDONE" | "FIND";
+type UpdateType = "UPDATEONE" | "UPDATEMANY";
 
 class ProductService {
     static async find<
         T extends FindType,
         Treturn = T extends "FINDONE"
             ? DocumentType<TProduct> | null
-            : DocumentType<TProduct>[]
+            : DocumentType<TProduct>[],
     >(opts: opts, type: T): Promise<Treturn> {
         if (type == "FIND") {
-            return (await ProductModel.find(opts).select('-__v')) as any;
+            return (await ProductModel.find(opts).select("-__v")) as any;
         } else {
-            return (await ProductModel.findOne(opts).select('-__v')) as any;
+            return (await ProductModel.findOne(opts).select("-__v")) as any;
         }
     }
 
-    static async UpdateMany(condition: opts, updatedData: any): Promise<any> {
-        await ProductModel.updateMany(condition, updatedData, {
-            new: true,
-        });
+    static async update<
+        T extends UpdateType,
+        Treturn = T extends "UPDATEONE"
+            ? DocumentType<TProduct> | null
+            : UpdateWriteOpResult,
+    >(condition: opts, data: Record<string, any>, type: T): Promise<Treturn> {
+        if (type == "UPDATEONE") {
+            return (await ProductModel.updateOne(condition, data).select(
+                "-__v",
+            )) as any;
+        } else {
+            return (await ProductModel.updateMany(condition, data)) as any;
+        }
     }
 
     static async createProdut(opts: opts) {
@@ -40,7 +51,7 @@ class ProductService {
 
     static async getFormatedProducts(
         productLimit: number,
-        categoryLimit: number
+        categoryLimit: number,
     ) {
         return await ProductModel.aggregate([
             {

@@ -12,12 +12,13 @@ import AdminProductDto from "../dto/product/admin";
 import ProductPriceSectionService from "../service/productPriceSection";
 import ProductDefaultPriceAttributeSerivice from "../service/productDefaultAttribute.service";
 import ProductPriceSectionDto from "../dto/productPriceSection.dto";
+import { ProductModel } from "../models/product.model";
 
 class ProductRead {
     static async products(
         req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
-        next: NextFunction
+        next: NextFunction,
     ) {
         const { category, status, min, max, featured, name } = req.query;
 
@@ -41,23 +42,23 @@ class ProductRead {
             res,
             202,
             true,
-            products.map((product) => new AdminProductDto(product))
+            products.map((product) => new AdminProductDto(product)),
         );
     }
 
     static async productPriceSection(
         req: Request<TGetProductPriceSectionSchema, {}, {}, {}>,
         res: Response,
-        next: NextFunction
+        next: NextFunction,
     ) {
         const { id } = req.params;
-        const isProductExists = ProductService.find(
+        const isProductExists = await ProductService.find(
             { _id: id as any },
-            "FINDONE"
+            "FINDONE",
         );
-        if (!isProductExists)
+        if (!isProductExists) {
             return next(new ErrorResponse("product not found", 404));
-
+        }
         const sections = await ProductPriceSectionService.findMany({
             product_id: id,
         });
@@ -68,18 +69,18 @@ class ProductRead {
 
         ResponseService.sendResponse(res, 200, true, {
             sections: sections.map((sec) => new ProductPriceSectionDto(sec)),
-            default_attributes: defaultPriceAttribute?.attribute,
+            default_attributes: defaultPriceAttribute?.attributes || [],
         });
     }
 
     static async fromatedProducts(
         req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
         res: Response,
-        next: NextFunction
+        next: NextFunction,
     ) {
         const products = await ProductService.getFormatedProducts(
             req.query.productLimit || 4,
-            req.query.categoryLimit || 4
+            req.query.categoryLimit || 4,
         );
         ResponseService.sendResponse(res, 200, true, products);
     }
@@ -87,11 +88,11 @@ class ProductRead {
     static async product(
         req: Request<TGetProductSchema>,
         res: Response,
-        next: NextFunction
+        next: NextFunction,
     ) {
         const product = await ProductService.find(
             { _id: req.params.id },
-            "FINDONE"
+            "FINDONE",
         );
         ResponseService.sendResponse(res, 200, true, product);
     }

@@ -12,8 +12,11 @@ class ProductDefaultPriceAttributeService {
     static getInstance(opts: opts) {
         return new ProductDefaultPriceAttributModel(opts);
     }
-    static async create(opts: opts) {
+    static async createOne(opts: opts) {
         return await ProductDefaultPriceAttributModel.create(opts);
+    }
+    static async updateOne(opts:opts){
+        return await ProductDefaultPriceAttributModel.updateOne(opts)
     }
     static async deleteOne(opts: opts) {
         return await ProductDefaultPriceAttributModel.deleteOne(opts);

@@ -29,15 +29,15 @@ require("./passport");
 app.use(passport.initialize());
 // ------------------------->
 
-// Routes
-app.use(routes);
-
-// HEALTH CHECK
+// HEALTH CHECK 
 app.get("/", (req, res) => {
     res.json({ message: "api is healthy" });
 });
 
-// ********* Error handler *********
+// Routes
+app.use(routes);
+
+// ********* Global Error handler *********
 app.use(errorHandler);
 
 // initilizing socket.io and creating server

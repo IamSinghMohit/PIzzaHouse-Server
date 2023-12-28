@@ -1,6 +1,6 @@
 import { z, TypeOf } from "zod";
-import { ProductId } from "./main";
+import { ProductIdSchema } from "./main";
 
-export const DeleteProduct = ProductId ;
+export const DeleteProduct = ProductIdSchema  ;
 
 export type DeleteProductType = TypeOf<typeof DeleteProduct>;
