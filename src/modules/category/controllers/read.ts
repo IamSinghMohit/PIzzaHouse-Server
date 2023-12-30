@@ -9,7 +9,6 @@ import {
 } from "../schema/read";
 import AdminCategoryDto from "../dto/category/admin";
 import AdminCategoryPriceSectionDto from "../dto/categoryPriceSection.dto";
-import { CategoryPriceSectionModel } from "../models/categoryPriceSection";
 
 class CategoryRead {
     static async getCategories(

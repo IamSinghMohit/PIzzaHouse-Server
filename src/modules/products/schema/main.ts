@@ -1,9 +1,5 @@
 import { z, TypeOf } from "zod";
-
-export enum ProductStatusEnum {
-    DRAFT = "Draft",
-    PUBLISHED = "Published",
-}
+import { StatusEnum } from "@/modules/schema";
 
 const ProductAttributeSchema = z.array(
     z.object({
@@ -23,7 +19,7 @@ export const ProductSectionSchema = z.object({
 });
 
 export const ProductStatusSchema = z.object({
-    status: z.enum([ProductStatusEnum.DRAFT, ProductStatusEnum.PUBLISHED], {
+    status: z.enum([StatusEnum.DRAFT, StatusEnum.PUBLISHED], {
         errorMap: () => ({ message: "enum is not valid" }),
     }),
 });

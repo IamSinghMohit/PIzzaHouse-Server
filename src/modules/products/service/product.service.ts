@@ -48,6 +48,15 @@ class ProductService {
     static async delete(opts: opts) {
         return await ProductModel.deleteOne(opts);
     }
+    static async findPaginatedProducts(
+        obj: Partial<Record<keyof TProduct, any>>,
+        limitSkip: { limit: number; skip: number },
+    ) {
+        return await ProductModel.find(obj)
+            .limit(limitSkip.limit)
+            .skip(limitSkip.skip);
+    }
+
 
     static async getFormatedProducts(
         productLimit: number,

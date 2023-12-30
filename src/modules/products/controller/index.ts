@@ -8,25 +8,28 @@ class ProductController {
     private static ControllerWrapper = asyncHandler;
 
     static createProduct = ProductController.ControllerWrapper(
-        ProductCreate.createProduct
+        ProductCreate.createProduct,
     );
     static getProducts = ProductController.ControllerWrapper(
-        ProductRead.products
+        ProductRead.products,
     );
     static getProductPriceSection = ProductController.ControllerWrapper(
-        ProductRead.productPriceSection
+        ProductRead.productPriceSection,
     );
     static deleteProduct = ProductController.ControllerWrapper(
-        ProductDelete.delete
+        ProductDelete.delete,
     );
     static getFromatedProducts = ProductController.ControllerWrapper(
-        ProductRead.fromatedProducts
+        ProductRead.fromatedProducts,
     );
     static getProduct = ProductController.ControllerWrapper(
-        ProductRead.product
+        ProductRead.product,
     );
     static updateProduct = ProductController.ControllerWrapper(
-        ProductUpdate.update
-    )
+        ProductUpdate.update,
+    );
+    static getProductStats = ProductController.ControllerWrapper(
+        ProductRead.stats,
+    );
 }
 export default ProductController;

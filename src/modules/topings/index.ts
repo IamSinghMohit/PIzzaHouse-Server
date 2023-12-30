@@ -1,19 +1,29 @@
 import { Validate, upload } from "@/middlewares";
 import { Router } from "express";
-import TopingsController from "./controller";
 import TopingValidator from "./topings.validator";
+import TopingController from "./controller";
 
 const router = Router();
 
+// Admin routes
 router.post(
-    "/create",
+    "/admin/create",
     upload.single("image"),
     TopingValidator.createToping,
-    TopingsController.create
+    TopingController.create
 );
+
+router.get('/admin/all',
+    TopingValidator.getAllTopings,
+    TopingController.getAllTopings
+)
+
+
+
 router.get('/category/:category',
     TopingValidator.GetTopingWithCategory,
-    TopingsController.getWithCategory,
+    TopingController.getWithCategory,
 )
+router.get('/stats',TopingController.getStats)
 
 export default router;

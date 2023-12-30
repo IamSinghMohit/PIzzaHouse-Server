@@ -8,7 +8,7 @@ import { ErrorResponse } from "@/utils";
 import ProductDefaultPriceAttributeService from "@/modules/products/service/productDefaultAttribute.service";
 import ProductPriceSectionService from "@/modules/products/service/productPriceSection";
 import CategoryPriceSectionService from "../service/categoryPriceSection.service";
-import { ProductStatusEnum } from "@/modules/products/schema/main";
+import { StatusEnum } from "@/modules/schema";
 
 class CategoryDelete {
     static async deleteCategory(
@@ -35,7 +35,7 @@ class CategoryDelete {
             { category: category.name },
             {
                 $set: {
-                    status: ProductStatusEnum.DRAFT,
+                    status: StatusEnum.DRAFT,
                     featured: false,
                     price: 0,
                     category: "",

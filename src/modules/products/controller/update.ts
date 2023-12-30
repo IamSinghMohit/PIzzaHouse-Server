@@ -51,7 +51,7 @@ class ProductUpdate {
                 { name: category },
                 "FINDONE",
             );
-            if (!isCategoryExists){
+            if (!isCategoryExists) {
                 return next(new ErrorResponse("Category  is not valid", 404));
             }
 

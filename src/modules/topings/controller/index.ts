@@ -1,14 +1,21 @@
 import { asyncHandler } from "@/middlewares";
 import TopingsCreate from "./create";
 import TopingRead from "./read";
+import TopingDelete from "./delete";
 
-class TopingsController {
+class TopingController {
     static ControllerWrapper = asyncHandler;
-    static create = TopingsController.ControllerWrapper(
-        TopingsCreate.createTopings
+
+    static create = TopingController.ControllerWrapper(TopingsCreate.toping);
+    static getWithCategory = TopingController.ControllerWrapper(
+        TopingRead.TopingWithCategory,
     );
-    static getWithCategory = TopingsController.ControllerWrapper(
-        TopingRead.getTopingWithCategory
+    static getAllTopings = TopingController.ControllerWrapper(
+        TopingRead.AllToping
+    )
+    static deleteToping = TopingController.ControllerWrapper(
+        TopingDelete.toping,
     );
+    static getStats = TopingController.ControllerWrapper(TopingRead.stats);
 }
-export default TopingsController;
+export default TopingController;

@@ -12,7 +12,6 @@ import AdminProductDto from "../dto/product/admin";
 import ProductPriceSectionService from "../service/productPriceSection";
 import ProductDefaultPriceAttributeSerivice from "../service/productDefaultAttribute.service";
 import ProductPriceSectionDto from "../dto/productPriceSection.dto";
-import { ProductModel } from "../models/product.model";
 
 class ProductRead {
     static async products(
@@ -20,7 +19,10 @@ class ProductRead {
         res: Response,
         next: NextFunction,
     ) {
-        const { category, status, min, max, featured, name } = req.query;
+        const { category, status, min, max, featured, name, limit, page } =
+            req.query;
+        const originalLimit = limit || 10;
+        const originalPage = page || 1;
 
         const query: Record<string, any> = {
             ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
@@ -37,13 +39,15 @@ class ProductRead {
             query.price = { $lte: max };
         }
 
-        const products = await ProductService.find(query, "FIND");
-        ResponseService.sendResponse(
-            res,
-            202,
-            true,
-            products.map((product) => new AdminProductDto(product)),
-        );
+        const products = await ProductService.findPaginatedProducts(query, {
+            limit: originalLimit,
+            skip: (originalPage - 1) * originalLimit,
+        });
+
+        ResponseService.sendResponse(res, 202, true, {
+            products: products.map((product) => new AdminProductDto(product)),
+            pages: Math.ceil(1 / originalLimit),
+        });
     }
 
     static async productPriceSection(
@@ -95,6 +99,16 @@ class ProductRead {
             "FINDONE",
         );
         ResponseService.sendResponse(res, 200, true, product);
+    }
+
+    static async stats(
+        req: Request<TGetProductSchema>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        ResponseService.sendResponse(res, 200, true, {
+            max_price: 5000,
+        });
     }
 }
 export default ProductRead;

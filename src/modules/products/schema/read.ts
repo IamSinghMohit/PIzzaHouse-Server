@@ -1,8 +1,11 @@
 import { z, TypeOf } from "zod";
-import { ProductIdSchema, ProductStatusEnum } from "./main";
+import { ProductIdSchema} from "./main";
+import { StatusEnum } from "@/modules/schema";
 
 export const GetProductsSchema = z.object({
     name: z.string().optional(),
+    limit: z.number().optional(),
+    page: z.number().optional(),
     min: z
         .string()
         .refine((value) => !isNaN(parseInt(value)), {
@@ -19,7 +22,7 @@ export const GetProductsSchema = z.object({
         .optional(),
     category: z.string().optional(),
     status: z
-        .enum([ProductStatusEnum.DRAFT, ProductStatusEnum.PUBLISHED], {
+        .enum([StatusEnum.DRAFT, StatusEnum.PUBLISHED], {
             errorMap: (issue, ctx) => ({ message: "enum is not valid" }),
         })
         .optional(),

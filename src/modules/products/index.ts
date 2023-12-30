@@ -4,21 +4,12 @@ import ProductValidator from "./product.validator";
 import ProductController from "./controller";
 const router = Router();
 
+// Admin CRUD routes
 router.post(
     "/admin/create",
     upload.single("image"),
     ProductValidator.createProduct,
     ProductController.createProduct,
-);
-router.get(
-    "/admin/all",
-    ProductValidator.getProducts,
-    ProductController.getProducts,
-);
-router.get(
-    "/sections/:id",
-    ProductValidator.getProductPriceSections,
-    ProductController.getProductPriceSection,
 );
 router.delete(
     "/admin/:id",
@@ -26,9 +17,9 @@ router.delete(
     ProductController.deleteProduct,
 );
 router.get(
-    "/formated",
-    ProductValidator.getFromatedProducts,
-    ProductController.getFromatedProducts,
+    "/admin/all",
+    ProductValidator.getProducts,
+    ProductController.getProducts,
 );
 router.put(
     "/admin/:id",
@@ -36,6 +27,19 @@ router.put(
     ProductValidator.updateProduct,
     ProductController.updateProduct,
 );
+// ------>
+
+router.get(
+    "/sections/:id",
+    ProductValidator.getProductPriceSections,
+    ProductController.getProductPriceSection,
+);
+router.get(
+    "/formated",
+    ProductValidator.getFromatedProducts,
+    ProductController.getFromatedProducts,
+);
+router.get("/stats", ProductController.getProductStats);
 
 // router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
 

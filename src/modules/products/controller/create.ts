@@ -7,7 +7,6 @@ import CategoryService from "@/modules/category/service/category.service";
 import AdminProductDto from "../dto/product/admin";
 import ProductPriceSectionService from "../service/productPriceSection";
 import ProductDefaultPriceAttributeService from "../service/productDefaultAttribute.service";
-import ProductUtilityDocument from "@/modules/utilities/utilities/product";
 
 class ProductCreate {
     static async createProduct(
@@ -81,13 +80,8 @@ class ProductCreate {
         product.featured = featured;
         product.price = price;
         product.default_attribute = productDefaultPrice._id;
-        
-        const ProductResult = await product.save()
 
-        // saving product information in utility class 
-        const productUtility = new ProductUtilityDocument()
-        await productUtility.Initialize()
-        productUtility.IncProductCount().saveChanges()
+        const ProductResult = await product.save();
 
         ResponseService.sendResponse(
             res,

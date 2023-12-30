@@ -3,10 +3,18 @@ import {
     prop,
     DocumentType,
     index,
+    modelOptions,
 } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { StatusEnum } from "../schema";
 
 @index({ category: 1 })
-export class Topings {
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
+export class Toping extends TimeStamps {
     _id: string;
 
     @prop({ required: true, type: String })
@@ -18,12 +26,22 @@ export class Topings {
     @prop({ required: true, type: Number })
     price: number;
 
+    @prop({ required: true, enum:  StatusEnum, default: "Draft" })
+    status: StatusEnum;
+
     @prop({ required: true, type: String })
     category: string;
 }
 
-export const TopingsModel = getModelForClass(Topings);
-export type TopingsType = Pick<
-    DocumentType<Topings>,
-    "name" | "image" | "category" | "_id" | "price"
+export const TopingModel = getModelForClass(Toping);
+export type TToping = Pick<
+    DocumentType<Toping>,
+    | "name"
+    | "image"
+    | "category"
+    | "_id"
+    | "price"
+    | "status"
+    | "createdAt"
+    | "updatedAt"
 >;

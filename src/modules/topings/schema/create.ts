@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { TopingCategory, TopingName, TopingPrice } from "./main";
+import { TopingCategorySchema, TopingNameSchema, TopingPriceSchema, TopingStatusSchema } from "./main";
 
 export const CreateTopingSchema = z
     .object({})
-    .merge(TopingName)
-    .merge(TopingPrice)
-    .merge(TopingCategory);
+    .merge(TopingNameSchema)
+    .merge(TopingPriceSchema)
+    .merge(TopingCategorySchema)
+    .merge(TopingStatusSchema)
 
 export type CreateTopingSchemaType = z.TypeOf<typeof CreateTopingSchema>;

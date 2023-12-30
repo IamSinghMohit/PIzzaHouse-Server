@@ -1,3 +1,4 @@
+import { StatusEnum } from "@/modules/schema";
 import {
     DocumentType,
     getModelForClass,
@@ -6,7 +7,6 @@ import {
     index,
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { ProductStatusEnum } from "../schema/main";
 
 @modelOptions({
     options: { allowMixed: 0 },
@@ -30,8 +30,8 @@ export class Product extends TimeStamps{
     @prop({ required: true, type: String })
     description: string;
 
-    @prop({ required: true, enum: ProductStatusEnum, default: "published" })
-    status: ProductStatusEnum;
+    @prop({ required: true, enum: StatusEnum, default: "Published" })
+    status:  StatusEnum;
 
     @prop({ required: true, type: Number })
     price: number;
