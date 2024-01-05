@@ -12,6 +12,7 @@ import AdminProductDto from "../dto/product/admin";
 import ProductPriceSectionService from "../service/productPriceSection";
 import ProductDefaultPriceAttributeSerivice from "../service/productDefaultAttribute.service";
 import ProductPriceSectionDto from "../dto/productPriceSection.dto";
+import BaseProductDto from "../dto/product/base";
 
 class ProductRead {
     static async products(
@@ -98,7 +99,16 @@ class ProductRead {
             { _id: req.params.id },
             "FINDONE",
         );
-        ResponseService.sendResponse(res, 200, true, product);
+        if (product) {
+            ResponseService.sendResponse(
+                res,
+                200,
+                true,
+                new BaseProductDto(product),
+            );
+        } else {
+            return next(new ErrorResponse("Product does not exist", 404));
+        }
     }
 
     static async stats(

@@ -53,5 +53,12 @@ class ImageService {
             });
         });
     }
+
+    static async uploadWithUrl(url: string,folderName:string) {
+        return await cloudinary.uploader.upload(url, {
+            folder: folderName,
+            invalidate: true,
+        });
+    }
 }
 export default ImageService;

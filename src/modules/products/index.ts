@@ -41,6 +41,6 @@ router.get(
 );
 router.get("/stats", ProductController.getProductStats);
 
-// router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
+router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
 
 export default router;

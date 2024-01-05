@@ -6,6 +6,7 @@ import {
     TGetTopingWithCategorySchema,
 } from "../schema/read";
 import AdminTopingDto from "../dto/admin";
+import BaseTopingDto from "../dto/base";
 
 class TopingRead {
     static async AllToping(
@@ -51,7 +52,7 @@ class TopingRead {
             { category: req.params.category },
             "FIND",
         );
-        ResponseService.sendResponse(res, 200, true, topings);
+        ResponseService.sendResponse(res, 200, true, topings?.map((toping) => new BaseTopingDto(toping)));
     }
 
     static async stats(

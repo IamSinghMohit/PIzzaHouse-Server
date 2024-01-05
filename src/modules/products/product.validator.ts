@@ -3,6 +3,7 @@ import Validator from "@/utils/validatorWrapper.";
 import {
     GetFormatedProductsSchema,
     GetProductPriceSectionSchema,
+    GetProductSchema,
     GetProductsSchema,
 } from "./schema/read";
 import { DeleteProduct } from "./schema/delete";
@@ -61,6 +62,6 @@ class ProductValidator {
         }
     };
 
-    // static getProduct = Validator.ReqParams(GetProduct);
+    static getProduct = Validator.ReqParams(GetProductSchema);
 }
 export default ProductValidator;
