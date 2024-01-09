@@ -2,7 +2,6 @@ import { z, TypeOf } from "zod";
 
 export enum OrderStatusEnum {
     PLACED = "placed",
-    CONFIRMED = "confirmed",
     PERPARING = "preparing",
     OUTFORDELIVERY = "out-for-delivery",
     COMPLETE = "complete",
