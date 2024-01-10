@@ -7,8 +7,7 @@ const errorHandler = (
     res: Response,
     next: NextFunction
 ) => {
-    console.log(JSON.stringify(err));
-    console.log("inside error handler");
+    console.log(err);
     let error = { ...err };
 
     error.message = err.message;

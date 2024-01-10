@@ -5,16 +5,17 @@ import {
     TGetProductSchema,
     TGetProductsSchema,
 } from "../schema/read";
-import ProductService from "../service/product.service";
 import { ResponseService } from "@/services";
 import { ErrorResponse } from "@/utils";
 import AdminProductDto from "../dto/product/admin";
-import ProductPriceSectionService from "../service/productPriceSection";
-import ProductDefaultPriceAttributeSerivice from "../service/productDefaultAttribute.service";
 import ProductPriceSectionDto from "../dto/productPriceSection.dto";
 import BaseProductDto from "../dto/product/base";
+import { ProductModel } from "../models/product.model";
+import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
+import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 
 class ProductRead {
+
     static async products(
         req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
@@ -40,10 +41,9 @@ class ProductRead {
             query.price = { $lte: max };
         }
 
-        const products = await ProductService.findPaginatedProducts(query, {
-            limit: originalLimit,
-            skip: (originalPage - 1) * originalLimit,
-        });
+        const products = await ProductModel.find(query)
+            .limit(originalLimit)
+            .skip((originalPage - 1) * originalLimit);
 
         ResponseService.sendResponse(res, 202, true, {
             products: products.map((product) => new AdminProductDto(product)),
@@ -51,24 +51,26 @@ class ProductRead {
         });
     }
 
+
+
     static async productPriceSection(
         req: Request<TGetProductPriceSectionSchema, {}, {}, {}>,
         res: Response,
         next: NextFunction,
     ) {
         const { id } = req.params;
-        const isProductExists = await ProductService.find(
+        const isProductExists = await ProductModel.find(
             { _id: id as any },
             "FINDONE",
         );
         if (!isProductExists) {
             return next(new ErrorResponse("product not found", 404));
         }
-        const sections = await ProductPriceSectionService.findMany({
+        const sections = await ProductPriceSectionModel.find({
             product_id: id,
         });
         const defaultPriceAttribute =
-            await ProductDefaultPriceAttributeSerivice.findOne({
+            await ProductDefaultPriceAttributModel.findOne({
                 product_id: id,
             });
 
@@ -78,27 +80,68 @@ class ProductRead {
         });
     }
 
+
+
     static async fromatedProducts(
         req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
         res: Response,
         next: NextFunction,
     ) {
-        const products = await ProductService.getFormatedProducts(
-            req.query.productLimit || 4,
-            req.query.categoryLimit || 4,
-        );
+        const productLimit = req.query.productLimit || 4;
+        const categoryLimit = req.query.categoryLimit || 4;
+        const products = await ProductModel.aggregate([
+            {
+                $match: {
+                    featured: true,
+                },
+            },
+            {
+                $group: {
+                    _id: "$category",
+                    products: {
+                        $push: {
+                            id: "$_id",
+                            name: "$name",
+                            category: "$category",
+                            description: "$description",
+                            price: "$price",
+                            image: "$image",
+                            price_attributes: "$price_attributes",
+                            default_prices: "$default_prices",
+                        },
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    id: "$_id",
+                    category: "$_id",
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    category: 1,
+                    products: { $slice: ["$products", productLimit] },
+                },
+            },
+            {
+                $limit: categoryLimit,
+            },
+        ]);
+
         ResponseService.sendResponse(res, 200, true, products);
     }
+
+
 
     static async product(
         req: Request<TGetProductSchema>,
         res: Response,
         next: NextFunction,
     ) {
-        const product = await ProductService.find(
-            { _id: req.params.id },
-            "FINDONE",
-        );
+        const product = await ProductModel.findOne({ _id: req.params.id });
         if (product) {
             ResponseService.sendResponse(
                 res,
@@ -110,6 +153,8 @@ class ProductRead {
             return next(new ErrorResponse("Product does not exist", 404));
         }
     }
+
+
 
     static async stats(
         req: Request<TGetProductSchema>,

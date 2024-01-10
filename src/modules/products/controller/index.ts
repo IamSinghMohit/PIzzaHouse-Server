@@ -5,31 +5,17 @@ import ProductDelete from "./delete";
 import ProductUpdate from "./update";
 
 class ProductController {
-    private static ControllerWrapper = asyncHandler;
+    private static wrapper = asyncHandler;
 
-    static createProduct = ProductController.ControllerWrapper(
-        ProductCreate.createProduct,
-    );
-    static getProducts = ProductController.ControllerWrapper(
-        ProductRead.products,
-    );
-    static getProductPriceSection = ProductController.ControllerWrapper(
+    static createProduct = this.wrapper(ProductCreate.createProduct);
+    static getProducts = this.wrapper(ProductRead.products);
+    static getProductPriceSection = this.wrapper(
         ProductRead.productPriceSection,
     );
-    static deleteProduct = ProductController.ControllerWrapper(
-        ProductDelete.delete,
-    );
-    static getFromatedProducts = ProductController.ControllerWrapper(
-        ProductRead.fromatedProducts,
-    );
-    static getProduct = ProductController.ControllerWrapper(
-        ProductRead.product,
-    );
-    static updateProduct = ProductController.ControllerWrapper(
-        ProductUpdate.update,
-    );
-    static getProductStats = ProductController.ControllerWrapper(
-        ProductRead.stats,
-    );
+    static deleteProduct = this.wrapper(ProductDelete.delete);
+    static getFromatedProducts = this.wrapper(ProductRead.fromatedProducts);
+    static getProduct = this.wrapper(ProductRead.product);
+    static updateProduct = this.wrapper(ProductUpdate.update);
+    static getProductStats = this.wrapper(ProductRead.stats);
 }
 export default ProductController;

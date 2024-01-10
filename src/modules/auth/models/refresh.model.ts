@@ -1,10 +1,15 @@
-import { getModelForClass, prop } from "@typegoose/typegoose";
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 
-class Refresh  {
-    @prop({required:true})
-    token:string;
+@modelOptions({
+    schemaOptions: {
+        versionKey: false,
+    },
+})
+class Refresh {
+    @prop({ required: true })
+    token: string;
 
-    @prop({required:true,unique:true})
-    user_id:string;
+    @prop({ required: true, unique: true })
+    user_id: string;
 }
-export const  RefreshModel = getModelForClass(Refresh)
+export const RefreshModel = getModelForClass(Refresh);

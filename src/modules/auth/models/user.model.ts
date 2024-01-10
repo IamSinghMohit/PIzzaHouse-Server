@@ -5,8 +5,8 @@ import {
     DocumentType,
     getModelForClass,
     index,
+    modelOptions,
 } from "@typegoose/typegoose";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { UserRole } from "../schema/auth.schema";
 
 @pre<User>("save", async function (next) {
@@ -24,20 +24,28 @@ import { UserRole } from "../schema/auth.schema";
     return next();
 })
 @index({ email: 1 }, { unique: true })
-class User extends TimeStamps {
-    @prop({ required: false })
-    googleId?: string;
+@modelOptions({
+    schemaOptions: {
+        versionKey: false,
+    },
+})
+class User {
+    @prop({ required: true, type: String })
+    first_name: string;
 
-    @prop({ required: true })
-    name: string;
+    @prop({ required: false, type: String })
+    last_name: string;
 
-    @prop({ required: false })
-    avatar: string;
-
-    @prop({ unique: true, required: true })
+    @prop({ unique: true, required: true, type: String })
     email: string;
 
-    @prop({ required: false })
+    @prop({ required: false, type: String ,unique:true})
+    googleId?: string;
+
+    @prop({ required: false, type: String })
+    avatar: string;
+
+    @prop({ required: false, type: String })
     password: string;
 
     @prop({ enum: UserRole, required: false, default: "normal" })
@@ -58,9 +66,8 @@ export type UserType = Pick<
     | "email"
     | "password"
     | "role"
-    | "name"
+    | "first_name"
+    | "last_name"
     | "googleId"
     | "_id"
-    | "createdAt"
-    | "updatedAt"
 >;

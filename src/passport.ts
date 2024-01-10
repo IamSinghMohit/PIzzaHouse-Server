@@ -1,11 +1,11 @@
 import { Request } from "express";
 import passport from "passport";
 import passportJWT from "passport-jwt";
-import UserService from "./modules/auth/service/user.service";
 import PassportGoogle from "passport-google-oauth20";
 import UserDto from "./modules/auth/dto/user.dto";
 import ErrorResponse from "./utils/error-response";
-import { JwtResponse } from "./modules/auth/schema/jwt.schema";
+import { UserModel } from "./modules/auth/models/user.model";
+import { IdJwtResponse } from "./modules/auth/schema/jwt.schema";
 const JWTStrategy = passportJWT.Strategy;
 const GoogleStrategy = PassportGoogle.Strategy;
 
@@ -23,19 +23,19 @@ passport.use(
             jwtFromRequest: cookieExtractor,
             secretOrKey: process.env.JWT_ACCESS_TOKEN_SECRET as string,
         },
-        async (jwtPayload: JwtResponse, done) => {
-            const { exp, _id } = jwtPayload;
+        async (jwtPayload: IdJwtResponse, done) => {
+            const { exp, id } = jwtPayload;
             if (!exp) return;
             if (Date.now() > exp * 1000) {
                 done("Unauthorized", false);
             }
-            let user = await UserService.findUser({ _id });
+            let user = await UserModel.findOne({ _id: id });
             if (user) {
                 return done(null, new UserDto(user));
             }
             return done(new ErrorResponse("User not found", 404), false);
-        }
-    )
+        },
+    ),
 );
 
 passport.use(
@@ -47,24 +47,25 @@ passport.use(
             passReqToCallback: true,
         },
         async (
-            req: Request,
-            accessToken: string,
-            refreshToken: string,
+            _req: Request,
+            _accessToken: string,
+            _refreshToken: string,
             profile: any,
-            cb: PassportGoogle.VerifyCallback
+            cb: PassportGoogle.VerifyCallback,
         ) => {
             const defaultUser = {
-                name: profile._json.name,
+                first_name: profile._json.name,
+                last_name: profile._json.familyName || "",
                 email: profile._json.email,
                 avatar: profile._json.picture,
                 googleId: profile._json.id,
             };
             /* LOGING HERE  */
-            const user = await UserService.findOrCreate(
-                { email: defaultUser.email },
-                defaultUser
-            )
+            let user = await UserModel.findOne({ email: defaultUser.email });
+            if (!user) {
+                user = await UserModel.create(defaultUser);
+            }
             return cb(null, new UserDto(user));
-        }
-    )
+        },
+    ),
 );

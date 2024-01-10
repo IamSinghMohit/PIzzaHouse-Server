@@ -1,117 +1,164 @@
 import { NextFunction, Request, Response } from "express";
 import { LoginType, SigninType } from "./schema/auth.schema";
 import { ErrorResponse } from "@/utils";
-import TokenService from "./service/token.service";
-import UserService from "./service/user.service";
 import { ResponseService } from "@/services";
 import UserDto from "./dto/user.dto";
+import { UserModel } from "./models/user.model";
+import jwt from "jsonwebtoken";
+import { IdJwtInput, IdJwtResponse } from "./schema/jwt.schema";
+import { RefreshModel } from "./models/refresh.model";
+import { asyncHandler } from "@/middlewares";
+
+const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET || "lksjjdflksd";
+const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET || "233kk3elk2";
 
 class AuthController {
-    static async signin(
-        req: Request<{}, {}, SigninType>,
-        res: Response,
-        next: NextFunction
-    ) {
-        const { email } = req.body;
-        const isExist = await UserService.findUser({ email });
+    private static wrapper = asyncHandler;
 
-        if (isExist) {
-            return next(new ErrorResponse("Email already exists", 403));
-        }
-        const user = await UserService.createUser(req.body);
-        const { refreshToken, accessToken } = TokenService.generateTokens({
-            _id: user._id,
-        });
-
-        ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
-        ResponseService.sendResponse(res, 201, true, new UserDto(user));
+    private static verifyRefreshToken(refreshToken: string) {
+        return jwt.verify(refreshToken, refreshTokenSecret);
     }
 
-    static async login(
-        req: Request<{}, {}, LoginType>,
-        res: Response,
-        next: NextFunction
-    ) {
-        const { email, password } = req.body;
-        const user = await UserService.findUser({ email });
+    private static generateTokens(payload: IdJwtInput) {
+        const accessToken = jwt.sign(payload, accessTokenSecret, {
+            expiresIn: "1h",
+        });
+        const refreshToken = jwt.sign(payload, refreshTokenSecret, {
+            expiresIn: "15d",
+        });
+        return { accessToken, refreshToken };
+    }
 
-        if (!user) {
-            return next(new ErrorResponse("User does not exist", 404));
-        }
-        const verifiedUser = await user.comparePassword(password);
-        if (verifiedUser) {
-            const { refreshToken, accessToken } = TokenService.generateTokens({
-                _id: user._id,
+    static signin = this.wrapper(
+        async (
+            req: Request<{}, {}, SigninType>,
+            res: Response,
+            next: NextFunction,
+        ) => {
+            const { email } = req.body;
+            const isExist = await UserModel.findOne({ email });
+
+            if (isExist) {
+                return next(new ErrorResponse("Email already exists", 403));
+            }
+            const user = await UserModel.create(req.body);
+            const { refreshToken, accessToken } = this.generateTokens({
+                id: user._id,
             });
-            TokenService.CreateOrUpdateRefreshToken(user._id, refreshToken);
+
             ResponseService.sendCookiesAsTokens(res, {
                 accessToken,
                 refreshToken,
             });
             ResponseService.sendResponse(res, 201, true, new UserDto(user));
-        } else {
-            return next(new ErrorResponse("Invalid credentials", 404));
-        }
+        },
+    );
+
+    static login = this.wrapper(
+        async (
+            req: Request<{}, {}, LoginType>,
+            res: Response,
+            next: NextFunction,
+        ) => {
+            const { email, password } = req.body;
+            const user = await UserModel.findOne({ email });
+
+            if (!user) {
+                return next(new ErrorResponse("User does not exist", 404));
+            }
+            const verifiedUser = await user.comparePassword(password);
+
+            if (!verifiedUser) {
+                return next(new ErrorResponse("Invalid credentials", 404));
+            }
+            const { refreshToken, accessToken } = this.generateTokens({
+                id: user._id,
+            });
+
+            await RefreshModel.findOneAndUpdate(
+                { user_id: user._id },
+                { token: refreshToken },
+            );
+
+            ResponseService.sendCookiesAsTokens(res, {
+                accessToken,
+                refreshToken,
+            });
+            ResponseService.sendResponse(res, 201, true, new UserDto(user));
+        },
+    );
+
+    static refresh = this.wrapper(
+        async (req: Request, res: Response, next: NextFunction) => {
+            // get refresh token from cookie
+            const { refreshToken: refreshTokenFromCookie } = req.cookies;
+
+            if (!refreshTokenFromCookie) {
+                return next(new ErrorResponse("token not found", 404));
+            }
+            // check if token is valid
+            const userData = this.verifyRefreshToken(
+                refreshTokenFromCookie,
+            ) as IdJwtResponse;
+
+            // Check if token is in db
+            const token = await RefreshModel.findOne({
+                user_id: userData._id,
+                token: refreshTokenFromCookie,
+            });
+
+            if (!token) {
+                res.redirect("/auth/logout");
+            }
+
+            // check if valid user
+            const validateUser = await UserModel.findOne({
+                _id: userData._id,
+            });
+
+            if (!validateUser) {
+                return next(new ErrorResponse("User doesh not exist", 404));
+            }
+
+            // Generate new tokens
+            const { refreshToken, accessToken } = this.generateTokens({
+                id: userData._id,
+            });
+            // Update refresh token
+
+            await RefreshModel.findOneAndUpdate({
+                user_id: validateUser._id,
+                token: refreshToken,
+            });
+            // put in cookie
+
+            await ResponseService.sendCookiesAsTokens(res, {
+                accessToken,
+                refreshToken,
+            });
+            await ResponseService.sendResponse(
+                res,
+                200,
+                true,
+                "Token refreshed",
+            );
+        },
+    );
+
+    static me(req: Request, res: Response, next: NextFunction) {
+        // @ts-ignore
+        ResponseService.sendResponse(res, 200, true, req.user);
     }
 
-    static async refresh(req: Request, res: Response, next: NextFunction) {
-        // get refresh token from cookie
-        const { refreshToken: refreshTokenFromCookie } = req.cookies;
-
-        if (!refreshTokenFromCookie) {
-            return next(new ErrorResponse("token not found", 404));
-        }
-        // check if token is valid
-        const userData = await TokenService.verifyRefreshToken(
-            refreshTokenFromCookie
-        );
-
-        // Check if token is in db
-        const token = await TokenService.findRefreshToken(
-            userData._id,
-            refreshTokenFromCookie
-        );
-
-        if (!token) {
-            res.redirect("/auth/logout");
-        }
-
-        // check if valid user
-        const validateUser = await UserService.findUser({ _id: userData._id });
-
-        if (!validateUser) {
-            return next(new ErrorResponse("User doesh not exist", 404));
-        }
-
-        // Generate new tokens
-        const { refreshToken, accessToken } = TokenService.generateTokens({
-            _id: userData._id,
-        });
-        // Update refresh token
-
-        await TokenService.CreateOrUpdateRefreshToken(
-            validateUser._id,
-            refreshToken
-        );
-        // put in cookie
-
-        await ResponseService.sendCookiesAsTokens(res, {
-            accessToken,
-            refreshToken,
-        });
-        await ResponseService.sendResponse(res, 200, true, "Token refreshed");
-    }
-
-    static async google(req: Request, res: Response, next: NextFunction) {
-        const { refreshToken, accessToken } = TokenService.generateTokens({
-            //@ts-expect-error
-            _id: req.user.id,
+    static google = this.wrapper(async (req: Request, res: Response) => {
+        const { refreshToken, accessToken } = this.generateTokens({
+            //@ts-ignore
+            id: req.user.id,
         });
         ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
         res.redirect("http://localhost:3000");
-    }
-
-    static async logout(req: Request, res: Response, next: NextFunction) {
+    });
+    static async logout(_req: Request, res: Response) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
         res.status(200).json("logout successfull");

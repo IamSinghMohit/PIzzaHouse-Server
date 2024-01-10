@@ -2,13 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { TDeleteCategorySchema } from "../schema/delete";
 import { ImageService } from "@/services";
 import CategoryService from "../service/category.service";
-import ProductService from "@/modules/products/service/product.service";
 import { ResponseService } from "@/services";
 import { ErrorResponse } from "@/utils";
-import ProductDefaultPriceAttributeService from "@/modules/products/service/productDefaultAttribute.service";
-import ProductPriceSectionService from "@/modules/products/service/productPriceSection";
 import CategoryPriceSectionService from "../service/categoryPriceSection.service";
 import { StatusEnum } from "@/modules/schema";
+import { ProductModel } from "@/modules/products/models/product.model";
+import { ProductDefaultPriceAttributModel } from "@/modules/products/models/productDefaultAttribute.model";
+import { ProductPriceSectionModel } from "@/modules/products/models/productPriceSection.model.ts";
 
 class CategoryDelete {
     static async deleteCategory(
@@ -31,7 +31,7 @@ class CategoryDelete {
         await CategoryService.delete({ _id: id });
         await CategoryPriceSectionService.deleteMany({ category_id: id });
         // updating the product
-        ProductService.update(
+        ProductModel.updateMany(
             { category: category.name },
             {
                 $set: {
@@ -41,13 +41,12 @@ class CategoryDelete {
                     category: "",
                 },
             },
-            "UPDATEMANY",
         );
         // delting the product data releated to category
-        await ProductDefaultPriceAttributeService.deleteOne({
+        await ProductDefaultPriceAttributModel.deleteOne({
             category: category.name,
         });
-        ProductPriceSectionService.deleteMany({ category: category.name });
+        ProductPriceSectionModel.deleteMany({ category: category.name });
         ResponseService.sendResponse(res, 200, true, "Category deleted");
     }
 }

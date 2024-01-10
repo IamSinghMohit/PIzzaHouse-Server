@@ -1,9 +1,8 @@
 import cloudinary from "../helper/cloudinary";
 import { Readable } from "stream";
 import sharp from "sharp";
-import { UploadApiResponse } from "cloudinary";
+import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
 import { Request } from "express";
-import { resolve } from "path";
 
 class ImageService {
     static async compressImageToBuffer(req: Request) {
@@ -18,7 +17,7 @@ class ImageService {
         foldername: string,
         processedImage: Buffer,
     ): Promise<UploadApiResponse> {
-        return new Promise((resolve, reject) => {
+        return new Promise<UploadApiResponse>((resolve, reject) => {
             const stream = new Readable();
             stream.push(processedImage);
 
@@ -29,8 +28,6 @@ class ImageService {
                         reject(error);
                     } else if (result) {
                         resolve(result);
-                    } else {
-                        reject(new Error("Error while uploading image"));
                     }
                 },
             );
@@ -54,7 +51,7 @@ class ImageService {
         });
     }
 
-    static async uploadWithUrl(url: string,folderName:string) {
+    static async uploadWithUrl(url: string, folderName: string) {
         return await cloudinary.uploader.upload(url, {
             folder: folderName,
             invalidate: true,

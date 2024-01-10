@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { TCreateProductSchema } from "../schema/create";
-import ProductService from "../service/product.service";
 import { ErrorResponse } from "@/utils";
-import ProductDefaultPriceAttributeService from "../service/productDefaultAttribute.service";
-import ProductPriceSectionService from "../service/productPriceSection";
 import { ImageService, ResponseService } from "@/services";
-import CategoryService from "@/modules/category/service/category.service";
+import { ProductModel } from "../models/product.model";
+import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
+import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
+import { CateogryModel } from "@/modules/category/models/category.model";
 
 class ProductUpdate {
     static async update(
@@ -13,10 +13,7 @@ class ProductUpdate {
         res: Response,
         next: NextFunction,
     ) {
-        const product = await ProductService.find(
-            { _id: req.params.id },
-            "FINDONE",
-        );
+        const product = await ProductModel.findOne({ _id: req.params.id });
 
         const {
             name,
@@ -31,9 +28,7 @@ class ProductUpdate {
         const product_id = req.params.id;
         console.log(JSON.stringify(req.body));
         if (!product) {
-            return next(
-                new ErrorResponse("Product with that id does not exist", 404),
-            );
+            return next(new ErrorResponse("Product does not exist", 404));
         }
         if (featured) product.featured = featured;
         if (name) product.name = name;
@@ -42,26 +37,24 @@ class ProductUpdate {
 
         if (price && default_attributes && !sections) {
             product.price = price;
-            await ProductDefaultPriceAttributeService.updateOne({
+            await ProductDefaultPriceAttributModel.updateOne({
                 attributes: default_attributes,
             });
         }
         if (sections && category) {
-            const isCategoryExists = await CategoryService.find(
-                { name: category },
-                "FINDONE",
-            );
+            const isCategoryExists = await CateogryModel.find({
+                name: category,
+            });
             if (!isCategoryExists) {
                 return next(new ErrorResponse("Category  is not valid", 404));
             }
-
             product.category = category;
-            await ProductPriceSectionService.deleteMany({
+            await ProductPriceSectionModel.deleteMany({
                 product_id: product_id,
             });
             for (let i = 0; i < sections.length; i++) {
                 const sec = sections[i];
-                await ProductPriceSectionService.create({
+                await ProductPriceSectionModel.create({
                     name: sec.name,
                     product_id: product.id,
                     category: category,

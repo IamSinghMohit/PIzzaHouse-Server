@@ -9,7 +9,7 @@ router.get(
     "/login/google",
     passport.authenticate("google", {
         scope: ["profile", "email"],
-    })
+    }),
 );
 
 router.get(
@@ -18,16 +18,15 @@ router.get(
         session: false,
         failureMessage: "Cannot login",
     }),
-    asyncHandler(AuthController.google)
+    asyncHandler(AuthController.google),
 );
 
-router.post("/signin", Validate.signin, asyncHandler(AuthController.signin));
-router.post("/login", Validate.login, asyncHandler(AuthController.login));
+router.post("/signin", Validate.signin, AuthController.signin);
+router.post("/login", Validate.login, AuthController.login);
 
-router.get("/logout",asyncHandler(AuthController.logout));
-router.get("/refresh", asyncHandler(AuthController.refresh));
+router.get("/logout", AuthController.logout);
+router.get("/refresh", AuthController.refresh);
 
-router.get("/me", Validate.passport, (req, res) => {
-    res.json(req.user);
-});
+router.get("/me", Validate.passport, AuthController.me);
+
 export default router;
