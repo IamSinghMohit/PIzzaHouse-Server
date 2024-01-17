@@ -2,6 +2,7 @@ import { z, TypeOf } from "zod";
 
 export enum OrderStatusEnum {
     PLACED = "placed",
+    CONFIRMED = "confirmed",
     PERPARING = "preparing",
     OUTFORDELIVERY = "out-for-delivery",
     COMPLETE = "complete",
@@ -34,12 +35,9 @@ export const OrderTopingSchema = z.object({
         z.object({
             price: z.number(),
             name: z.string(),
-            image:z.string()
+            image: z.string(),
         }),
     ),
 });
 
 export type TOrderTopingSchema = TypeOf<typeof OrderTopingSchema>;
-export type TOrderProductSectionsSchema = TypeOf<
-    typeof OrderProductSectiosSchema
->;

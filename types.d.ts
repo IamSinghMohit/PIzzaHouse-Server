@@ -14,5 +14,7 @@ declare namespace NodeJS {
         CLOUDINARY_TOPING_FOLDER: string;
         CLOUDINARY_ORDER_FOLDER: string;
         CLOUDINARY_KEY: string;
+        STRIPE_SECRETKEY: string;
+        STRIPE_PUBLISHABLE_KEY: string;
     }
 }

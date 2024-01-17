@@ -25,7 +25,7 @@ app.use(
 app.use(express.json({ limit: "8mb" }));
 app.use(morgan("common"));
 
-// PASSPORT
+// PASSPORT 
 require("./passport");
 app.use(passport.initialize());
 // ------------------------->
