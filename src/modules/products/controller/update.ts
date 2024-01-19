@@ -5,7 +5,7 @@ import { ImageService, ResponseService } from "@/services";
 import { ProductModel } from "../models/product.model";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
-import { CateogryModel } from "@/modules/category/models/category.model";
+import { CategoryModel } from "@/modules/category/models/category.model";
 
 class ProductUpdate {
     static async update(
@@ -42,7 +42,7 @@ class ProductUpdate {
             });
         }
         if (sections && category) {
-            const isCategoryExists = await CateogryModel.find({
+            const isCategoryExists = await CategoryModel.find({
                 name: category,
             });
             if (!isCategoryExists) {

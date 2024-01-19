@@ -26,7 +26,7 @@ export class Category extends TimeStamps {
     sections: string[];
 }
 
-export const CateogryModel = getModelForClass(Category);
+export const CategoryModel = getModelForClass(Category);
 
 export type TCategory = Pick<
     DocumentType<Category>,

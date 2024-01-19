@@ -1,12 +1,11 @@
 import cloudinary from "../helper/cloudinary";
 import { Readable } from "stream";
 import sharp from "sharp";
-import { UploadApiErrorResponse, UploadApiResponse } from "cloudinary";
-import { Request } from "express";
+import {  UploadApiResponse } from "cloudinary";
 
 class ImageService {
-    static async compressImageToBuffer(req: Request) {
-        let compressedImage = sharp(req.file?.buffer)
+    static async compressImageToBuffer(buffer:Buffer) {
+        let compressedImage = sharp(buffer)
             .toFormat("webp")
             .webp({ quality: 85 });
 

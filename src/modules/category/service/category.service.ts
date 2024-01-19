@@ -1,4 +1,4 @@
-import { TCategory, CateogryModel } from "../models/category.model";
+import { TCategory, CategoryModel } from "../models/category.model";
 import { DocumentType } from "@typegoose/typegoose";
 
 type Tfind = "FINDONE" | "FIND";
@@ -12,42 +12,42 @@ class CategoryService {
             : DocumentType<TCategory>[],
     >(obj: Partial<Record<keyof TCategory, any>>, type: T): Promise<Treturn> {
         if (type == "FIND") {
-            return (await CateogryModel.find(obj)) as any;
+            return (await CategoryModel.find(obj)) as any;
         } else {
-            return (await CateogryModel.findOne(obj)) as any;
+            return (await CategoryModel.findOne(obj)) as any;
         }
     }
 
     static async createCategory(opts: options) {
-        return await CateogryModel.create(opts);
+        return await CategoryModel.create(opts);
     }
 
     static getInstance(opts: options) {
-        return new CateogryModel(opts);
+        return new CategoryModel(opts);
     }
 
     static async updateCategoryById(id: string) {
-        return await CateogryModel.findByIdAndUpdate(id);
+        return await CategoryModel.findByIdAndUpdate(id);
     }
     static async delete(opts: options) {
-        return await CateogryModel.deleteOne(opts);
+        return await CategoryModel.deleteOne(opts);
     }
 
     static async findOneAndUpdate(condition: options, update: options) {
-        return await CateogryModel.findOneAndUpdate(condition, update, {
+        return await CategoryModel.findOneAndUpdate(condition, update, {
             new: true,
         });
     }
 
     static async count() {
-        return await CateogryModel.estimatedDocumentCount();
+        return await CategoryModel.estimatedDocumentCount();
     }
 
     static async findPaginatedCategory(
         obj: Partial<Record<keyof TCategory, any>>,
         limitSkip: { limit: number; skip: number },
     ) {
-        return await CateogryModel.find(obj)
+        return await CategoryModel.find(obj)
             .limit(limitSkip.limit)
             .skip(limitSkip.skip);
     }
@@ -57,7 +57,7 @@ class CategoryService {
         limit: number,
         cursor?: string,
     ) {
-        return await CateogryModel.find({
+        return await CategoryModel.find({
             name: {
                 $regex: new RegExp(nameString, "i"),
             },

@@ -14,6 +14,7 @@ import mongoose from "mongoose";
 import { OrderModel } from "../model/order";
 
 import Stripe from "stripe";
+import { OrderImageUploadQueue } from "@/queue/orderImageUpload.queue";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 class OrderCreate {
@@ -22,6 +23,7 @@ class OrderCreate {
         res: Response,
         next: NextFunction,
     ) {
+        await OrderImageUploadQueue.add("hello world",{data:"hello world"});
         const { topings, product_id, product_sections, price } = req.body;
         let original_price = 0;
 
@@ -108,7 +110,7 @@ class OrderCreate {
                         status: OrderStatusEnum.CONFIRMED, // TODO: later fix when implementing stripe
                         product_name: product.name,
                         image: productImage,
-                        quantity:1
+                        quantity: 1,
                     },
                 ],
                 { session },

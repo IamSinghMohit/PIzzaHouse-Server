@@ -89,7 +89,7 @@ class CategoryUpdate {
             }
 
             const processedImage =
-                await ImageService.compressImageToBuffer(req);
+                await ImageService.compressImageToBuffer(req.file?.buffer as Buffer);
             const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`;
             const result = ImageService.uploadImageWithBuffer(
                 folder,

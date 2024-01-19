@@ -29,6 +29,9 @@ app.use(morgan("common"));
 require("./passport");
 app.use(passport.initialize());
 // ------------------------->
+// Settings up Queue
+require("./queue")
+// -------------------->
 
 // HEALTH CHECK 
 app.get("/", (req, res) => {

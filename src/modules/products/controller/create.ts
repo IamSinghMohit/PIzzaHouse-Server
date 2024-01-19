@@ -31,7 +31,6 @@ class ProductCreate {
         } = req.body;
 
         if (!req.file) return next(new ErrorResponse("image is required", 422));
-
         // checking if product already exist
         const isExist = await ProductModel.findOne({ name });
         if (isExist) {
