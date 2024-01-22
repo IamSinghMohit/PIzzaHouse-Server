@@ -1,4 +1,4 @@
-import { Job, Queue, Worker, tryCatch } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import { QueueEnum } from "./types/enum";
 import RedisClient from "@/redis";
 import { ImageService } from "@/services";
@@ -23,9 +23,6 @@ export const ImageUploadQueueWorker = new Worker(
             const buffer = await RedisClient.getBuffer(
                 payload.data.categoryBufferRedisKey,
             );
-            if (!Buffer.isBuffer(buffer)) {
-                console.log("invalid buffer");
-            }
             const processedImage = await ImageService.compressImageToBuffer(
                 buffer!,
             );
@@ -39,6 +36,7 @@ export const ImageUploadQueueWorker = new Worker(
                 { _id: payload.data.categoryId },
                 { image: result.url },
             );
+            payload.remove()
         } catch (error) {
             console.log(error);
         }

@@ -69,7 +69,7 @@ class ProductUpdate {
                 url[url.length - 1].split(".")[0]
             }`;
             await ImageService.deleteImage(image);
-            const bufferedImage = await ImageService.compressImageToBuffer(req);
+            const bufferedImage = await ImageService.compressImageToBuffer(req.file.buffer);
             const result = await ImageService.uploadImageWithBuffer(
                 `${process.env.CLOUDINARY_PRODUCT_FOLDER}`,
                 bufferedImage,

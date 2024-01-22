@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { TCreateCategorySchema } from "../schema/create";
-import CategoryAttributeService from "../service/categoryPriceSection.service";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import AdminCategoryDto from "../dto/category/admin";
@@ -27,35 +26,25 @@ class CategoryCreate {
             return next(new ErrorResponse("Category already exist", 403));
         }
         if (!req.file?.buffer) {
-            return next(new ErrorResponse("Invalid input", 403));
+            return next(new ErrorResponse("Image required", 403));
         }
 
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            const category = new CategoryModel(
-                [
-                    {
-                        name,
-                        image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
-                    },
-                ],
-                { session },
-            );
+            const category = new CategoryModel({
+                name,
+                image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+            });
             const SectionIdArray: string[] = [];
-
-            Promise.all(
+            console.log(category);
+            await Promise.all(
                 sections.map(({ name, attributes }) => {
-                    const section = new CategoryPriceSectionModel(
-                        [
-                            {
-                                category_id: category.id,
-                                name,
-                                attributes: attributes,
-                            },
-                        ],
-                        { session },
-                    );
+                    const section = new CategoryPriceSectionModel({
+                        category_id: category.id,
+                        name,
+                        attributes: attributes,
+                    });
 
                     SectionIdArray.push(section._id);
                     section.save();
@@ -85,9 +74,9 @@ class CategoryCreate {
             );
         } catch (error) {
             next(error);
-            session.abortTransaction();
+            await session.abortTransaction();
         } finally {
-            session.endSession();
+            await session.endSession();
         }
     }
 }

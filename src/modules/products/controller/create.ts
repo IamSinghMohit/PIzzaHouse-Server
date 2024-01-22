@@ -46,7 +46,7 @@ class ProductCreate {
             return next(new ErrorResponse("category not  found", 404));
 
         // compressing the image
-        const processedImage = await ImageService.compressImageToBuffer(req);
+        const processedImage = await ImageService.compressImageToBuffer(req.file.buffer);
         const folder = `${process.env.CLOUDINARY_PRODUCT_FOLDER}`;
 
         // uploading the image

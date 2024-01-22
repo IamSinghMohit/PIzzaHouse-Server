@@ -11,6 +11,9 @@ class TopingsCreate {
         res: Response,
         next: NextFunction,
     ) {
+        if(!req.file?.buffer){
+            return next(new ErrorResponse("Image is required",402))
+        }
         const { name, category, price, status } = req.body;
         const isExist = await TopingService.findToping({ name }, "FINDONE");
 
@@ -18,7 +21,7 @@ class TopingsCreate {
             next(new ErrorResponse("product already exist", 403));
         }
 
-        const processedImage = await ImageService.compressImageToBuffer(req);
+        const processedImage = await ImageService.compressImageToBuffer(req.file.buffer);
 
         const result = await ImageService.uploadImageWithBuffer(
             `${process.env.CLOUDINARY_TOPING_FOLDER}`,

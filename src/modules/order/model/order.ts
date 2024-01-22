@@ -1,30 +1,38 @@
-import { getModelForClass, prop ,modelOptions} from "@typegoose/typegoose";
 import {
-    OrderStatusEnum,
-} from "../schema/main";
+    getModelForClass,
+    prop,
+    modelOptions,
+    DocumentType,
+} from "@typegoose/typegoose";
+import { OrderStatusEnum } from "../schema/main";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
 @modelOptions({
     options: { allowMixed: 0 },
     schemaOptions: {
         timestamps: true,
+        versionKey: false,
     },
 })
-export class Order {
+export class Order extends TimeStamps {
     _id: string;
 
-    @prop({ required: false, type: String })
+    @prop({ required: true, type: String })
     user_full_name: string;
 
-    @prop({ required: false, type: String })
-    user_id:string;
-
-    @prop({ required: false, type: String })
+    @prop({ required: true, type: String })
     image: string;
 
-    @prop({ required: false, type: String })
-    adress: string;
+    @prop({ required: true, type: String })
+    address: string;
 
-    @prop({ required: false, type: Number })
+    @prop({ required: true, type: String })
+    city: string;
+
+    @prop({ required: true, type: String })
+    state: string;
+
+    @prop({ required: true, type: Number })
     price: number;
 
     @prop({ required: true, type: Number })
@@ -34,8 +42,3 @@ export class Order {
     status: OrderStatusEnum;
 }
 export const OrderModel = getModelForClass(Order);
-// export type TOrderModel = Pick<
-//     DocumentType<Order>,
-//     "_id" | "price" | "status" | "user_full_name" | "adress" | "user_id" | "quantity"
-// >;
-

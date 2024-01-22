@@ -19,21 +19,27 @@ app.use(
     cors({
         origin: ["http://localhost:5173", "http://localhost:3000"],
         credentials: true,
-    })
+    }),
 );
 
-app.use(express.json({ limit: "8mb" }));
 app.use(morgan("common"));
+app.use((req, res, next) => {
+    if (req.originalUrl === "/order/payment-result") {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+});
 
-// PASSPORT 
+// PASSPORT
 require("./passport");
 app.use(passport.initialize());
 // ------------------------->
 // Settings up Queue
-require("./queue")
+// require("./queue");
 // -------------------->
 
-// HEALTH CHECK 
+// HEALTH CHECK
 app.get("/", (req, res) => {
     res.json({ message: "api is healthy" });
 });

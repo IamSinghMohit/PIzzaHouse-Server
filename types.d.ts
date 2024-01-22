@@ -17,5 +17,6 @@ declare namespace NodeJS {
         CLOUDINARY_PLACEHOLDER_IMAGE_URL: string;
         STRIPE_SECRETKEY: string;
         STRIPE_PUBLISHABLE_KEY: string;
+        STRIPE_WEBHOOK_SECRET: string;
     }
 }

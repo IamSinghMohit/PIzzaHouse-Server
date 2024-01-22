@@ -1,6 +1,5 @@
 import { z, TypeOf } from "zod";
 import {
-    OrderPriceSchema,
     OrderProductIdSchema,
     OrderProductSectiosSchema,
 } from "./main";
@@ -8,14 +7,14 @@ import {
 export const CreateOrderSchema = z
     .object({
         topings: z.array(z.string()),
-        // first_name: z.string(),
-        // last_name: z.string(),
-        // city: z.string(),
-        // state: z.string(),
-        // address: z.string(),
+        city: z.string(),
+        state: z.string(),
+        address: z.string(),
+        quantity: z.number(),
+        user_id: z.string(),
+        product_price: z.number(),
     })
     .merge(OrderProductIdSchema)
-    .merge(OrderPriceSchema)
     .merge(OrderProductSectiosSchema);
 
 export type TCreateOrderSchema = TypeOf<typeof CreateOrderSchema>;

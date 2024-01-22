@@ -3,7 +3,7 @@ import { TOrderTopingSchema } from "../schema/main";
 
 export type TOrderProductSections = {
     name: string;
-    attribute_name: string;
+    attribute: string;
     value: number;
 }[];
 
@@ -11,6 +11,7 @@ export type TOrderProductSections = {
     options: { allowMixed: 0 },
     schemaOptions: {
         timestamps: true,
+        versionKey:false
     },
 })
 class OrderDetails {
