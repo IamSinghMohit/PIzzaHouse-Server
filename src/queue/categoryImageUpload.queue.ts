@@ -1,12 +1,12 @@
-import { Queue, Worker } from "bullmq";
+import { Job, Queue, Worker } from "bullmq";
 import { QueueEnum } from "./types/enum";
 import RedisClient from "@/redis";
 import { ImageService } from "@/services";
 import { CategoryModel } from "@/modules/category/models/category.model";
 
-type TImageUploadProps = {
-    imageBuffer: Buffer;
-    id: string;
+export type TImageUploadQueue = {
+    categoryBufferRedisKey: string;
+    categoryId: string;
 };
 
 export const CategoryImageUploadQueue = new Queue(
@@ -16,7 +16,7 @@ export const CategoryImageUploadQueue = new Queue(
     },
 );
 
-export const ImageUploadQueueWorker = new Worker(
+export const ImageUploadQueueWorker = new Worker<TImageUploadQueue>(
     QueueEnum.CATEGORY_IMAGE_UPLOAD_QUEUE,
     async (payload) => {
         try {
@@ -32,11 +32,11 @@ export const ImageUploadQueueWorker = new Worker(
                 folder,
                 processedImage,
             );
+            console.log(result);
             await CategoryModel.findOneAndUpdate(
                 { _id: payload.data.categoryId },
                 { image: result.url },
             );
-            payload.remove()
         } catch (error) {
             console.log(error);
         }

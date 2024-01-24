@@ -19,7 +19,7 @@ class CategoryController {
         CategoryRead.searchCategory
     );
     static updateCategory = CategoryController.controllerWrapper(
-        CategoryUpdate.updateCategory
+        CategoryUpdate.category
     );
     static getSections = CategoryController.controllerWrapper(
         CategoryRead.getSections

@@ -5,7 +5,7 @@ import { CategoryValidator } from "./category.validator";
 const router = Router();
 
 router.post(
-    "/create",
+    "/admin/create",
     upload.single("image"),
     CategoryValidator.createCategory,
     CategoryController.createCategory
@@ -28,15 +28,14 @@ router.get(
     CategoryController.searchCategory
 );
 
-router.put(
-    "/update",
+router.patch(
+    "/admin/update",
     upload.single("image"),
-    CategoryValidator.updateCategory,
     CategoryController.updateCategory
 );
 
 router.get(
-    "/sections/:id",
+    "/admin/sections/:id",
     CategoryValidator.getSections,
     CategoryController.getSections
 );

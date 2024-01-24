@@ -24,13 +24,5 @@ export class CategoryValidator {
 
     static getSections = Validator.ReqParams(GetSectionsSchema);
 
-    static updateCategory = Validator.ReqBody(UpdateCategorySchema, (req) => {
-        return {
-            ...req.body,
-            sections: [...JSON.parse(req.body.json)],
-            is_name_updated: req.body.is_name_update == "true",
-            is_image_updated: req.body.is_image_update == "true",
-            is_sections_updated: req.body.is_sections_updated == "true",
-        };
-    });
+    static updateCategory = Validator.ReqBody(UpdateCategorySchema);
 }
