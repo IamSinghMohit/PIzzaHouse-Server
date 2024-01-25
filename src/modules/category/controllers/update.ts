@@ -2,10 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { ErrorResponse } from "@/utils";
 import { CategoryModel } from "../models/category.model";
 import RedisClient from "@/redis";
-import { CategoryImageUploadQueue, TImageUploadQueue } from "@/queue/categoryImageUpload.queue";
 import { ResponseService } from "@/services";
 import { TUpdateCategorySchema } from "../schema/update";
-import { DeleteImaeQueue } from "@/queue/deleteImage.queue";
+import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
+import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 
 class CategoryUpdate {
     static async category(
@@ -21,20 +21,19 @@ class CategoryUpdate {
             return next(new ErrorResponse("Image required", 400));
         }
 
-        const categoryBufferRedisKey = `category_image_update:${category._id}`;
-        await RedisClient.set(categoryBufferRedisKey, req.file.buffer);
-        await CategoryImageUploadQueue.add(`image update ${category._id}`, {
-            categoryBufferRedisKey,
-            categoryId:category._id
-        } as TImageUploadQueue);
+        const key = `category_image_update:${category._id}`;
 
-        await DeleteImaeQueue.add(`delete category image`,{
+        await RedisClient.set(key, req.file.buffer);
+        await AddToCategoryImageUploadQueue({
+            categoryBufferRedisKey: key,
+            categoryId: category._id,
+        });
+        await AddToDeleteImageQueue({ url: category.image });
 
-        })
         category.image = process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!;
         await category.save();
         ResponseService.sendResponse(res, 200, true, "Image updated");
-        console.log('controller ended')
+        console.log("controller ended");
     }
 }
 export default CategoryUpdate;

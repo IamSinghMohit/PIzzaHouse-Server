@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { TCreateProductSchema } from "../schema/create";
 import { ErrorResponse } from "@/utils";
-import { ImageService, ResponseService } from "@/services";
-import CategoryService from "@/modules/category/service/category.service";
 import AdminProductDto from "../dto/product/admin";
 import {
     ProductPriceSectionModel,
@@ -12,6 +10,8 @@ import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttrib
 import { ProductModel } from "../models/product.model";
 import mongoose from "mongoose";
 import { DocumentType } from "@typegoose/typegoose";
+import { CategoryModel } from "@/modules/category/models/category.model";
+import { ResponseService } from "@/services";
 
 class ProductCreate {
     static async createProduct(
@@ -22,7 +22,7 @@ class ProductCreate {
         const {
             name,
             sections,
-            category,
+            category_id,
             description,
             status,
             featured,
@@ -38,34 +38,23 @@ class ProductCreate {
         }
 
         // checking if provide category is valid
-        const isCategoryExists = await CategoryService.find(
-            { name: { $regex: new RegExp(category, "i") } },
-            "FINDONE",
+        const category = await CategoryModel.findOne(
+            {_id:category_id},
         );
-        if (!isCategoryExists)
+        if (!category){
             return next(new ErrorResponse("category not  found", 404));
-
-        // compressing the image
-        const processedImage = await ImageService.compressImageToBuffer(req.file.buffer);
-        const folder = `${process.env.CLOUDINARY_PRODUCT_FOLDER}`;
-
-        // uploading the image
-        const result = await ImageService.uploadImageWithBuffer(
-            folder,
-            processedImage,
-        );
+        }
 
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
             const product = new ProductModel(
                 {
-                    image: result.url,
+                    image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
                     name,
                     description,
                     status,
-                },
-                { session },
+                }
             );
             const ProductSectionIdArray: string[] = [];
             const ProductSectionArray: Promise<
@@ -76,14 +65,13 @@ class ProductCreate {
                 const patt = new ProductPriceSectionModel(
                     {
                         product_id: product._id.toString(),
-                        category: category,
+                        category: category.name,
                         name,
                         attributes: attributes,
                     },
-                    { session },
                 );
                 ProductSectionIdArray.push(patt._id.toString());
-                ProductSectionArray.push(patt.save());
+                ProductSectionArray.push(patt.save({session}));
             });
 
             // saving all the sections to the database
@@ -94,7 +82,7 @@ class ProductCreate {
                     [
                         {
                             product_id: product._id.toString(),
-                            category: category,
+                            category: category.name,
                             attributes: default_attributes,
                         },
                     ],
@@ -103,7 +91,7 @@ class ProductCreate {
 
             // savving the product with other releated fields
             product.sections = ProductSectionIdArray;
-            product.category = category;
+            product.category = category.name;
             product.featured = featured;
             product.price = price;
             product.default_attribute = productDeafultAttribute[0]._id;
@@ -118,11 +106,6 @@ class ProductCreate {
                 new AdminProductDto(ProductResult),
             );
         } catch (error) {
-            const url = result.url;
-            const image = `${process.env.CLOUDINARY_PRODUCT_FOLDER}/${
-                url[url.length - 1].split(".")[0]
-            }`;
-            ImageService.deleteImage(image);
             await session.abortTransaction();
             next(new ErrorResponse("Error while creating product", 500));
         } finally {

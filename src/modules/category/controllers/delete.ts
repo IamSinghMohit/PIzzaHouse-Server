@@ -9,7 +9,6 @@ import { StatusEnum } from "@/modules/schema";
 import { ProductModel } from "@/modules/products/models/product.model";
 import { ProductDefaultPriceAttributModel } from "@/modules/products/models/productDefaultAttribute.model";
 import { ProductPriceSectionModel } from "@/modules/products/models/productPriceSection.model.ts";
-
 class CategoryDelete {
     static async deleteCategory(
         req: Request<TDeleteCategorySchema, {}, {}>,

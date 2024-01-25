@@ -3,7 +3,10 @@ import { TCreateCategorySchema } from "../schema/create";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import AdminCategoryDto from "../dto/category/admin";
-import { CategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
+import {
+    AddToCategoryImageUploadQueue,
+    CategoryImageUploadQueue,
+} from "@/queue/categoryImageUpload.queue";
 import { QueueEnum } from "@/queue/types/enum";
 import { CategoryModel } from "../models/category.model";
 import mongoose from "mongoose";
@@ -37,7 +40,6 @@ class CategoryCreate {
                 image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
             });
             const SectionIdArray: string[] = [];
-            console.log(category);
             await Promise.all(
                 sections.map(({ name, attributes }) => {
                     const section = new CategoryPriceSectionModel({
@@ -47,12 +49,12 @@ class CategoryCreate {
                     });
 
                     SectionIdArray.push(section._id);
-                    section.save();
+                    section.save({ session });
                 }),
             );
             category.sections = SectionIdArray;
 
-            const CatResult = await category.save();
+            const CatResult = await category.save({ session });
             await session.commitTransaction();
 
             ResponseService.sendResponse(
@@ -64,14 +66,10 @@ class CategoryCreate {
 
             const key = `categoryId:${category._id}:buffer`;
             await RedisClient.set(key, req.file.buffer);
-
-            await CategoryImageUploadQueue.add(
-                QueueEnum.CATEGORY_IMAGE_UPLOAD_QUEUE,
-                {
-                    categoryBufferRedisKey: key,
-                    categoryId: category._id,
-                },
-            );
+            await AddToCategoryImageUploadQueue({
+                categoryBufferRedisKey: key,
+                categoryId: category._id,
+            });
         } catch (error) {
             next(error);
             await session.abortTransaction();

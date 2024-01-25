@@ -1,10 +1,10 @@
 import cloudinary from "../helper/cloudinary";
 import { Readable } from "stream";
 import sharp from "sharp";
-import {  UploadApiResponse } from "cloudinary";
+import { UploadApiResponse } from "cloudinary";
 
 class ImageService {
-    static async compressImageToBuffer(buffer:Buffer) {
+    static async compressImageToBuffer(buffer: Buffer) {
         let compressedImage = sharp(buffer)
             .toFormat("webp")
             .webp({ quality: 85 });
@@ -36,9 +36,9 @@ class ImageService {
         });
     }
 
-    static async deleteImage(id: string) {
+    static async deleteUsingId(public_id: string) {
         return new Promise((resolve, reject) => {
-            cloudinary.uploader.destroy(id, (error, result) => {
+            cloudinary.uploader.destroy(public_id, (error, result) => {
                 if (error) {
                     reject(error);
                 } else if (result) {
@@ -50,11 +50,11 @@ class ImageService {
         });
     }
 
-    static async uploadWithUrl(url: string, folderName: string) {
-        return await cloudinary.uploader.upload(url, {
-            folder: folderName,
-            invalidate: true,
-        });
+    static async addTag(tag: string, public_ids: string[]) {
+        return await cloudinary.uploader.add_tag(tag, public_ids);
+    }
+    static async deleteUsingTag(tag: string) {
+        return await cloudinary.api.delete_resources_by_tag(tag);
     }
 }
 export default ImageService;
