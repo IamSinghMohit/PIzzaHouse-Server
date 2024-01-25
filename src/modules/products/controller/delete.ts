@@ -5,24 +5,19 @@ import { ProductModel } from "../models/product.model";
 import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 import mongoose from "mongoose";
+import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 
 class ProductDelete {
     static async delete(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params;
+        const product = await ProductModel.findOne({ _id: id });
+        if (!product) {
+            return next(new ErrorResponse("Product not found", 404));
+        }
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            const { id } = req.params;
-            const product = await ProductModel.findOne({ _id: id });
-            if (!product) {
-                return next(new ErrorResponse("Product not found", 404));
-            }
-            const url = product.image.split("/");
-
-            const image = `${process.env.CLOUDINARY_PRODUCT_FOLDER}/${
-                url[url.length - 1].split(".")[0]
-            }`;
             Promise.all([
-                await ImageService.deleteImage(image),
                 await ProductModel.deleteOne({ _id: id }, { session }),
                 await ProductPriceSectionModel.deleteMany(
                     { product_id: id },
@@ -35,8 +30,9 @@ class ProductDelete {
                     { session },
                 ),
             ]);
-            await session.commitTransaction()
+            await session.commitTransaction();
             ResponseService.sendResponse(res, 200, true, "Product deleted");
+            await AddToDeleteImageQueue({ tag: product._id });
         } catch (error) {
             await session.abortTransaction();
             next(new ErrorResponse("Error while deleting product", 500));

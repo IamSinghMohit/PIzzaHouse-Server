@@ -5,9 +5,7 @@ import { ResponseService } from "@/services";
 import AdminCategoryDto from "../dto/category/admin";
 import {
     AddToCategoryImageUploadQueue,
-    CategoryImageUploadQueue,
 } from "@/queue/categoryImageUpload.queue";
-import { QueueEnum } from "@/queue/types/enum";
 import { CategoryModel } from "../models/category.model";
 import mongoose from "mongoose";
 import RedisClient from "@/redis";
@@ -71,8 +69,8 @@ class CategoryCreate {
                 categoryId: category._id,
             });
         } catch (error) {
-            next(error);
             await session.abortTransaction();
+            next(error);
         } finally {
             await session.endSession();
         }

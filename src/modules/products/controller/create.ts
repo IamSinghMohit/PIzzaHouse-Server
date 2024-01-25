@@ -4,14 +4,14 @@ import { ErrorResponse } from "@/utils";
 import AdminProductDto from "../dto/product/admin";
 import {
     ProductPriceSectionModel,
-    TProductPriceSection,
 } from "../models/productPriceSection.model.ts";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 import { ProductModel } from "../models/product.model";
 import mongoose from "mongoose";
-import { DocumentType } from "@typegoose/typegoose";
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { ResponseService } from "@/services";
+import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
+import RedisClient from "@/redis";
 
 class ProductCreate {
     static async createProduct(
@@ -38,44 +38,35 @@ class ProductCreate {
         }
 
         // checking if provide category is valid
-        const category = await CategoryModel.findOne(
-            {_id:category_id},
-        );
-        if (!category){
+        const category = await CategoryModel.findOne({ _id: category_id });
+        if (!category) {
             return next(new ErrorResponse("category not  found", 404));
         }
 
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            const product = new ProductModel(
-                {
-                    image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
-                    name,
-                    description,
-                    status,
-                }
-            );
+            const product = new ProductModel({
+                image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                name,
+                description,
+                status,
+            });
             const ProductSectionIdArray: string[] = [];
-            const ProductSectionArray: Promise<
-                DocumentType<TProductPriceSection>
-            >[] = [];
             // creating product price sections
-            sections.forEach(({ name, attributes }) => {
-                const patt = new ProductPriceSectionModel(
-                    {
+            await Promise.all(
+                sections.map(async ({ name, attributes }) => {
+                    const patt = new ProductPriceSectionModel({
                         product_id: product._id.toString(),
                         category: category.name,
                         name,
                         attributes: attributes,
-                    },
-                );
-                ProductSectionIdArray.push(patt._id.toString());
-                ProductSectionArray.push(patt.save({session}));
-            });
+                    });
+                    ProductSectionIdArray.push(patt._id.toString());
+                    await patt.save({ session });
+                }),
+            );
 
-            // saving all the sections to the database
-            Promise.all(ProductSectionArray);
             // creating product_default_price document
             const productDeafultAttribute =
                 await ProductDefaultPriceAttributModel.create(
@@ -105,11 +96,18 @@ class ProductCreate {
                 true,
                 new AdminProductDto(ProductResult),
             );
+            const redisKey = `productId:${product._id}:buffer`;
+            await RedisClient.set(redisKey, req.file.buffer);
+            await AddToProductImageUploadQueue({
+                productId: product._id,
+                categoryId: category._id,
+                productBufferRedisKey: redisKey,
+            });
         } catch (error) {
             await session.abortTransaction();
             next(new ErrorResponse("Error while creating product", 500));
         } finally {
-            session.endSession();
+            await session.endSession();
         }
     }
 }

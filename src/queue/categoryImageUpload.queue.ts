@@ -34,7 +34,7 @@ export const ImageUploadQueueWorker =
                     folder,
                     processedImage,
                 );
-                await ImageService.addTag(categoryId, [result.public_id]);
+                await ImageService.addTag(`categoryId:${categoryId}`, [result.public_id]);
                 await CategoryModel.findOneAndUpdate(
                     { _id: categoryId },
                     { image: result.url },

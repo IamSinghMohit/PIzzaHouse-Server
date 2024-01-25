@@ -25,7 +25,7 @@ class CategoryDelete {
         const image = `${process.env.CLOUDINARY_CAEGORY_FOLDER}/${
             url[url.length - 1].split(".")[0]
         }`;
-        await ImageService.deleteImage(image).catch((e) => next(e));
+        // await ImageService.deleteUsingTag(image).catch((e) => next(e));
         // deleting data releated cateogry
         await CategoryService.delete({ _id: id });
         await CategoryPriceSectionService.deleteMany({ category_id: id });

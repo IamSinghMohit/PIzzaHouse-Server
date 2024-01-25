@@ -28,7 +28,7 @@ class CategoryUpdate {
             categoryBufferRedisKey: key,
             categoryId: category._id,
         });
-        await AddToDeleteImageQueue({ url: category.image });
+        // await AddToDeleteImageQueue({ url: category.image });
 
         category.image = process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!;
         await category.save();

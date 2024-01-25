@@ -17,7 +17,6 @@ class ProductUpdate {
 
         const {
             name,
-            category,
             price,
             status,
             featured,
@@ -26,6 +25,7 @@ class ProductUpdate {
             description,
         } = req.body;
         const product_id = req.params.id;
+        const category = ""
         console.log(JSON.stringify(req.body));
         if (!product) {
             return next(new ErrorResponse("Product does not exist", 404));
@@ -68,7 +68,7 @@ class ProductUpdate {
             const image = `${process.env.CLOUDINARY_PRODUCT_FOLDER}/${
                 url[url.length - 1].split(".")[0]
             }`;
-            await ImageService.deleteImage(image);
+            await ImageService.deleteUsingId(image);
             const bufferedImage = await ImageService.compressImageToBuffer(req.file.buffer);
             const result = await ImageService.uploadImageWithBuffer(
                 `${process.env.CLOUDINARY_PRODUCT_FOLDER}`,
