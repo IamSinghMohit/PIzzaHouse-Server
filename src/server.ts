@@ -35,8 +35,8 @@ app.use((req, res, next) => {
 require("./passport");
 app.use(passport.initialize());
 // ------------------------->
-// Settings up Queue
-// require("./queue");
+// Settings up Queues
+require("./queue");
 // -------------------->
 
 // HEALTH CHECK

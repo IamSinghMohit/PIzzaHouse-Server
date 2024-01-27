@@ -9,7 +9,7 @@ declare namespace NodeJS {
         PORT: string;
         CLOUDINARY_CLOUD_NAME: string;
         CLOUDINARY_API_SECRET: string;
-        CLOUDINARY_CAEGORY_FOLDER: string;
+        CLOUDINARY_CATEGORY_FOLDER: string;
         CLOUDINARY_PRODUCT_FOLDER: string;
         CLOUDINARY_TOPING_FOLDER: string;
         CLOUDINARY_ORDER_FOLDER: string;

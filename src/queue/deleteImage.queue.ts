@@ -4,7 +4,7 @@ import RedisClient from "@/redis";
 import { ImageService } from "@/services";
 
 type TDeleteImageQueuePayload = {
-    tag: string;
+    tag: `${string}Id:${string}`;
 };
 export const DeleteImageQueue = new Queue(QueueEnum.DELETE_IMAGE_QUEUE, {
     connection: RedisClient,

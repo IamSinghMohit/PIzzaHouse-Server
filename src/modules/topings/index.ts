@@ -12,14 +12,10 @@ router.post(
     TopingValidator.createToping,
     TopingController.create
 );
-
 router.get('/admin/all',
     TopingValidator.getAllTopings,
     TopingController.getAllTopings
 )
-
-
-
 router.get('/category/:category',
     TopingValidator.GetTopingWithCategory,
     TopingController.getWithCategory,

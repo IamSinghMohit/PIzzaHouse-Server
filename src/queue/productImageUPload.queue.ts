@@ -1,5 +1,5 @@
 import { Job, Queue, Worker } from "bullmq";
-import { QueueEnum } from "./types/enum";
+import { QueueEnum ,TRedisBufferKey} from "./types";
 import RedisClient from "@/redis";
 import { ImageService } from "@/services";
 import { ProductModel } from "@/modules/products/models/product.model";
@@ -7,7 +7,7 @@ import { ProductModel } from "@/modules/products/models/product.model";
 type TProductImageUploadQueuePayload = {
     categoryId: string;
     productId: string;
-    productBufferRedisKey: string;
+    productBufferRedisKey:TRedisBufferKey;
 };
 
 const ProductImageUploadQueue = new Queue(
@@ -28,7 +28,7 @@ export const ProductImageQueueWorker =
                 buffer!,
             );
 
-            const folder = `${process.env.CLOUDINARY_CAEGORY_FOLDER}`;
+            const folder = `${process.env.CLOUDINARY_PRODUCT_FOLDER}`;
             const result = await ImageService.uploadImageWithBuffer(
                 folder,
                 processedImage,
@@ -37,7 +37,7 @@ export const ProductImageQueueWorker =
                 await ImageService.addTag(`categoryId:${categoryId}`, [
                     result.public_id,
                 ]),
-                await ImageService.addTag(`product_id:${productId}`, [
+                await ImageService.addTag(`productId:${productId}`, [
                     result.public_id,
                 ]),
             ]);
