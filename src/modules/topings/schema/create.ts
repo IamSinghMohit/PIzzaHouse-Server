@@ -8,11 +8,10 @@ import {
 
 export const CreateTopingSchema = z
     .object({
-        category_id: z.string(),
+        category_id: z.string().min(2),
     })
     .merge(TopingNameSchema)
     .merge(TopingPriceSchema)
-    .merge(TopingCategorySchema)
     .merge(TopingStatusSchema);
 
 export type TCreateTopingSchema = z.TypeOf<typeof CreateTopingSchema>;

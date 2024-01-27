@@ -10,6 +10,7 @@ import { CategoryModel } from "../models/category.model";
 import mongoose from "mongoose";
 import RedisClient from "@/redis";
 import { CategoryPriceSectionModel } from "../models/categoryPriceSection";
+import { TRedisBufferKey } from "@/queue/types";
 
 class CategoryCreate {
     static async createCategory(
@@ -62,7 +63,7 @@ class CategoryCreate {
                 new AdminCategoryDto(CatResult),
             );
 
-            const key = `categoryId:${category._id}:buffer`;
+            const key:TRedisBufferKey = `categoryId:${category._id}:buffer`;
             await RedisClient.set(key, req.file.buffer);
             await AddToCategoryImageUploadQueue({
                 categoryBufferRedisKey: key,

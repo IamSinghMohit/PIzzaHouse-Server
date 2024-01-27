@@ -5,6 +5,7 @@ import {
     ProductFeaturedSchema,
     ProductNameSchema,
     ProductPriceSchema,
+    ProductSectionSchema,
     ProductStatusSchema,
 } from "./main";
 
@@ -16,6 +17,7 @@ const restFieldsAsOptionalSchema = z
     .merge(ProductFeaturedSchema)
     .merge(ProductPriceSchema)
     .merge(ProductDefaultAttributeSchema)
+    .merge(ProductSectionSchema)
     .partial();
 
 export const UpdateProductSchema = z

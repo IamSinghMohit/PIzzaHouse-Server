@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
-import { Product, ProductModel } from "../models/product.model";
+import { ProductModel } from "../models/product.model";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { TUpdateProductSchema } from "../schema/update";
@@ -9,7 +9,8 @@ import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 import RedisClient from "@/redis";
 import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
 import mongoose from "mongoose";
-import { warn } from "console";
+import { TRedisBufferKey } from "@/queue/types";
+import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
 
 class ProductUpdate {
     static async update(
@@ -25,24 +26,28 @@ class ProductUpdate {
             id,
             default_attributes,
             description,
+            sections,
         } = req.body;
         console.log(req.body);
         const product = await ProductModel.findOne({ _id: id });
         if (!product) {
-            return next(new ErrorResponse("Product does not exist", 404));
+            return next(new ErrorResponse("product does not exist", 404));
         }
         if (name) product.name = name;
         if (status) product.status = status;
         if (description) product.description = description;
-        if(price) product.price = price;
+        if (price) product.price = price;
 
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
             if (default_attributes) {
-                await ProductDefaultPriceAttributModel.deleteOne({
-                    _id: product.default_attribute,
-                },{session});
+                await ProductDefaultPriceAttributModel.deleteOne(
+                    {
+                        _id: product.default_attribute,
+                    },
+                    { session },
+                );
                 const pda = await ProductDefaultPriceAttributModel.create(
                     [
                         {
@@ -56,12 +61,32 @@ class ProductUpdate {
                 product.default_attribute = pda[0]._id;
             }
 
+            if (sections) {
+                const arr:any = [];
+                await ProductPriceSectionModel.deleteMany(
+                    { _id: { $in: product.sections } },
+                    { session },
+                );
+                await Promise.all(
+                    sections.map(async (sec) => {
+                        const patt = new ProductPriceSectionModel({
+                            category: category?.name,
+                            name: sec.name,
+                            attributes: sec.attributes,
+                        });
+                        arr.push(patt._id);
+                        await patt.save({ session });
+                    }),
+                    product.sections = arr 
+                );
+            }
+
             if (req.file?.buffer) {
                 product.image = process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!;
             }
 
             product.featured = featured || false;
-            await product.save({session});
+            await product.save({ session });
             await session.commitTransaction();
             ResponseService.sendResponse(
                 res,
@@ -78,7 +103,7 @@ class ProductUpdate {
             await AddToDeleteImageQueue({
                 tag: `productId:${product._id}`,
             });
-            const key = `productId:${product._id}:buffer`;
+            const key: TRedisBufferKey = `productId:${product._id}:buffer`;
             await RedisClient.set(key, req.file.buffer);
             await AddToProductImageUploadQueue({
                 productBufferRedisKey: key,

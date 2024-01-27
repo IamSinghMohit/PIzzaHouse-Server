@@ -10,6 +10,7 @@ import { CategoryModel } from "@/modules/category/models/category.model";
 import { ResponseService } from "@/services";
 import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
 import RedisClient from "@/redis";
+import { TRedisBufferKey } from "@/queue/types";
 
 class ProductCreate {
     static async createProduct(
@@ -85,7 +86,7 @@ class ProductCreate {
             product.sections = ProductSectionIdArray;
             product.default_attribute = productDeafultAttribute[0]._id;
 
-            const ProductResult = await product.save();
+            const ProductResult = await product.save({session});
             await session.commitTransaction();
 
             ResponseService.sendResponse(
@@ -94,12 +95,12 @@ class ProductCreate {
                 true,
                 new AdminProductDto(ProductResult),
             );
-            const redisKey = `productId:${product._id}:buffer`;
-            await RedisClient.set(redisKey, req.file.buffer);
+            const key:TRedisBufferKey = `productId:${product._id}:buffer`;
+            await RedisClient.set(key, req.file.buffer);
             await AddToProductImageUploadQueue({
                 productId: product._id,
                 categoryId: category._id,
-                productBufferRedisKey: redisKey,
+                productBufferRedisKey: key,
             });
         } catch (error) {
             await session.abortTransaction();

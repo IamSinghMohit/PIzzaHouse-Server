@@ -7,6 +7,7 @@ import {
 } from "../schema/read";
 import AdminTopingDto from "../dto/admin";
 import BaseTopingDto from "../dto/base";
+import { TopingModel } from "../topings.model";
 
 class TopingRead {
     static async AllToping(
@@ -17,6 +18,7 @@ class TopingRead {
         const { category, status, min, max, name, limit, page } = req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
+        console.log(req.query)
 
         const query: Record<any, any> = {
             ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
@@ -31,7 +33,6 @@ class TopingRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-
         const topings = await TopingService.findPaginatedTopings(query, {
             limit: originalLimit,
             skip: (originalPage - 1) * originalLimit,
@@ -52,7 +53,12 @@ class TopingRead {
             { category: req.params.category },
             "FIND",
         );
-        ResponseService.sendResponse(res, 200, true, topings?.map((toping) => new BaseTopingDto(toping)));
+        ResponseService.sendResponse(
+            res,
+            200,
+            true,
+            topings?.map((toping) => new BaseTopingDto(toping)),
+        );
     }
 
     static async stats(
@@ -60,9 +66,9 @@ class TopingRead {
         res: Response,
         next: NextFunction,
     ) {
-        const price = await TopingService.getMaxPrice();
+        const toping = await TopingModel.findOne().sort({ price: -1 }).limit(1);
         ResponseService.sendResponse(res, 200, true, {
-            max_price: price,
+            max_price: (toping?.price || 0) + 10,
         });
     }
 }

@@ -14,9 +14,6 @@ export class ProductPriceSection {
     category: string;
 
     @prop({ required: true, type: String })
-    product_id: string;
-
-    @prop({ required: true, type: String })
     name: string;
 
     @prop({ required: true, type: [Object] })
@@ -26,5 +23,5 @@ export class ProductPriceSection {
 export const ProductPriceSectionModel = getModelForClass(ProductPriceSection);
 export type TProductPriceSection= Pick<
     DocumentType<ProductPriceSection>,
-    "_id" | "name" | "attributes" | "category" | "product_id"
+    "_id" | "name" | "attributes" | "category" 
 >;

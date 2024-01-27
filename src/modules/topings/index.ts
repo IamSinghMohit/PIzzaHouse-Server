@@ -1,4 +1,4 @@
-import { Validate, upload } from "@/middlewares";
+import { upload } from "@/middlewares";
 import { Router } from "express";
 import TopingValidator from "./topings.validator";
 import TopingController from "./controller";
@@ -20,6 +20,6 @@ router.get('/category/:category',
     TopingValidator.GetTopingWithCategory,
     TopingController.getWithCategory,
 )
-router.get('/stats',TopingController.getStats)
+router.get('/admin/stats',TopingController.getStats)
 
 export default router;

@@ -6,6 +6,7 @@ import { ResponseService } from "@/services";
 import { TUpdateCategorySchema } from "../schema/update";
 import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
+import { TRedisBufferKey } from "@/queue/types";
 
 class CategoryUpdate {
     static async category(
@@ -26,7 +27,7 @@ class CategoryUpdate {
         ResponseService.sendResponse(res, 200, true, "image updated");
 
         await AddToDeleteImageQueue({ tag: `categoryId:${category._id}` });
-        const key = `category_image_update:${category._id}`;
+        const key:TRedisBufferKey = `categoryId:${category._id}:buffer`;
         await RedisClient.set(key, req.file.buffer);
         await AddToCategoryImageUploadQueue({
             categoryBufferRedisKey: key,

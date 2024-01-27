@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorResponse } from "@/utils";
-import { ImageService, ResponseService } from "@/services";
+import {  ResponseService } from "@/services";
 import { ProductModel } from "../models/product.model";
 import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
@@ -32,7 +32,7 @@ class ProductDelete {
             ]);
             await session.commitTransaction();
             ResponseService.sendResponse(res, 200, true, "Product deleted");
-            await AddToDeleteImageQueue({ tag: product._id });
+            await AddToDeleteImageQueue({ tag: `productId:${product._id}` });
         } catch (error) {
             await session.abortTransaction();
             next(new ErrorResponse("Error while deleting product", 500));

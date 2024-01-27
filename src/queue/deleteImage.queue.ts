@@ -1,5 +1,5 @@
 import { Job, Queue, Worker } from "bullmq";
-import { QueueEnum } from "./types/enum";
+import { QueueEnum } from "./types";
 import RedisClient from "@/redis";
 import { ImageService } from "@/services";
 
