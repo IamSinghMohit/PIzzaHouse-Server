@@ -7,9 +7,7 @@ import {
     GetProductsSchema,
 } from "./schema/read";
 import { DeleteProduct } from "./schema/delete";
-import { ProductIdSchema } from "./schema/main";
-import { NextFunction } from "express";
-import { ErrorResponse } from "@/utils";
+import { UpdateProductSchema } from "./schema/update";
 
 class ProductValidator {
     static createProduct = Validator.ReqBody(CreateProductSchema, (req) => {
@@ -26,6 +24,19 @@ class ProductValidator {
         GetProductPriceSectionSchema,
     );
     static deleteProduct = Validator.ReqParams(DeleteProduct);
+    static updateProduct = Validator.ReqBody(UpdateProductSchema, (req) => {
+        return {
+            ...req.body,
+            ...(req.body?.default_attributes_json
+                ? {
+                      default_attributes: JSON.parse(
+                          req.body.default_attributes_json,
+                      ),
+                  }
+                : {}),
+            featured: req.body.featured === "true",
+        };
+    });
     static getFromatedProducts = Validator.ReqQuery(
         GetFormatedProductsSchema,
         (req) => {
@@ -35,33 +46,6 @@ class ProductValidator {
             };
         },
     );
-
-    static updateProduct = (req: any, res: any, next: NextFunction) => {
-        const id = ProductIdSchema.parse(req.params as any);
-        if (!id) return next(new ErrorResponse("id is required", 422));
-        try {
-            if (req.body.sections_json) {
-                req.body.sections = JSON.parse(req.body.sections_json);
-            }
-            if (req.body.default_attributes_json) {
-                req.body.default_attributes = JSON.parse(
-                    req.body.default_attributes_json,
-                );
-            }
-            if (req.body.featured) {
-                req.body.featured = req.body.featured === "true";
-            }
-        } catch (error) {
-            return next(new ErrorResponse("Invalid input", 422));
-        }
-        try {
-            req.body = CreateProductSchema.partial().parse(req.body);
-            next();
-        } catch (error) {
-            next(error);
-        }
-    };
-
     static getProduct = Validator.ReqParams(GetProductSchema);
 }
 export default ProductValidator;

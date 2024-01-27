@@ -2,9 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { TCreateProductSchema } from "../schema/create";
 import { ErrorResponse } from "@/utils";
 import AdminProductDto from "../dto/product/admin";
-import {
-    ProductPriceSectionModel,
-} from "../models/productPriceSection.model.ts";
+import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 import { ProductModel } from "../models/product.model";
 import mongoose from "mongoose";
@@ -48,7 +46,10 @@ class ProductCreate {
         try {
             const product = new ProductModel({
                 image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                category: category.name,
                 name,
+                featured,
+                price,
                 description,
                 status,
             });
@@ -82,9 +83,6 @@ class ProductCreate {
 
             // savving the product with other releated fields
             product.sections = ProductSectionIdArray;
-            product.category = category.name;
-            product.featured = featured;
-            product.price = price;
             product.default_attribute = productDeafultAttribute[0]._id;
 
             const ProductResult = await product.save();

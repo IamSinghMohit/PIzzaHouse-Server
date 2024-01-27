@@ -21,12 +21,12 @@ router.get(
     ProductValidator.getProducts,
     ProductController.getProducts,
 );
-/* router.patch(
-    "/admin/:id",
+router.patch(
+    "/admin",
     upload.single("image"),
     ProductValidator.updateProduct,
     ProductController.updateProduct,
-); */
+);
 // ------>
 
 router.get(

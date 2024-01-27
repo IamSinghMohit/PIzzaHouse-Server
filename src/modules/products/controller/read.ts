@@ -15,7 +15,6 @@ import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts
 import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttribute.model";
 
 class ProductRead {
-
     static async products(
         req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
@@ -51,8 +50,6 @@ class ProductRead {
         });
     }
 
-
-
     static async productPriceSection(
         req: Request<TGetProductPriceSectionSchema, {}, {}, {}>,
         res: Response,
@@ -79,8 +76,6 @@ class ProductRead {
             default_attributes: defaultPriceAttribute?.attributes || [],
         });
     }
-
-
 
     static async fromatedProducts(
         req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
@@ -134,8 +129,6 @@ class ProductRead {
         ResponseService.sendResponse(res, 200, true, products);
     }
 
-
-
     static async product(
         req: Request<TGetProductSchema>,
         res: Response,
@@ -154,15 +147,16 @@ class ProductRead {
         }
     }
 
-
-
     static async stats(
         req: Request<TGetProductSchema>,
         res: Response,
         next: NextFunction,
     ) {
+        const product = await ProductModel.findOne({})
+            .sort({ price: -1 })
+            .limit(1);
         ResponseService.sendResponse(res, 200, true, {
-            max_price: 5000,
+            max_price: (product?.price || 0) + 10,
         });
     }
 }
