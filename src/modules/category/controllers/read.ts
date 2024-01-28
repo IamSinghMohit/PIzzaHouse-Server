@@ -9,6 +9,7 @@ import {
 } from "../schema/read";
 import AdminCategoryDto from "../dto/category/admin";
 import AdminCategoryPriceSectionDto from "../dto/categoryPriceSection.dto";
+import { CategoryModel } from "../models/category.model";
 
 class CategoryRead {
     static async getCategories(
@@ -17,20 +18,17 @@ class CategoryRead {
         next: NextFunction,
     ) {
         const totalDocument = await CategoryService.count();
-        const { limit, name } = req.query;
-        const page = req.query.page;
+        const { limit, name ,page} = req.query;
+        const originalLimit = limit || 10
+        const originalPage = page || 1
 
-        const categories = await CategoryService.findPaginatedCategory(
+        const categories = await CategoryModel.find(
             { ...(name ? { name: new RegExp(name, "i") } : {}) },
-            {
-                limit,
-                skip: (page - 1) * limit,
-            },
-        );
+        ).limit(originalLimit).skip((originalPage - 1) * originalLimit)
 
         ResponseService.sendResponse(res, 202, true, {
-            page,
-            pages: Math.ceil(totalDocument / limit),
+            page:originalPage,
+            pages: Math.ceil(totalDocument / originalLimit),
             categories: categories.map((cat) => new AdminCategoryDto(cat)), // don't mess up here, this must remain unchanged
         });
     }

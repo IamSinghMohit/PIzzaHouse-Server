@@ -14,7 +14,7 @@ import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts
 
 class ProductUpdate {
     static async update(
-        req: Request<{ id: string }, {}, Partial<TUpdateProductSchema>>,
+        req: Request<{}, {}, Partial<TUpdateProductSchema>>,
         res: Response,
         next: NextFunction,
     ) {
@@ -31,12 +31,20 @@ class ProductUpdate {
         console.log(req.body);
         const product = await ProductModel.findOne({ _id: id });
         if (!product) {
-            return next(new ErrorResponse("product does not exist", 404));
+            return next(new ErrorResponse("product not found", 404));
+        }
+        const category = await CategoryModel.findOne({
+            name: product.category,
+        });
+        if (!category) {
+            return next(new ErrorResponse("category not found", 404));
         }
         if (name) product.name = name;
         if (status) product.status = status;
         if (description) product.description = description;
         if (price) product.price = price;
+
+        product.featured = featured || false
 
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -62,7 +70,8 @@ class ProductUpdate {
             }
 
             if (sections) {
-                const arr:any = [];
+                const arr: any = [];
+                console.log(JSON.stringify(sections));
                 await ProductPriceSectionModel.deleteMany(
                     { _id: { $in: product.sections } },
                     { session },
@@ -74,18 +83,17 @@ class ProductUpdate {
                             name: sec.name,
                             attributes: sec.attributes,
                         });
-                        arr.push(patt._id);
+                        arr.push(patt._id.toString());
                         await patt.save({ session });
                     }),
-                    product.sections = arr 
                 );
+                product.sections = arr;
             }
 
             if (req.file?.buffer) {
                 product.image = process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!;
             }
 
-            product.featured = featured || false;
             await product.save({ session });
             await session.commitTransaction();
             ResponseService.sendResponse(
@@ -96,10 +104,6 @@ class ProductUpdate {
             );
             if (!req.file?.buffer) return;
 
-            const category = await CategoryModel.findOne({
-                name: product.category,
-            });
-
             await AddToDeleteImageQueue({
                 tag: `productId:${product._id}`,
             });
@@ -107,7 +111,7 @@ class ProductUpdate {
             await RedisClient.set(key, req.file.buffer);
             await AddToProductImageUploadQueue({
                 productBufferRedisKey: key,
-                categoryId: category?._id!,
+                categoryId: category._id,
                 productId: product._id,
             });
         } catch (error) {

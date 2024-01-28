@@ -3,18 +3,18 @@ import { StatusEnum } from "@/modules/schema";
 
 const ProductAttributeSchema = z.array(
     z.object({
-        id: z.string(),
-        name: z.string(),
+        id: z.string().min(1),
+        name: z.string().min(1),
         value: z.number(),
-    })
+    }),
 );
 
 export const ProductSectionSchema = z.object({
     sections: z.array(
         z.object({
-            name: z.string(),
+            name: z.string().min(1),
             attributes: ProductAttributeSchema,
-        })
+        }),
     ),
 });
 
@@ -24,16 +24,16 @@ export const ProductStatusSchema = z.object({
     }),
 });
 export const ProductNameSchema = z.object({
-    name: z.string(),
+    name: z.string().min(1),
 });
 export const ProductCategorySchema = z.object({
-    category: z.string(),
+    category: z.string().min(1),
 });
 export const ProductDescriptionSchema = z.object({
-    description: z.string(),
+    description: z.string().min(1).max(30),
 });
 export const ProductFeaturedSchema = z.object({
-    featured: z.boolean(),
+    featured: z.string().transform((str) => str.toLowerCase() === "true"),
 });
 export const ProductPriceSchema = z.object({
     price: z.string().transform((data) => parseInt(data)),
@@ -41,14 +41,14 @@ export const ProductPriceSchema = z.object({
 export const ProductDefaultAttributeSchema = z.object({
     default_attributes: z.array(
         z.object({
-            id: z.string(),
-            section: z.string(),
-            name: z.string(),
-        })
+            id: z.string().min(1),
+            section: z.string().min(1),
+            name: z.string().min(1),
+        }),
     ),
 });
 export const ProductIdSchema = z.object({
-    id: z.string(),
+    id: z.string().min(1),
 });
 
 export type TProductAttributeSchema = TypeOf<typeof ProductAttributeSchema>;

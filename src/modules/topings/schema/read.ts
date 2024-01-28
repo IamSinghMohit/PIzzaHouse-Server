@@ -1,12 +1,20 @@
-import { z ,TypeOf} from "zod";
-import { TopingCategorySchema} from "./main";
+import { z, TypeOf } from "zod";
+import { TopingCategorySchema } from "./main";
 import { StatusEnum } from "@/modules/schema";
 
-export const GetTopingWithCategorySchema = z.object({}).merge(TopingCategorySchema)
+export const GetTopingWithCategorySchema = z
+    .object({})
+    .merge(TopingCategorySchema);
 export const GetAllTopingsSchema = z.object({
     name: z.string().optional(),
-    limit: z.number().optional(),
-    page: z.number().optional(),
+    page: z
+        .string()
+        .transform((data) => parseInt(data))
+        .optional(),
+    limit: z
+        .string()
+        .transform((data) => parseInt(data))
+        .optional(),
     min: z
         .string()
         .refine((value) => !isNaN(parseInt(value)), {
@@ -29,5 +37,7 @@ export const GetAllTopingsSchema = z.object({
         .optional(),
 });
 
-export type TGetTopingWithCategorySchema  = z.TypeOf<typeof GetTopingWithCategorySchema >;
-export type TGetAllTopingsSchema  = TypeOf<typeof GetAllTopingsSchema>
+export type TGetTopingWithCategorySchema = z.TypeOf<
+    typeof GetTopingWithCategorySchema
+>;
+export type TGetAllTopingsSchema = TypeOf<typeof GetAllTopingsSchema>;

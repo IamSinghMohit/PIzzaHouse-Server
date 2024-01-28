@@ -59,7 +59,6 @@ class ProductCreate {
             await Promise.all(
                 sections.map(async ({ name, attributes }) => {
                     const patt = new ProductPriceSectionModel({
-                        product_id: product._id.toString(),
                         category: category.name,
                         name,
                         attributes: attributes,

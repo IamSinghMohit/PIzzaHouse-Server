@@ -15,7 +15,6 @@ class ProductValidator {
             ...req.body,
             sections: JSON.parse(req.body.sections_json),
             default_attributes: JSON.parse(req.body.default_attributes_json),
-            featured: req.body.featured === "true",
         };
     });
     static getProducts = Validator.ReqQuery(GetProductsSchema);
@@ -27,6 +26,13 @@ class ProductValidator {
     static updateProduct = Validator.ReqBody(UpdateProductSchema, (req) => {
         return {
             ...req.body,
+
+            ...(req.body?.sections_json
+                ? {
+                      sections: JSON.parse(req.body.sections_json),
+                  }
+                : {}),
+
             ...(req.body?.default_attributes_json
                 ? {
                       default_attributes: JSON.parse(
@@ -34,7 +40,6 @@ class ProductValidator {
                       ),
                   }
                 : {}),
-            featured: req.body.featured === "true",
         };
     });
     static getFromatedProducts = Validator.ReqQuery(

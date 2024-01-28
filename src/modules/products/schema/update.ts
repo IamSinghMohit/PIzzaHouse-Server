@@ -10,14 +10,15 @@ import {
 } from "./main";
 
 const restFieldsAsOptionalSchema = z
-    .object({})
+    .object({
+    })
     .merge(ProductNameSchema)
     .merge(ProductStatusSchema)
     .merge(ProductDescriptionSchema)
-    .merge(ProductFeaturedSchema)
     .merge(ProductPriceSchema)
     .merge(ProductDefaultAttributeSchema)
     .merge(ProductSectionSchema)
+    .merge(ProductFeaturedSchema)
     .partial();
 
 export const UpdateProductSchema = z

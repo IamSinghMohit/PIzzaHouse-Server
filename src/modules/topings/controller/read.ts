@@ -18,13 +18,13 @@ class TopingRead {
         const { category, status, min, max, name, limit, page } = req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
-        console.log(req.query)
 
         const query: Record<any, any> = {
             ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
             ...(category ? { category } : {}),
             ...(status ? { status } : {}),
         };
+        const totalDocuments = await TopingModel.estimatedDocumentCount();
 
         if (min && max) {
             query.price = { $gte: min, $lte: max };
@@ -33,14 +33,15 @@ class TopingRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-        const topings = await TopingService.findPaginatedTopings(query, {
-            limit: originalLimit,
-            skip: (originalPage - 1) * originalLimit,
-        });
+        const topings = await TopingModel.find(query)
+            .skip((originalPage - 1) * originalLimit)
+            .limit(originalLimit);
 
         ResponseService.sendResponse(res, 202, true, {
             topings: topings.map((product) => new AdminTopingDto(product)),
-            pages: Math.ceil(1 / originalLimit),
+            pages: Math.ceil(totalDocuments / originalLimit),
+            // page:originalPage
+            page: 1,
         });
     }
 

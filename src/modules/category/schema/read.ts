@@ -8,8 +8,8 @@ export const searchCategorySchema = z.object({
 
 export const getCategoriesSchema = z.object({
     name:z.string(),
-    page: z.string().transform((data) => parseInt(data)),
-    limit: z.string().transform((data) => parseInt(data)),
+    page: z.string().transform((data) => parseInt(data)).optional(),
+    limit: z.string().transform((data) => parseInt(data)).optional(),
 });
 
 export const GetSectionsSchema = z.object({

@@ -11,7 +11,7 @@ import {
 
 export const CreateProductSchema = z
     .object({
-        category_id: z.string(),
+        category_id: z.string().min(1),
     })
     .merge(ProductNameSchema)
     .merge(ProductStatusSchema)

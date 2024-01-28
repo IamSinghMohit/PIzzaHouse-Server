@@ -16,6 +16,11 @@ router.get('/admin/all',
     TopingValidator.getAllTopings,
     TopingController.getAllTopings
 )
+router.patch("/admin",
+    upload.single("image"),
+    TopingValidator.updateToping,
+    TopingController.updateToping
+)
 router.get('/category/:category',
     TopingValidator.GetTopingWithCategory,
     TopingController.getWithCategory,

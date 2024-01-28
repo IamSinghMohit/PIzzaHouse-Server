@@ -4,17 +4,14 @@ import {
     GetAllTopingsSchema,
     GetTopingWithCategorySchema,
 } from "./schema/read";
+import { UpdateTopingSchema } from "./schema/update";
 
 class TopingValidator {
-    static createToping = Validator.ReqBody(CreateTopingSchema, (req) => {
-        return {
-            ...req.body,
-            price: parseInt(req.body.price),
-        };
-    });
+    static createToping = Validator.ReqBody(CreateTopingSchema);
     static GetTopingWithCategory = Validator.ReqParams(
         GetTopingWithCategorySchema,
     );
-    static getAllTopings = Validator.ReqParams(GetAllTopingsSchema);
+    static getAllTopings = Validator.ReqQuery(GetAllTopingsSchema);
+    static updateToping = Validator.ReqBody(UpdateTopingSchema)
 }
 export default TopingValidator;

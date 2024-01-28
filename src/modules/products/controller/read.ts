@@ -24,6 +24,7 @@ class ProductRead {
             req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
+        const totalDocument = await ProductModel.estimatedDocumentCount()
 
         const query: Record<string, any> = {
             ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
@@ -46,7 +47,8 @@ class ProductRead {
 
         ResponseService.sendResponse(res, 202, true, {
             products: products.map((product) => new AdminProductDto(product)),
-            pages: Math.ceil(1 / originalLimit),
+            pages: Math.ceil(totalDocument / originalLimit),
+            page:originalPage
         });
     }
 
@@ -56,19 +58,16 @@ class ProductRead {
         next: NextFunction,
     ) {
         const { id } = req.params;
-        const isProductExists = await ProductModel.find(
-            { _id: id as any },
-            "FINDONE",
-        );
-        if (!isProductExists) {
+        const product = await ProductModel.findOne({ _id: id });
+        if (!product) {
             return next(new ErrorResponse("product not found", 404));
         }
         const sections = await ProductPriceSectionModel.find({
-            product_id: id,
+            _id: { $in: product.sections },
         });
         const defaultPriceAttribute =
             await ProductDefaultPriceAttributModel.findOne({
-                product_id: id,
+                _id: product.default_attribute,
             });
 
         ResponseService.sendResponse(res, 200, true, {

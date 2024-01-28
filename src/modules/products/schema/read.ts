@@ -1,11 +1,17 @@
 import { z, TypeOf } from "zod";
-import { ProductIdSchema} from "./main";
+import { ProductIdSchema } from "./main";
 import { StatusEnum } from "@/modules/schema";
 
 export const GetProductsSchema = z.object({
     name: z.string().optional(),
-    limit: z.number().optional(),
-    page: z.number().optional(),
+    page: z
+        .string()
+        .transform((data) => parseInt(data))
+        .optional(),
+    limit: z
+        .string()
+        .transform((data) => parseInt(data))
+        .optional(),
     min: z
         .string()
         .refine((value) => !isNaN(parseInt(value)), {

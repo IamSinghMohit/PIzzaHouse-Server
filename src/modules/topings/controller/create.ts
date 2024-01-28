@@ -17,13 +17,13 @@ class TopingsCreate {
         next: NextFunction,
     ) {
         if (!req.file?.buffer) {
-            return next(new ErrorResponse("Image is required", 402));
+            return next(new ErrorResponse("Image is required", 422));
         }
         const { name, category_id, price, status } = req.body;
         const isExist = await TopingModel.findOne({ name });
 
         if (isExist) {
-            return next(new ErrorResponse("product already exist", 403));
+            return next(new ErrorResponse("toping already exist", 403));
         }
         const category = await CategoryModel.findOne({ _id: category_id });
 
