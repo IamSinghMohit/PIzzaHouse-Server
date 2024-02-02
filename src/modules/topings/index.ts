@@ -21,6 +21,11 @@ router.patch("/admin",
     TopingValidator.updateToping,
     TopingController.updateToping
 )
+router.delete("/admin/:id",
+    TopingValidator.deleteToping,
+    TopingController.deleteToping
+)
+
 router.get('/category/:category',
     TopingValidator.GetTopingWithCategory,
     TopingController.getWithCategory,

@@ -5,7 +5,7 @@ const errorHandler = (
     err: any,
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
 ) => {
     console.log(err);
     let error = { ...err };
@@ -43,6 +43,11 @@ const errorHandler = (
 
     if (err === "jwt-unathorized") {
         const message = "Invalid Token";
+        error = new ErrorResponse(message, 404);
+    }
+
+    if (err === "MongoServerError") {
+        const message = "something went wrong";
         error = new ErrorResponse(message, 404);
     }
 

@@ -1,11 +1,11 @@
-import { UserType } from "../models/user.model";
+import { TUser } from "../models/user.model";
 class UserDto {
     id;
     first_name;
     last_name;
     avatar;
 
-    constructor(user: UserType) {
+    constructor(user: TUser ) {
         this.id = user._id;
         this.first_name = user.first_name;
         this.last_name = user.last_name ;

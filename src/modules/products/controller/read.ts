@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import {
+    TGetCursorPaginatedProducts,
     TGetFromatedProductsSchema,
     TGetProductPriceSectionSchema,
     TGetProductSchema,
@@ -24,7 +25,7 @@ class ProductRead {
             req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
-        const totalDocument = await ProductModel.estimatedDocumentCount()
+        const totalDocument = await ProductModel.estimatedDocumentCount();
 
         const query: Record<string, any> = {
             ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
@@ -48,7 +49,7 @@ class ProductRead {
         ResponseService.sendResponse(res, 202, true, {
             products: products.map((product) => new AdminProductDto(product)),
             pages: Math.ceil(totalDocument / originalLimit),
-            page:originalPage
+            page: originalPage,
         });
     }
 
@@ -157,6 +158,40 @@ class ProductRead {
         ResponseService.sendResponse(res, 200, true, {
             max_price: (product?.price || 0) + 10,
         });
+    }
+
+    static async CursorPaginated(
+        req: Request<{}, {}, {}, TGetCursorPaginatedProducts>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        const { category, min, max, limit, name, cursor } = req.query;
+
+        const originalLimit = limit || 5;
+        const categories = category?.split(",").map((id) => id.trim()) || [];
+
+        const query: Record<string, any> = {
+            ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
+            ...(categories.length > 0 ? { category: { $in: categories } } : {}),
+            ...(cursor ? { _id: { $gt: cursor } } : {}),
+        };
+
+        if (min && max) {
+            query.price = { $gte: min, $lte: max };
+        } else if (min) {
+            query.price = { $gte: min };
+        } else if (max) {
+            query.price = { $lte: max };
+        }
+
+        const products = await ProductModel.find(query).limit(originalLimit);
+
+        ResponseService.sendResponse(
+            res,
+            202,
+            true,
+            products.map((pro) => new BaseProductDto(pro)),
+        );
     }
 }
 export default ProductRead;

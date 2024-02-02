@@ -39,6 +39,11 @@ router.get(
     ProductValidator.getFromatedProducts,
     ProductController.getFromatedProducts,
 );
+router.get(
+    "/",
+    ProductValidator.getCursorPaginatedProducts,
+    ProductController.getCursorPaginatedProducts,
+);
 router.get("/stats", ProductController.getProductStats);
 
 router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);

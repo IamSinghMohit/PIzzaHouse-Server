@@ -5,24 +5,12 @@ import CategoryDelete from "./delete";
 import CategoryUpdate from "./update";
 
 class CategoryController {
-    private static controllerWrapper = asyncHandler;
-    static createCategory = CategoryController.controllerWrapper(
-        CategoryCreate.createCategory
-    );
-    static getCategories = CategoryController.controllerWrapper(
-        CategoryRead.getCategories
-    );
-    static deleteCategory = CategoryController.controllerWrapper(
-        CategoryDelete.deleteCategory
-    );
-    static searchCategory = CategoryController.controllerWrapper(
-        CategoryRead.searchCategory
-    );
-    static updateCategory = CategoryController.controllerWrapper(
-        CategoryUpdate.category
-    );
-    static getSections = CategoryController.controllerWrapper(
-        CategoryRead.getSections
-    );
+    private static wrapper = asyncHandler;
+    static createCategory = this.wrapper(CategoryCreate.createCategory);
+    static getCategories = this.wrapper(CategoryRead.getCategories);
+    static deleteCategory = this.wrapper(CategoryDelete.deleteCategory);
+    static searchCategory = this.wrapper(CategoryRead.searchCategory);
+    static updateCategory = this.wrapper(CategoryUpdate.category);
+    static getSections = this.wrapper(CategoryRead.getSections);
 }
 export default CategoryController;

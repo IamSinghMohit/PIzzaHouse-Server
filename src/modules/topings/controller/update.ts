@@ -17,6 +17,7 @@ class TopingUpdate {
         next: NextFunction,
     ) {
         const { id, name, price, status } = req.body;
+        console.log(req.body)
         const toping = await TopingModel.findOne({ _id: id });
         if (!toping) {
             return next(new ErrorResponse("toping not found", 404));

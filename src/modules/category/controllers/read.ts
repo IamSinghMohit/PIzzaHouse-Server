@@ -18,16 +18,18 @@ class CategoryRead {
         next: NextFunction,
     ) {
         const totalDocument = await CategoryService.count();
-        const { limit, name ,page} = req.query;
-        const originalLimit = limit || 10
-        const originalPage = page || 1
+        const { limit, name, page } = req.query;
+        const originalLimit = limit || 10;
+        const originalPage = page || 1;
 
-        const categories = await CategoryModel.find(
-            { ...(name ? { name: new RegExp(name, "i") } : {}) },
-        ).limit(originalLimit).skip((originalPage - 1) * originalLimit)
+        const categories = await CategoryModel.find({
+            ...(name ? { name: new RegExp(name, "i") } : {}),
+        })
+            .limit(originalLimit)
+            .skip((originalPage - 1) * originalLimit);
 
         ResponseService.sendResponse(res, 202, true, {
-            page:originalPage,
+            page: originalPage,
             pages: Math.ceil(totalDocument / originalLimit),
             categories: categories.map((cat) => new AdminCategoryDto(cat)), // don't mess up here, this must remain unchanged
         });
@@ -38,11 +40,17 @@ class CategoryRead {
         res: Response,
         next: NextFunction,
     ) {
-        const categories = await CategoryService.searchCategory(
-            req.query.name,
-            req.query.limit,
-            req.query.cursor,
-        );
+        const { cursor, name, limit } = req.query;
+
+        const categories = await CategoryModel.find({
+            name: {
+                $regex: new RegExp(name, "i"),
+            },
+            ...(cursor ? { _id: { $lt: cursor } } : {}),
+        })
+            .sort({ _id: -1 })
+            .limit(limit)
+
         ResponseService.sendResponse(
             res,
             200,

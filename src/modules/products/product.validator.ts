@@ -1,6 +1,7 @@
 import { CreateProductSchema } from "./schema/create";
 import Validator from "@/utils/validatorWrapper.";
 import {
+    GetCursorPaginatedProducts,
     GetFormatedProductsSchema,
     GetProductPriceSectionSchema,
     GetProductSchema,
@@ -52,5 +53,6 @@ class ProductValidator {
         },
     );
     static getProduct = Validator.ReqParams(GetProductSchema);
+    static getCursorPaginatedProducts = Validator.ReqQuery(GetCursorPaginatedProducts)
 }
 export default ProductValidator;

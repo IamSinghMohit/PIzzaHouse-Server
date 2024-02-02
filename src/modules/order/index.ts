@@ -2,11 +2,13 @@ import express from "express";
 import OrderController from "./controller";
 import OrderValidator from "./orderValiator";
 import { ResponseService } from "@/services";
+import { Validator } from "@/middlewares";
 const router = express.Router();
 
 router.post(
     "/create",
     OrderValidator.create,
+    Validator.authenticate,
     OrderController.create,
 );
 router.post(

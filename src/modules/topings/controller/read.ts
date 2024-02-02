@@ -40,8 +40,7 @@ class TopingRead {
         ResponseService.sendResponse(res, 202, true, {
             topings: topings.map((product) => new AdminTopingDto(product)),
             pages: Math.ceil(totalDocuments / originalLimit),
-            // page:originalPage
-            page: 1,
+            page:originalPage
         });
     }
 

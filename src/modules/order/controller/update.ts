@@ -1,11 +1,11 @@
-import RedisClient from "@/redis";
 import { NextFunction, Request, Response } from "express";
 import Stripe from "stripe";
 import { OrderModel } from "../model/order";
-import { ErrorResponse } from "@/utils";
 import { TOrderObject } from "../schema/main";
 import { OrderDetailsModel } from "../model/orderDetails";
 import { EventEmitter } from "@/eventEmitter";
+import { CartModel } from "@/modules/auth/models/cart.model";
+import mongoose from "mongoose";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 class OrderUpdate {
@@ -28,20 +28,61 @@ class OrderUpdate {
 
         // Handle the event
         switch (event.type) {
-            case "payment_intent.payment_failed":
-                const paymentIntentPaymentFailed = event.data.object;
-                break;
             case "payment_intent.succeeded":
                 const paymentIntentSucceeded = event.data.object;
-                const OrderObject = (await RedisClient.get(
-                    paymentIntentSucceeded.metadata.order_redis_key,
-                ).then((res) => JSON.parse(res || "") || null)) as TOrderObject;
-                console.log(OrderObject);
-                if (!OrderObject) {
-                    return;
+
+                const order =
+                    paymentIntentSucceeded.metadata as unknown as TOrderObject;
+                const topings = JSON.parse(
+                    paymentIntentSucceeded.metadata.toping,
+                );
+                const product_sections = JSON.parse(
+                    paymentIntentSucceeded.metadata.product_sections,
+                );
+
+                const session = await mongoose.startSession();
+                session.startTransaction();
+                try {
+                    const orderDetails = await OrderDetailsModel.create(
+                        [
+                            {
+                                toping: topings,
+                                product_sections: product_sections,
+                                product_name: order.product_name,
+                            },
+                        ],
+                        { session },
+                    );
+                    const newOrder = await OrderModel.create(
+                        [
+                            {
+                                order_details: orderDetails[0]._id,
+                                price: order.price,
+                                user_full_name: order.user_full_name,
+                                image: order.image,
+                                address: order.address,
+                                city: order.city,
+                                state: order.state,
+                                quantity: order.quantity,
+                                status: order.status,
+                            },
+                        ],
+                        { session },
+                    );
+                    await CartModel.updateOne(
+                        {
+                            user_id: order.user_id,
+                        },
+                        { $push: { orders_ids: newOrder[0]._id } },
+                    ).session(session);
+
+                    await session.commitTransaction();
+                } catch (error) {
+                    await session.abortTransaction();
+                } finally {
+                    await session.endSession();
                 }
-                await OrderModel.create(OrderObject.order);
-                await OrderDetailsModel.create(OrderObject.order_detail);
+
                 break;
             default:
                 console.log(`Unhandled event type ${event.type}`);
@@ -50,12 +91,12 @@ class OrderUpdate {
         res.send();
     }
     static async orderStatus(req: Request, res: Response, next: NextFunction) {
-        console.log(req.body)
+        console.log(req.body);
         EventEmitter.emit("update_status", {
             roomId: req.params.id,
-            data:req.body,
+            data: req.body,
         });
-        res.send()
+        res.send();
     }
 }
 export default OrderUpdate;

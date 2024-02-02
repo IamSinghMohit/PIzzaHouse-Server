@@ -1,9 +1,9 @@
 import { LoginSchema, SigninSchema } from "@/modules/auth/schema/auth.schema";
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
-import { UserType } from "@/modules/auth/models/user.model";
+import { TUser } from "@/modules/auth/models/user.model";
 
-class Validate {
+class Validator {
     static async signin(req: Request, res: Response, next: NextFunction) {
         try {
             await SigninSchema.parseAsync(req.body);
@@ -22,7 +22,7 @@ class Validate {
         }
     }
 
-    static async passport(req: Request, res: Response, next: NextFunction) {
+    static async authenticate(req: Request, res: Response, next: NextFunction) {
         passport.authenticate("jwt", { session: false })(req, res, next);
     }
 
@@ -30,7 +30,7 @@ class Validate {
         passport.authenticate(
             "jwt",
             { session: false },
-            (err: Error, user: UserType) => {
+            (err: Error, user: TUser) => {
                 if (!user || user.role !== "admin") {
                     // User not authenticated, handle accordingly
                     return res.status(401).json({ message: "Unauthorized" });
@@ -38,8 +38,8 @@ class Validate {
                 // User is authenticated, you can access user data with req.user
                 req.user = user;
                 return next();
-            }
+            },
         )(req, res, next);
     }
 }
-export default Validate;
+export default Validator ;

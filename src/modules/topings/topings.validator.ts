@@ -5,6 +5,7 @@ import {
     GetTopingWithCategorySchema,
 } from "./schema/read";
 import { UpdateTopingSchema } from "./schema/update";
+import { DeleteTopingSchema } from "./schema/delete";
 
 class TopingValidator {
     static createToping = Validator.ReqBody(CreateTopingSchema);
@@ -13,5 +14,6 @@ class TopingValidator {
     );
     static getAllTopings = Validator.ReqQuery(GetAllTopingsSchema);
     static updateToping = Validator.ReqBody(UpdateTopingSchema)
+    static deleteToping = Validator.ReqParams(DeleteTopingSchema)
 }
 export default TopingValidator;

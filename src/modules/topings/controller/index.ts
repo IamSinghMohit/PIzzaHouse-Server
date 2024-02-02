@@ -5,19 +5,13 @@ import TopingDelete from "./delete";
 import TopingUpdate from "./update";
 
 class TopingController {
-    static ControllerWrapper = asyncHandler;
+    private static wrapper = asyncHandler;
 
-    static create = TopingController.ControllerWrapper(TopingsCreate.toping);
-    static getWithCategory = TopingController.ControllerWrapper(
-        TopingRead.TopingWithCategory,
-    );
-    static getAllTopings = TopingController.ControllerWrapper(
-        TopingRead.AllToping
-    )
-    static deleteToping = TopingController.ControllerWrapper(
-        TopingDelete.toping,
-    );
-    static getStats = TopingController.ControllerWrapper(TopingRead.stats);
-    static updateToping = TopingController.ControllerWrapper(TopingUpdate.toping)
+    static create = this.wrapper(TopingsCreate.toping);
+    static getWithCategory = this.wrapper(TopingRead.TopingWithCategory);
+    static getAllTopings = this.wrapper(TopingRead.AllToping);
+    static deleteToping = this.wrapper(TopingDelete.toping);
+    static getStats = this.wrapper(TopingRead.stats);
+    static updateToping = this.wrapper(TopingUpdate.toping);
 }
 export default TopingController;

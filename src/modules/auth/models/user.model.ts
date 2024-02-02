@@ -30,6 +30,8 @@ import { UserRole } from "../schema/auth.schema";
     },
 })
 class User {
+    _id:string;
+
     @prop({ required: true, type: String })
     first_name: string;
 
@@ -60,7 +62,7 @@ class User {
 
 export const UserModel = getModelForClass(User);
 
-export type UserType = Pick<
+export type TUser = Pick<
     DocumentType<User>,
     | "avatar"
     | "email"

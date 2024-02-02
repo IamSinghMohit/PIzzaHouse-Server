@@ -28,4 +28,3 @@ class OrderDetails {
 }
 export default OrderDetails;
 export const OrderDetailsModel = getModelForClass(OrderDetails)
-// export type TOrderDetails = Pick<DocumentType<typeof OrderDetails>,"_id" | "product_name">

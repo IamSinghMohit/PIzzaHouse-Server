@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { TDeleteTopingSchema } from "../schema/delete";
-import TopingService from "../topings.service";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
+import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
+import { TopingModel } from "../topings.model";
 
 class TopingDelete {
     static async toping(
@@ -11,17 +12,20 @@ class TopingDelete {
         next: NextFunction,
     ) {
         const id = req.params.id;
-        const isExist = await TopingService.findToping({ _id: id }, "FINDONE");
-        if (!isExist) {
-            next(new ErrorResponse("Toping not found", 404));
+        const toping = await TopingModel.findOne({ _id: id });
+        if (!toping ) {
+            return next(new ErrorResponse("Toping not found", 404));
         }
-        await TopingService.delete({ _id: id });
+        await TopingModel.deleteOne({_id:toping._id})
         ResponseService.sendResponse(
             res,
             200,
             true,
             "Toping deleted successfully",
         );
+        await AddToDeleteImageQueue({
+            tag:`topingId:${toping._id}`
+        })
     }
 }
 export default TopingDelete;

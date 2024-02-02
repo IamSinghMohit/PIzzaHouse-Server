@@ -51,3 +51,28 @@ export const GetProductPriceSectionSchema = ProductIdSchema;
 export type TGetProductPriceSectionSchema = TypeOf<
     typeof GetProductPriceSectionSchema
 >;
+
+export const GetCursorPaginatedProducts = z.object({
+    name: z.string().optional(),
+    limit: z
+        .string()
+        .transform((data) => parseInt(data))
+        .optional(),
+    min: z
+        .string()
+        .refine((value) => !isNaN(parseInt(value)), {
+            message: "min must be a valid number",
+        })
+        .transform((value) => parseInt(value))
+        .optional(),
+    max: z
+        .string()
+        .refine((value) => !isNaN(parseInt(value)), {
+            message: "max must be a valid number",
+        })
+        .transform((value) => parseInt(value))
+        .optional(),
+    category: z.string().optional(),
+    cursor: z.string().optional(),
+});
+export type TGetCursorPaginatedProducts = TypeOf<typeof GetCursorPaginatedProducts>

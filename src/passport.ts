@@ -6,6 +6,7 @@ import UserDto from "./modules/auth/dto/user.dto";
 import ErrorResponse from "./utils/error-response";
 import { UserModel } from "./modules/auth/models/user.model";
 import { IdJwtResponse } from "./modules/auth/schema/jwt.schema";
+import { CartModel } from "./modules/auth/models/cart.model";
 const JWTStrategy = passportJWT.Strategy;
 const GoogleStrategy = PassportGoogle.Strategy;
 
@@ -64,6 +65,7 @@ passport.use(
             let user = await UserModel.findOne({ email: defaultUser.email });
             if (!user) {
                 user = await UserModel.create(defaultUser);
+                await CartModel.create({ user_id: user._id, orders_ids: [] });
             }
             return cb(null, new UserDto(user));
         },

@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import { IdJwtInput, IdJwtResponse } from "./schema/jwt.schema";
 import { RefreshModel } from "./models/refresh.model";
 import { asyncHandler } from "@/middlewares";
+import { CartModel } from "./models/cart.model";
+import mongoose from "mongoose";
 
 const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET || "lksjjdflksd";
 const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET || "233kk3elk2";
@@ -41,16 +43,30 @@ class AuthController {
             if (isExist) {
                 return next(new ErrorResponse("Email already exists", 403));
             }
-            const user = await UserModel.create(req.body);
-            const { refreshToken, accessToken } = this.generateTokens({
-                id: user._id,
-            });
+            const session = await mongoose.startSession();
+            session.startTransaction()
+            try {
 
-            ResponseService.sendCookiesAsTokens(res, {
-                accessToken,
-                refreshToken,
-            });
-            ResponseService.sendResponse(res, 201, true, new UserDto(user));
+                const user = await UserModel.create(req.body);
+                const { refreshToken, accessToken } = this.generateTokens({
+                    id: user._id,
+                });
+                await CartModel.create({
+                    user_id: user._id,
+                    orders_ids: [],
+                });
+                ResponseService.sendCookiesAsTokens(res, {
+                    accessToken,
+                    refreshToken,
+                });
+                ResponseService.sendResponse(res, 201, true, new UserDto(user));
+
+            } catch (error) {
+                await session.abortTransaction();
+                next(error);
+            } finally {
+                await session.endSession();
+            }
         },
     );
 

@@ -2,7 +2,6 @@ import {
     getModelForClass,
     prop,
     modelOptions,
-    DocumentType,
 } from "@typegoose/typegoose";
 import { OrderStatusEnum } from "../schema/main";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
@@ -40,5 +39,8 @@ export class Order extends TimeStamps {
 
     @prop({ required: true, enum: OrderStatusEnum, default: "placed" })
     status: OrderStatusEnum;
+
+    @prop({ required: true, type: String })
+    order_details:string;
 }
 export const OrderModel = getModelForClass(Order);
