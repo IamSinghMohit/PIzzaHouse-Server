@@ -1,10 +1,11 @@
 import { z, TypeOf } from "zod";
-import { TopingCategorySchema } from "./main";
+import { TopingCategorySchema, TopingNameSchema } from "./main";
 import { StatusEnum } from "@/modules/schema";
 
 export const GetTopingWithCategorySchema = z
     .object({})
     .merge(TopingCategorySchema);
+
 export const GetAllTopingsSchema = z.object({
     name: z.string().optional(),
     page: z

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { LoginType, SigninType } from "./schema/auth.schema";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import UserDto from "./dto/user.dto";
@@ -10,9 +9,10 @@ import { RefreshModel } from "./models/refresh.model";
 import { asyncHandler } from "@/middlewares";
 import { CartModel } from "./models/cart.model";
 import mongoose from "mongoose";
+import { TLoginSchema, TSigninSchema } from "./schema/auth.schema";
 
-const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET || "lksjjdflksd";
-const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET || "233kk3elk2";
+const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET!;
+const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET!;
 
 class AuthController {
     private static wrapper = asyncHandler;
@@ -26,28 +26,32 @@ class AuthController {
             expiresIn: "1h",
         });
         const refreshToken = jwt.sign(payload, refreshTokenSecret, {
-            expiresIn: "15d",
+            expiresIn: "7d",
         });
         return { accessToken, refreshToken };
     }
 
     static signin = this.wrapper(
         async (
-            req: Request<{}, {}, SigninType>,
+            req: Request<{}, {}, TSigninSchema>,
             res: Response,
             next: NextFunction,
         ) => {
-            const { email } = req.body;
+            const { email, password, first_name, last_name } = req.body;
             const isExist = await UserModel.findOne({ email });
 
             if (isExist) {
                 return next(new ErrorResponse("Email already exists", 403));
             }
             const session = await mongoose.startSession();
-            session.startTransaction()
+            session.startTransaction();
             try {
-
-                const user = await UserModel.create(req.body);
+                const user = await UserModel.create({
+                    email,
+                    password,
+                    first_name,
+                    last_name,
+                });
                 const { refreshToken, accessToken } = this.generateTokens({
                     id: user._id,
                 });
@@ -55,12 +59,15 @@ class AuthController {
                     user_id: user._id,
                     orders_ids: [],
                 });
+                await RefreshModel.create({
+                    user_id: user._id,
+                    token: refreshToken,
+                });
                 ResponseService.sendCookiesAsTokens(res, {
                     accessToken,
                     refreshToken,
                 });
                 ResponseService.sendResponse(res, 201, true, new UserDto(user));
-
             } catch (error) {
                 await session.abortTransaction();
                 next(error);
@@ -72,7 +79,7 @@ class AuthController {
 
     static login = this.wrapper(
         async (
-            req: Request<{}, {}, LoginType>,
+            req: Request<{}, {}, TLoginSchema>,
             res: Response,
             next: NextFunction,
         ) => {
@@ -119,26 +126,25 @@ class AuthController {
 
             // Check if token is in db
             const token = await RefreshModel.findOne({
-                user_id: userData._id,
-                token: refreshTokenFromCookie,
+                user_id: userData.id
             });
 
             if (!token) {
-                res.redirect("/auth/logout");
+                return res.redirect("/auth/logout");
             }
 
             // check if valid user
             const validateUser = await UserModel.findOne({
-                _id: userData._id,
+                _id: userData.id,
             });
 
             if (!validateUser) {
-                return next(new ErrorResponse("User doesh not exist", 404));
+                return next(new ErrorResponse("User does not exist", 404));
             }
 
             // Generate new tokens
             const { refreshToken, accessToken } = this.generateTokens({
-                id: userData._id,
+                id: userData.id,
             });
             // Update refresh token
 
@@ -167,13 +173,20 @@ class AuthController {
     }
 
     static google = this.wrapper(async (req: Request, res: Response) => {
+        const user = req.user as UserDto;
+        console.log(req.user);
         const { refreshToken, accessToken } = this.generateTokens({
-            //@ts-ignore
-            id: req.user.id,
+            id: user.id,
         });
+        await RefreshModel.findOneAndUpdate(
+            { user_id: user.id },
+            { token: refreshToken, user_id: user.id }, // Use $set to update the token field
+            { upsert: true },
+        );
         ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });
         res.redirect("http://localhost:3000");
     });
+
     static async logout(_req: Request, res: Response) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");

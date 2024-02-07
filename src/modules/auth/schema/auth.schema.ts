@@ -18,5 +18,5 @@ export const LoginSchema = z.object({
     email: z.string().email("Invalid email format"),
     password: z.string().nonempty("Password is required"),
 });
-export type SigninType = TypeOf<typeof SigninSchema>;
-export type LoginType = TypeOf<typeof LoginSchema>;
+export type TSigninSchema = TypeOf<typeof SigninSchema>;
+export type TLoginSchema = TypeOf<typeof LoginSchema>;

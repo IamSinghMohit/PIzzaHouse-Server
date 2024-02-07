@@ -55,14 +55,15 @@ passport.use(
             cb: PassportGoogle.VerifyCallback,
         ) => {
             const defaultUser = {
-                first_name: profile._json.name,
-                last_name: profile._json.familyName || "",
                 email: profile._json.email,
                 avatar: profile._json.picture,
-                googleId: profile._json.id,
+                first_name:profile._json.name
             };
+
             /* LOGING HERE  */
-            let user = await UserModel.findOne({ email: defaultUser.email });
+            let user = await UserModel.findOne({
+                email: defaultUser.email,
+            });
             if (!user) {
                 user = await UserModel.create(defaultUser);
                 await CartModel.create({ user_id: user._id, orders_ids: [] });

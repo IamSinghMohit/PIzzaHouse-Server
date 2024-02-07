@@ -19,7 +19,7 @@ class ProductRead {
     static async products(
         req: Request<{}, {}, {}, TGetProductsSchema>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const { category, status, min, max, featured, name, limit, page } =
             req.query;
@@ -56,7 +56,7 @@ class ProductRead {
     static async productPriceSection(
         req: Request<TGetProductPriceSectionSchema, {}, {}, {}>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const { id } = req.params;
         const product = await ProductModel.findOne({ _id: id });
@@ -80,7 +80,7 @@ class ProductRead {
     static async fromatedProducts(
         req: Request<{}, {}, {}, TGetFromatedProductsSchema>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const productLimit = req.query.productLimit || 4;
         const categoryLimit = req.query.categoryLimit || 4;
@@ -132,7 +132,7 @@ class ProductRead {
     static async product(
         req: Request<TGetProductSchema>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const product = await ProductModel.findOne({ _id: req.params.id });
         if (product) {
@@ -140,7 +140,7 @@ class ProductRead {
                 res,
                 200,
                 true,
-                new BaseProductDto(product),
+                new BaseProductDto(product)
             );
         } else {
             return next(new ErrorResponse("Product does not exist", 404));
@@ -150,7 +150,7 @@ class ProductRead {
     static async stats(
         req: Request<TGetProductSchema>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const product = await ProductModel.findOne({})
             .sort({ price: -1 })
@@ -163,17 +163,30 @@ class ProductRead {
     static async CursorPaginated(
         req: Request<{}, {}, {}, TGetCursorPaginatedProducts>,
         res: Response,
-        next: NextFunction,
+        next: NextFunction
     ) {
         const { category, min, max, limit, name, cursor } = req.query;
+        console.log(req.query);
 
-        const originalLimit = limit || 5;
-        const categories = category?.split(",").map((id) => id.trim()) || [];
+        const originalLimit = limit || 10;
+        let categories: string[] = [];
+
+        if (category && category.length > 0) {
+            categories = category?.split(",").map((id) => id.trim());
+        }
 
         const query: Record<string, any> = {
-            ...(name ? { name: { $regex: new RegExp(name, "i") } } : {}),
-            ...(categories.length > 0 ? { category: { $in: categories } } : {}),
+            ...(name
+                ? {
+                      name: {
+                          $regex: new RegExp(name, "i"),
+                      },
+                  }
+                : {}),
             ...(cursor ? { _id: { $gt: cursor } } : {}),
+            ...(categories?.length > 0
+                ? { category: { $in: categories } }
+                : {}),
         };
 
         if (min && max) {
@@ -183,14 +196,14 @@ class ProductRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-
+        console.log(query);
         const products = await ProductModel.find(query).limit(originalLimit);
 
         ResponseService.sendResponse(
             res,
             202,
             true,
-            products.map((pro) => new BaseProductDto(pro)),
+            products.map((pro) => new BaseProductDto(pro))
         );
     }
 }
