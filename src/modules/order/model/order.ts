@@ -39,8 +39,5 @@ export class Order extends TimeStamps {
 
     @prop({ required: true, enum: OrderStatusEnum, default: "placed" })
     status: OrderStatusEnum;
-
-    @prop({ required: true, type: String })
-    order_details:string;
 }
 export const OrderModel = getModelForClass(Order);

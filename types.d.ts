@@ -5,6 +5,7 @@ declare namespace NodeJS {
         MONGODB_URL: string;
         CLIENT_ID: string;
         CLIENT_SECRET: string;
+        FRONTEND_URL: string;
         REDIS_URL: string;
         PORT: string;
         CLOUDINARY_CLOUD_NAME: string;

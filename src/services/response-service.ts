@@ -16,9 +16,6 @@ class ResponseService {
         });
     }
 
-    static async sendResWithData(res: Response, status: number, data: any) {
-        res.status(status).json(data);
-    }
 
     static async sendResponse<
         T extends boolean,

@@ -84,7 +84,7 @@ class ProductUpdate {
                             attributes: sec.attributes,
                         });
                         arr.push(patt._id.toString());
-                        await patt.save({ session });
+                        patt.save({ session });
                     }),
                 );
                 product.sections = arr;

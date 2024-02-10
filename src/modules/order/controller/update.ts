@@ -1,16 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import Stripe from "stripe";
-import { OrderModel } from "../model/order";
-import { TOrderObject } from "../schema/main";
-import { OrderDetailsModel } from "../model/orderDetails";
 import { EventEmitter } from "@/eventEmitter";
+import { DeleteJobFromDeleteOrderQueue } from "@/queue/deleteOrderQueue";
 import { CartModel } from "@/modules/auth/models/cart.model";
-import mongoose from "mongoose";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
+type WebhookMeta = {
+    orderIds: string[];
+    queueJobId: string;
+    userId: string;
+};
+type StripeWebhookMeta = {
+    orderIds: string;
+    queueJobId: string;
+    userId: string;
+};
 class OrderUpdate {
     static async OrderWebhook(req: Request, res: Response, next: NextFunction) {
-        const sig = req.headers["stripe-signature"] as string;
+        const sig = req.headers["stripe-signature"]!;
 
         let event;
 
@@ -18,72 +25,30 @@ class OrderUpdate {
             event = stripe.webhooks.constructEvent(
                 req.body,
                 sig,
-                process.env.STRIPE_WEBHOOK_SECRET || "",
+                process.env.STRIPE_WEBHOOK_SECRET!,
             );
         } catch (err: any) {
             res.status(400).send(`Webhook Error: ${err.message}`);
-            console.log(err);
             return;
         }
 
         // Handle the event
         switch (event.type) {
-            case "payment_intent.succeeded":
-                const paymentIntentSucceeded = event.data.object;
-
-                const order =
-                    paymentIntentSucceeded.metadata as unknown as TOrderObject;
-                const topings = JSON.parse(
-                    paymentIntentSucceeded.metadata.toping,
+            case "checkout.session.completed":
+                const checkoutSessionCompleted = event.data.object
+                    .metadata as StripeWebhookMeta;
+                const meta: WebhookMeta = {
+                    orderIds: JSON.parse(checkoutSessionCompleted.orderIds),
+                    queueJobId: checkoutSessionCompleted.queueJobId,
+                    userId: checkoutSessionCompleted.userId,
+                };
+                await DeleteJobFromDeleteOrderQueue(meta.queueJobId);
+                await CartModel.findOneAndUpdate(
+                    { user_id: meta.userId },
+                    { $push: { orders_ids: { $each: meta.orderIds } } }, // Using $push with $each to push multiple items
                 );
-                const product_sections = JSON.parse(
-                    paymentIntentSucceeded.metadata.product_sections,
-                );
-
-                const session = await mongoose.startSession();
-                session.startTransaction();
-                try {
-                    const orderDetails = await OrderDetailsModel.create(
-                        [
-                            {
-                                toping: topings,
-                                product_sections: product_sections,
-                                product_name: order.product_name,
-                            },
-                        ],
-                        { session },
-                    );
-                    const newOrder = await OrderModel.create(
-                        [
-                            {
-                                order_details: orderDetails[0]._id,
-                                price: order.price,
-                                user_full_name: order.user_full_name,
-                                image: order.image,
-                                address: order.address,
-                                city: order.city,
-                                state: order.state,
-                                quantity: order.quantity,
-                                status: order.status,
-                            },
-                        ],
-                        { session },
-                    );
-                    await CartModel.updateOne(
-                        {
-                            user_id: order.user_id,
-                        },
-                        { $push: { orders_ids: newOrder[0]._id } },
-                    ).session(session);
-
-                    await session.commitTransaction();
-                } catch (error) {
-                    await session.abortTransaction();
-                } finally {
-                    await session.endSession();
-                }
-
                 break;
+            // ... handle other event types
             default:
                 console.log(`Unhandled event type ${event.type}`);
         }

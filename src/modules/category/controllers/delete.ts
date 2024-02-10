@@ -22,20 +22,20 @@ class CategoryDelete {
         if (!category) {
             return new ErrorResponse("category not found", 404);
         }
-        await Promise.allSettled([
-            await CategoryModel.deleteOne({
+        await Promise.all([
+            CategoryModel.deleteOne({
                 _id: category._id,
             }),
-            await ProductModel.deleteMany({
+            ProductModel.deleteMany({
                 category: category.name,
             }),
-            await ProductDefaultPriceAttributModel.deleteOne({
+            ProductDefaultPriceAttributModel.deleteOne({
                 category: category.name,
             }),
-            await ProductPriceSectionModel.deleteMany({
+            ProductPriceSectionModel.deleteMany({
                 category: category.name,
             }),
-            await TopingModel.deleteMany({
+            TopingModel.deleteMany({
                 category: category.name,
             }),
         ]);

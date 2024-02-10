@@ -34,16 +34,16 @@ export const ProductImageQueueWorker =
                 processedImage,
             );
             await Promise.all([
-                await ImageService.addTag(`categoryId:${categoryId}`, [
+                ImageService.addTag(`categoryId:${categoryId}`, [
                     result.public_id,
                 ]),
-                await ImageService.addTag(`productId:${productId}`, [
+                ImageService.addTag(`productId:${productId}`, [
                     result.public_id,
                 ]),
             ]);
             await ProductModel.findOneAndUpdate(
                 { _id: productId },
-                { image: result.url },
+                { image: result.public_id },
             );
         },
         {

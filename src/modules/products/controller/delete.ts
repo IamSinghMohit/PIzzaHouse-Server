@@ -17,13 +17,13 @@ class ProductDelete {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            Promise.all([
-                await ProductModel.deleteOne({ _id: id }, { session }),
-                await ProductPriceSectionModel.deleteMany(
+            await Promise.all([
+                ProductModel.deleteOne({ _id: id }, { session }),
+                ProductPriceSectionModel.deleteMany(
                     { product_id: id },
                     { session },
                 ),
-                await ProductDefaultPriceAttributModel.deleteOne(
+                ProductDefaultPriceAttributModel.deleteOne(
                     {
                         product_id: id,
                     },

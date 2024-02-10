@@ -2,7 +2,6 @@ import { z, TypeOf } from "zod";
 
 export enum OrderStatusEnum {
     PLACED = "placed",
-    CONFIRMED = "confirmed",
     PREPARING = "preparing",
     OUTFORDELIVERY = "out for delivery",
     COMPLETED = "completed",
@@ -20,7 +19,7 @@ export const OrderProductNameSchema = z.object({
     product_name: z.string(),
 });
 
-export const OrderProductSectiosSchema = z.object({
+export const OrderProductSectionsSchema = z.object({
     product_sections: z.array(
         z.object({
             name: z.string().min(1),

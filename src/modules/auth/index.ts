@@ -2,6 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 import { asyncHandler, Validator } from "@/middlewares";
 import AuthController from "./auth.controller";
+import CartController from "./cart.controller";
 
 const router = Router();
 
@@ -29,4 +30,5 @@ router.get("/refresh", AuthController.refresh);
 
 router.get("/me", Validator.authenticate, AuthController.me);
 
+router.get('/cart',Validator.authenticate,CartController.getProducts)
 export default router;

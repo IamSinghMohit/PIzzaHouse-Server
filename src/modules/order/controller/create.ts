@@ -1,17 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import { TCreateOrderSchema } from "../schema/create";
-import { ErrorResponse } from "@/utils";
-import {
-    OrderStatusEnum,
-    TOrderTopingSchema,
-} from "../schema/main";
-import { ResponseService } from "@/services";
-import { TopingModel } from "@/modules/topings/topings.model";
-import { ProductModel } from "@/modules/products/models/product.model";
-import { ProductPriceSectionModel } from "@/modules/products/models/productPriceSection.model.ts";
-import { TOrderProductSections } from "../model/orderDetails";
 import Stripe from "stripe";
-import { TUser } from "@/modules/auth/models/user.model";
+import { ResponseService } from "@/services";
+import { OrderModel } from "../model/order";
+import { OrderStatusEnum } from "../schema/main";
+import cloudinary from "@/helper/cloudinary";
+import {
+    AddToOrderImageUploadQueue,
+    TOrderImageUplaodQueuePayload,
+} from "@/queue/orderImageUpload.queue";
+import { AddToDeleteOrderQueue } from "@/queue/deleteOrderQueue";
+import UserDto from "@/modules/auth/dto/user.dto";
+import { v4 as uuidV4 } from "uuid";
+import mongoose from "mongoose";
 
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
@@ -21,95 +22,110 @@ class OrderCreate {
         res: Response,
         next: NextFunction,
     ) {
-        const {
-            topings,
-            product_id,
-            product_sections,
-            quantity,
-            address,
-            city,
-            state,
-        } = req.body;
+        const { products, address, city, state } = req.body;
+        const user = req.user as UserDto;
 
-        let originalPrice = 0;
-        const user = req.user as TUser;
+        const lineItems = products.map((pro) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: pro.name,
+                    images: [cloudinary.url(pro.image)],
+                },
+                unit_amount: Math.round(pro.price * 100),
+            },
+            quantity: pro.quantity,
+        }));
 
-        const product = await ProductModel.findOne({ _id: product_id });
-        if (!product) {
-            return next(new ErrorResponse("Product not found", 404));
-        }
+        const jobId = uuidV4();
+        const imageArrayWithOrderIds: TOrderImageUplaodQueuePayload = [];
+        const orderIds = [];
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const orders = await OrderModel.create(
+                products.map((pro) => {
+                    return {
+                        user_full_name: `${user.first_name} ${user.last_name}`,
+                        city,
+                        state,
+                        image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                        price: pro.price,
+                        quantity: pro.quantity,
+                        status: OrderStatusEnum.PLACED,
+                        address,
+                    };
+                }),
+                { session },
+            );
 
-        const modifiedProductSections: TOrderProductSections = [];
-
-        if (product.sections.length > 0) {
-            const fetchedProductSections = await ProductPriceSectionModel.find({
-                _id: { $in: product.sections },
-            });
-
-            product_sections.forEach((sec) => {
-                const section = fetchedProductSections.find(
-                    (item) => item.name == sec.name,
-                );
-                console.log(section);
-                section?.attributes.forEach((att) => {
-                    if (att.name === sec.attribute) {
-                        modifiedProductSections.push({
-                            name: sec.name,
-                            attribute: att.name,
-                            value: att.value,
-                        });
-                        originalPrice += att.value;
-                    }
+            for (let i = 0; i < products.length; i++) {
+                imageArrayWithOrderIds.push({
+                    orderId: orders[i]._id,
+                    image: products[i].image,
                 });
-            });
-        }
-
-        const TopingArray: TOrderTopingSchema["topings"] = [];
-        if (topings.length > 0) {
-            const fetchedTopings = await TopingModel.find({
-                _id: { $in: topings },
-            });
-
-            if (fetchedTopings.length < topings.length) {
-                return next(new ErrorResponse("invalid topings", 422));
+                orderIds.push(orders[i]._id);
             }
 
-            fetchedTopings.forEach((toping) => {
-                originalPrice += toping.price;
 
-                TopingArray.push({
-                    name: toping.name,
-                    price: toping.price,
-                    image: toping.image,
-                });
+            const stripeSessoin = await stripe.checkout.sessions.create({
+                customer_email:user.email,
+                payment_method_types: ["card"],
+                shipping_address_collection: {
+                    allowed_countries: ["IN"],
+                },
+                line_items: lineItems as any,
+                mode: "payment",
+                success_url: process.env.FRONTEND_URL,
+                cancel_url: process.env.FRONTEND_URL,
+                metadata: {
+                    orderIds: JSON.stringify(orderIds),
+                    userId: user.id,
+                    queueJobId: jobId,
+                },
+                shipping_options: [
+                    {
+                        shipping_rate_data: {
+                            type: "fixed_amount",
+                            fixed_amount: {
+                                amount: 1000,
+                                currency: "inr",
+                            },
+                            display_name: "Next day air",
+                            delivery_estimate: {
+                                minimum: {
+                                    unit: "business_day",
+                                    value: 1,
+                                },
+                                maximum: {
+                                    unit: "business_day",
+                                    value: 1,
+                                },
+                            },
+                        },
+                    },
+                ],
             });
+            ResponseService.sendResponse(res, 200, true, stripeSessoin.id);
+            await session.commitTransaction();
+
+            await Promise.all([
+                AddToOrderImageUploadQueue(imageArrayWithOrderIds),
+                AddToDeleteOrderQueue({
+                    orderIds: orderIds,
+                    sessionId: stripeSessoin.id,
+                    jobId,
+                }),
+            ]);
+        } catch (error) {
+            await session.abortTransaction();
+            ResponseService.sendResponse(res,400,false,{
+                code:400,
+                message:'something went wrong'
+            })
+        } finally {
+            await session.endSession();
         }
-
-
-        const paymentIntent = await stripe.paymentIntents.create({
-            currency: "inr",
-            amount: originalPrice * 100,
-            payment_method_types: ["card"],
-            metadata: {
-                price: originalPrice,
-                status: OrderStatusEnum.PLACED,
-                user_full_name:`${user.first_name} ${user.last_name}`,
-                user_id:user._id,
-                image: product.image,
-                address: address,
-                quantity: quantity,
-                city: city,
-                state: state,
-                product_name: product.name,
-                toping: JSON.stringify(TopingArray),
-                product_sections: JSON.stringify(modifiedProductSections),
-            },
-        });
-
-        ResponseService.sendResponse(res, 200, true, {
-            client_secret: paymentIntent.client_secret,
-            total_price: originalPrice * quantity,
-        });
     }
 }
 export default OrderCreate;

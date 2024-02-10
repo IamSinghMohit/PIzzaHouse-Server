@@ -32,16 +32,16 @@ export const TopingImageUploadQueueWorker =
                 processedImage,
             );
             await Promise.all([
-                await ImageService.addTag(`categoryId:${categoryId}`, [
+                ImageService.addTag(`categoryId:${categoryId}`, [
                     result.public_id,
                 ]),
-                await ImageService.addTag(`topingId:${topingId}`, [
+                ImageService.addTag(`topingId:${topingId}`, [
                     result.public_id,
                 ]),
             ]);
             await TopingModel.findOneAndUpdate(
                 { _id: topingId },
-                { image: result.url },
+                { image: result.public_id },
             );
         },
         {

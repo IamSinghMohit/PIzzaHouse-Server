@@ -39,7 +39,7 @@ export const CategoryImageUploadQueueWorker =
                 ]);
                 await CategoryModel.findOneAndUpdate(
                     { _id: categoryId },
-                    { image: result.url },
+                    { image: result.public_id },
                 );
             } catch (error) {
                 console.log(error);
