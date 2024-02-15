@@ -1,4 +1,10 @@
-import { DocumentType, getModelForClass, prop } from "@typegoose/typegoose";
+import { Order } from "@/modules/order/model/order";
+import {
+    DocumentType,
+    Ref,
+    getModelForClass,
+    prop,
+} from "@typegoose/typegoose";
 
 class Cart {
     _id: string;
@@ -6,8 +12,8 @@ class Cart {
     @prop({ required: true, type: String })
     user_id: string;
 
-    @prop({ type: [String], default: [] })
-    orders_ids: string[];
+    @prop({ ref: () => Order })
+    orders_ids: Ref<Order>[];
 }
 
 export const CartModel = getModelForClass(Cart);

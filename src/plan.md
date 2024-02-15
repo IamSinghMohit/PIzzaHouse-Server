@@ -1,4 +1,4 @@
-1.configure the cart model to use reference instead of order_id
-2.specify the name field in the order model
-
+1.rename the order_ids to just orders inside cart model
+2. uncomment verykey option in ordertopingmodel 
+3. add order description in order model
 

@@ -4,10 +4,12 @@ import { QueueEnum } from "./types";
 import { OrderModel } from "@/modules/order/model/order";
 import { ImageService } from "@/services";
 import Stripe from "stripe";
+import { OrderTopingModel } from "@/modules/order/model/orderTopings";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 export type TDeleteOrderQueuePayload = {
     orderIds: string[];
+    orderTopingsIds: string[];
     sessionId: string;
     jobId: string;
 };
@@ -20,13 +22,27 @@ export const DeleteOrderQueueWorker = new Worker<TDeleteOrderQueuePayload>(
     QueueEnum.DELETE_ORDER_QUEUE,
     async (job) => {
         try {
-            await OrderModel.deleteMany({ _id: { $in: job.data.orderIds } });
-            await Promise.all(
-                job.data.orderIds.map((id) => {
+            console.log("inside delete order queue");
+            await Promise.allSettled([
+                OrderModel.deleteMany({
+                    _id: { $in: job.data.orderIds },
+                }),
+                ...job.data.orderIds.map((id) => {
                     return ImageService.deleteUsingTag(`orderId:${id}`);
                 }),
-            );
-            await stripe.checkout.sessions.expire(job.data.sessionId);
+                stripe.checkout.sessions.expire(job.data.sessionId),
+
+                OrderTopingModel.deleteMany({
+                    _id: { $in: job.data.orderTopingsIds },
+                }),
+                Promise.all(
+                    job.data.orderIds.map((id) => {
+                        return ImageService.deleteUsingTag(
+                            `orderTopingId:${id}`,
+                        );
+                    }),
+                ),
+            ]);
         } catch (error) {
             console.log(error);
         }

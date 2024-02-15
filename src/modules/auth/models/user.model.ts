@@ -41,6 +41,9 @@ class User {
     @prop({ unique: true, required: true, type: String })
     email: string;
 
+    @prop({ required: false, type: String, unique: true })
+    google_Id: string;
+
     @prop({ required: false, type: String })
     avatar: string;
 
@@ -67,5 +70,6 @@ export type TUser = Pick<
     | "role"
     | "first_name"
     | "last_name"
+    | "google_Id"
     | "_id"
 >;

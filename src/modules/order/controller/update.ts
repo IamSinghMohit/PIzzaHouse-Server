@@ -3,6 +3,10 @@ import Stripe from "stripe";
 import { EventEmitter } from "@/eventEmitter";
 import { DeleteJobFromDeleteOrderQueue } from "@/queue/deleteOrderQueue";
 import { CartModel } from "@/modules/auth/models/cart.model";
+import { OrderModel } from "../model/order";
+import { ResponseService } from "@/services";
+import {  TOrderStatusSchema } from "../schema/update";
+import { TOrderParamIdSchema } from "../schema/main";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 type WebhookMeta = {
@@ -55,13 +59,24 @@ class OrderUpdate {
 
         res.send();
     }
-    static async orderStatus(req: Request, res: Response, next: NextFunction) {
-        console.log(req.body);
+    static async orderStatus(
+        req: Request<TOrderParamIdSchema, {}, TOrderStatusSchema, {}>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        await OrderModel.findOneAndUpdate(
+            {
+                _id: req.params.id,
+            },
+            {
+                status: req.body.status,
+            },
+        );
         EventEmitter.emit("update_status", {
             roomId: req.params.id,
             data: req.body,
         });
-        res.send();
+        ResponseService.sendResponse(res, 200, true, "updated successfully");
     }
 }
 export default OrderUpdate;

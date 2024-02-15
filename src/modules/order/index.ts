@@ -24,8 +24,13 @@ router.get("/stripe-publish-key", async (req, res) => {
         process.env.STRIPE_PUBLISHABLE_KEY,
     );
 });
-router.get("/admin",OrderController.getOrdersForAdmin)
-router.get("/:id",OrderController.getOrder)
-router.patch("/:id",OrderController.upateOrderStatus)
+router.get("/admin", OrderController.getOrdersForAdmin);
+router.get("/:id", OrderValidator.getOrder, OrderController.getOrder);
+router.patch(
+    "/:id",
+    OrderValidator.paramId,
+    OrderValidator.status,
+    OrderController.upateOrderStatus,
+);
 
 export default router;

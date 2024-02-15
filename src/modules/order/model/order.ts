@@ -2,9 +2,11 @@ import {
     getModelForClass,
     prop,
     modelOptions,
+    Ref,
 } from "@typegoose/typegoose";
 import { OrderStatusEnum } from "../schema/main";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { OrderTopings } from "./orderTopings";
 
 @modelOptions({
     options: { allowMixed: 0 },
@@ -17,6 +19,9 @@ export class Order extends TimeStamps {
     _id: string;
 
     @prop({ required: true, type: String })
+    name: string;
+
+    @prop({ required: true, type: String })
     user_full_name: string;
 
     @prop({ required: true, type: String })
@@ -24,6 +29,9 @@ export class Order extends TimeStamps {
 
     @prop({ required: true, type: String })
     address: string;
+
+    @prop({ required: true, type: String })
+    description: string;
 
     @prop({ required: true, type: String })
     city: string;
@@ -39,5 +47,8 @@ export class Order extends TimeStamps {
 
     @prop({ required: true, enum: OrderStatusEnum, default: "placed" })
     status: OrderStatusEnum;
+
+    @prop({ required: true, ref:() => OrderTopings})
+    order_topings:Ref<OrderTopings>[]
 }
 export const OrderModel = getModelForClass(Order);

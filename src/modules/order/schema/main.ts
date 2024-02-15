@@ -39,27 +39,8 @@ export const OrderTopingSchema = z.object({
     ),
 });
 
-export type TOrderTopingSchema = TypeOf<typeof OrderTopingSchema>;
+export const OrderParamIdSchema = z.object({
+    id: z.string(),
+});
 
-export type TOrderObject = {
-    price: number;
-    status: string;
-    user_full_name: string;
-    address: string;
-    image: string;
-    user_id:string;
-    quantity: number;
-    city: string;
-    state: string;
-    product_name: string;
-    toping: {
-        price: number;
-        name: string;
-        image: string;
-    }[]
-    product_sections: {
-        name: string;
-        attribute: string;
-        value: number;
-    }[];
-};
+export type TOrderParamIdSchema = TypeOf<typeof OrderParamIdSchema>;

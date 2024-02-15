@@ -3,6 +3,7 @@ import passport from "passport";
 import { asyncHandler, Validator } from "@/middlewares";
 import AuthController from "./auth.controller";
 import CartController from "./cart.controller";
+import CartValidator from "./cartValidator";
 
 const router = Router();
 
@@ -30,5 +31,11 @@ router.get("/refresh", AuthController.refresh);
 
 router.get("/me", Validator.authenticate, AuthController.me);
 
-router.get('/cart',Validator.authenticate,CartController.getProducts)
+router.get("/cart", Validator.authenticate, CartController.getProducts);
+router.delete(
+    "/cart/:id",
+    Validator.authenticate,
+    CartValidator.deleteItem,
+    CartController.deleteItem,
+);
 export default router;

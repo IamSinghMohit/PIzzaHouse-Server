@@ -168,8 +168,8 @@ class AuthController {
     );
 
     static me(req: Request, res: Response, next: NextFunction) {
-        // @ts-ignore
-        ResponseService.sendResponse(res, 200, true, req.user);
+        const user = req.user as UserDto
+        ResponseService.sendResponse(res, 200, true, user);
     }
 
     static google = this.wrapper(async (req: Request, res: Response) => {
