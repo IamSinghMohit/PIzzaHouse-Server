@@ -32,7 +32,7 @@ import { UserRole } from "../schema/auth.schema";
 class User {
     _id: string;
 
-    @prop({ required: false, type: String })
+    @prop({ required: true, type: String })
     first_name: string;
 
     @prop({ required: false, type: String })
@@ -40,9 +40,6 @@ class User {
 
     @prop({ unique: true, required: true, type: String })
     email: string;
-
-    @prop({ required: false, type: String, unique: true })
-    google_Id: string;
 
     @prop({ required: false, type: String })
     avatar: string;
@@ -70,6 +67,5 @@ export type TUser = Pick<
     | "role"
     | "first_name"
     | "last_name"
-    | "google_Id"
     | "_id"
 >;

@@ -6,7 +6,9 @@ import {
 } from "./main";
 
 const schema = z
-    .object({})
+    .object({
+        categories: z.array(z.string()),
+    })
     .merge(TopingNameSchema)
     .merge(TopingPriceSchema)
     .merge(TopingStatusSchema)
@@ -14,7 +16,7 @@ const schema = z
 
 export const UpdateTopingSchema = z
     .object({
-        id: z.string().min(2),
+        id: z.string().nonempty(),
     })
     .merge(schema);
 

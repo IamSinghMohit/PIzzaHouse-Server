@@ -1,5 +1,5 @@
 import { ErrorResponse } from "@/utils";
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { Request, Response, NextFunction} from "express";
 
 const errorHandler = (
     err: any,

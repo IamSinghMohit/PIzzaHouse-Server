@@ -51,6 +51,7 @@ class AuthController {
                     password,
                     first_name,
                     last_name,
+                    avatar: "",
                 });
                 const { refreshToken, accessToken } = this.generateTokens({
                     id: user._id,
@@ -126,7 +127,7 @@ class AuthController {
 
             // Check if token is in db
             const token = await RefreshModel.findOne({
-                user_id: userData.id
+                user_id: userData.id,
             });
 
             if (!token) {
@@ -168,7 +169,7 @@ class AuthController {
     );
 
     static me(req: Request, res: Response, next: NextFunction) {
-        const user = req.user as UserDto
+        const user = req.user as UserDto;
         ResponseService.sendResponse(res, 200, true, user);
     }
 

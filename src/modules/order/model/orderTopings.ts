@@ -1,13 +1,13 @@
 import { getModelForClass, prop, modelOptions } from "@typegoose/typegoose";
 
-// @modelOptions({
-//     schemaOptions: {
-//         versionKey: false,
-//         timestamps: false,
-//     },
-// });
+@modelOptions({
+    schemaOptions: {
+        versionKey: false,
+        timestamps: false,
+    },
+})
 export class OrderTopings {
-    _id:string;
+    _id: string;
 
     @prop({ type: String, required: true })
     name: string;

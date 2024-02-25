@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import TopingService from "../topings.service";
 import { ResponseService } from "@/services";
 import {
     TGetAllTopingsSchema,
@@ -13,7 +12,6 @@ class TopingRead {
     static async AllToping(
         req: Request<{}, {}, {}, TGetAllTopingsSchema>,
         res: Response,
-        next: NextFunction
     ) {
         const { category, status, min, max, name, limit, page } = req.query;
         const originalLimit = limit || 10;
@@ -47,10 +45,9 @@ class TopingRead {
     static async TopingWithCategory(
         req: Request<TGetTopingWithCategorySchema>,
         res: Response,
-        next: NextFunction
     ) {
         let topings = await TopingModel.find({
-            category: req.params.category,
+            categories: req.params.category,
         });
         if (topings.length <= 0) {
             topings = await TopingModel.find({}).limit(10);
@@ -59,14 +56,13 @@ class TopingRead {
             res,
             200,
             true,
-            topings?.map((toping) => new BaseTopingDto(toping))
+            topings?.map((toping) => new BaseTopingDto(toping)),
         );
     }
 
     static async stats(
         req: Request<TGetTopingWithCategorySchema>,
         res: Response,
-        next: NextFunction
     ) {
         const toping = await TopingModel.findOne().sort({ price: -1 }).limit(1);
         ResponseService.sendResponse(res, 200, true, {

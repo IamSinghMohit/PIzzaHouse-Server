@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-    TopingCategorySchema,
     TopingNameSchema,
     TopingPriceSchema,
     TopingStatusSchema,
@@ -8,7 +7,7 @@ import {
 
 export const CreateTopingSchema = z
     .object({
-        category_id: z.string().min(2),
+        categories:z.array(z.string())
     })
     .merge(TopingNameSchema)
     .merge(TopingPriceSchema)

@@ -45,8 +45,7 @@ class OrderRead {
             true,
             new BaseOrderDto(
                 order,
-                // @ts-ignore
-                order.order_topings.map((top) => new OrderTopingDto(top)),
+                order.order_topings.map((top) => new OrderTopingDto(top as OrderTopings)),
             ),
         );
     }

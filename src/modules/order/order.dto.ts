@@ -10,6 +10,7 @@ class OrderDto {
     status;
     state;
     city;
+    description;
     created_at;
     updated_at;
     constructor(order: Order) {
@@ -20,6 +21,7 @@ class OrderDto {
         this.address = order.address;
         this.quantity = order.quantity;
         this.state = order.state;
+        this.description = order.description;
         this.city = order.city;
         this.price = order.price;
         this.created_at = order.createdAt;

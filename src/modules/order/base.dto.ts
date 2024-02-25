@@ -19,16 +19,18 @@ export class BaseOrderDto {
     image;
     price;
     quantity;
+    description;
     name;
     topings;
     status;
-    constructor(order: Order,toping:OrderTopings) {
+    constructor(order: Order,toping:OrderTopingDto[]) {
         this.id = order._id;
         this.price = order.price;
         this.status = order.status;
         this.name = order.name;
         this.quantity = order.quantity;
         this.image = order.image;
+        this.description = order.description;
         this.topings = toping;
     }
 }

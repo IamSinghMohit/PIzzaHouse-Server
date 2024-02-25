@@ -57,7 +57,8 @@ passport.use(
             const defaultUser = {
                 email: profile._json.email,
                 avatar: profile._json.picture,
-                first_name:profile._json.name
+                first_name: profile._json.name,
+                last_name: "",
             };
 
             /* LOGING HERE  */

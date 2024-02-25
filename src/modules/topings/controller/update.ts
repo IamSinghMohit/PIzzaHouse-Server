@@ -16,18 +16,21 @@ class TopingUpdate {
         res: Response,
         next: NextFunction,
     ) {
-        const { id, name, price, status } = req.body;
-        console.log(req.body)
+        const { id, name, price, status, categories } = req.body;
         const toping = await TopingModel.findOne({ _id: id });
         if (!toping) {
             return next(new ErrorResponse("toping not found", 404));
         }
 
-        const category = await CategoryModel.findOne({
-            name: toping.category,
-        });
-        if (!category) {
-            return next(new ErrorResponse("category not found", 404));
+        if (categories) {
+            const fetchedCategories = await CategoryModel.find({
+                name: { $in: categories },
+            }).select("name");
+
+            if (fetchedCategories.length !== categories.length) {
+                return next(new ErrorResponse("category not found", 404));
+            }
+            if (categories) toping.categories = categories;
         }
 
         if (name) toping.name = name;
@@ -54,7 +57,6 @@ class TopingUpdate {
         await RedisClient.set(key, req.file.buffer);
         await AddToTopingImageUploadQueue({
             topingId: toping._id,
-            categoryId: category._id,
             topingBufferRedisKey: key,
         });
     }

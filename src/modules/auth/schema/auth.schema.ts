@@ -4,15 +4,10 @@ export enum UserRole {
     NORMAL = "normal",
 }
 export const SigninSchema = z.object({
-    first_name: z.string().optional(),
-    last_name: z.string().optional(),
+    first_name: z.string().nonempty("first_name is required"),
+    last_name: z.string().nonempty("first_name is required"),
     email: z.string().email("Invalid email format"),
-    password: z.string(),
-    role: z
-        .enum([UserRole.ADMIN, UserRole.NORMAL], {
-            errorMap: () => ({ message: "enum is not valid" }),
-        })
-        .optional(),
+    password: z.string().nonempty("Password is required"),
 });
 export const LoginSchema = z.object({
     email: z.string().email("Invalid email format"),

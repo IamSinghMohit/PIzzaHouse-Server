@@ -1,13 +1,12 @@
 import { Queue, Worker } from "bullmq";
-import { QueueEnum ,TRedisBufferKey} from "./types";
+import { QueueEnum, TRedisBufferKey } from "./types";
 import RedisClient from "@/redis";
 import { ImageService } from "@/services";
 import { TopingModel } from "@/modules/topings/topings.model";
 
 type TTopingImageQueuePayload = {
-    topingBufferRedisKey:TRedisBufferKey;
+    topingBufferRedisKey: TRedisBufferKey;
     topingId: string;
-    categoryId: string;
 };
 
 const TopingImageUploadQueue = new Queue(QueueEnum.TOPING_IMAGE_UPLOAD_QUEUE, {
@@ -20,7 +19,7 @@ export const TopingImageUploadQueueWorker =
         async (payload) => {
             console.log(payload.data);
 
-            const { topingId, topingBufferRedisKey, categoryId } = payload.data;
+            const { topingId, topingBufferRedisKey } = payload.data;
             const buffer = await RedisClient.getBuffer(topingBufferRedisKey);
             const processedImage = await ImageService.compressImageToBuffer(
                 buffer!,
@@ -32,12 +31,7 @@ export const TopingImageUploadQueueWorker =
                 processedImage,
             );
             await Promise.all([
-                ImageService.addTag(`categoryId:${categoryId}`, [
-                    result.public_id,
-                ]),
-                ImageService.addTag(`topingId:${topingId}`, [
-                    result.public_id,
-                ]),
+                ImageService.addTag(`topingId:${topingId}`, [result.public_id]),
             ]);
             await TopingModel.findOneAndUpdate(
                 { _id: topingId },

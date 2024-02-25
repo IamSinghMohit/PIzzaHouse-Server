@@ -14,7 +14,10 @@ import UserDto from "@/modules/auth/dto/user.dto";
 import { v4 as uuidV4 } from "uuid";
 import mongoose from "mongoose";
 import { OrderTopingModel } from "../model/orderTopings";
-import { AddToOrderTopingImageUploadQueue, TOrderTopingImageUplaodQueuePayload } from "@/queue/orderTopingImageUpload.queue";
+import {
+    AddToOrderTopingImageUploadQueue,
+    TOrderTopingImageUplaodQueuePayload,
+} from "@/queue/orderTopingImageUpload.queue";
 
 type TLineItem = {
     price_data: {
@@ -35,7 +38,7 @@ class OrderCreate {
         res: Response,
         next: NextFunction,
     ) {
-        const { products, } = req.body;
+        const { products } = req.body;
         const user = req.user as UserDto;
 
         const lineItems: TLineItem = [];
@@ -86,17 +89,19 @@ class OrderCreate {
                     return OrderModel.create(
                         [
                             {
-                                user_full_name: `${user.first_name} ${user.last_name}`,
+                                user_full_name: `${user.first_name} ${
+                                    user.last_name || ""
+                                }`,
                                 name: pro.name,
-                                city:'sd',
-                                state:'slkd',
+                                city: "sd",
+                                state: "slkd",
                                 image: process.env
                                     .CLOUDINARY_PLACEHOLDER_IMAGE_URL,
                                 price: pro.price,
-                                description:pro.description,
+                                description: pro.description,
                                 quantity: pro.quantity,
                                 status: OrderStatusEnum.PLACED,
-                                address:'lskd',
+                                address: "lskd",
                                 order_topings: tids,
                             },
                         ],
@@ -168,7 +173,7 @@ class OrderCreate {
                 }),
             ]);
         } catch (error) {
-            console.log(error)
+            console.log(error);
             await session.abortTransaction();
             ResponseService.sendResponse(res, 400, false, {
                 code: 400,
