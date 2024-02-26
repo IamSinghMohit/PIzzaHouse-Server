@@ -17,16 +17,21 @@ class CategoryRead {
         res: Response,
         next: NextFunction,
     ) {
-        const totalDocument = await CategoryService.count();
         const { limit, name, page } = req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
 
-        const categories = await CategoryModel.find({
+        const query = {
             ...(name ? { name: new RegExp(name, "i") } : {}),
-        })
-            .limit(originalLimit)
-            .skip((originalPage - 1) * originalLimit);
+        };
+        const result = await Promise.all([
+            CategoryModel.find(query)
+                .limit(originalLimit)
+                .skip((originalPage - 1) * originalLimit),
+
+            CategoryModel.find(query).countDocuments(),
+        ]);
+        const [categories, totalDocument] = result;
 
         ResponseService.sendResponse(res, 202, true, {
             page: originalPage,
@@ -49,7 +54,7 @@ class CategoryRead {
             ...(cursor ? { _id: { $lt: cursor } } : {}),
         })
             .sort({ _id: -1 })
-            .limit(limit)
+            .limit(limit);
 
         ResponseService.sendResponse(
             res,

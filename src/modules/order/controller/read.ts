@@ -17,14 +17,19 @@ class OrderRead {
         const { limit, page } = req.query;
         const originalLimit = limit || 10;
         const originalPage = page || 1;
-        const totalDocument = await OrderModel.estimatedDocumentCount();
 
-        const orders = await OrderModel.find({
+        const query = {
             status: { $ne: OrderStatusEnum.COMPLETED },
-        })
-            .limit(originalLimit)
-            .skip((originalPage - 1) * originalLimit);
+        };
 
+        const result = await Promise.all([
+            OrderModel.find(query)
+                .limit(originalLimit)
+                .skip((originalPage - 1) * originalLimit),
+            OrderModel.find(query).countDocuments(),
+        ]);
+
+        const [orders, totalDocument] = result;
         ResponseService.sendResponse(res, 200, true, {
             orders: orders.map((order) => new OrderDto(order)),
             pages: Math.ceil(totalDocument / originalLimit),
@@ -45,7 +50,9 @@ class OrderRead {
             true,
             new BaseOrderDto(
                 order,
-                order.order_topings.map((top) => new OrderTopingDto(top as OrderTopings)),
+                order.order_topings.map(
+                    (top) => new OrderTopingDto(top as OrderTopings),
+                ),
             ),
         );
     }

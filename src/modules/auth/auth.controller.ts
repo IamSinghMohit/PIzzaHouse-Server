@@ -46,29 +46,50 @@ class AuthController {
             const session = await mongoose.startSession();
             session.startTransaction();
             try {
-                const user = await UserModel.create({
-                    email,
-                    password,
-                    first_name,
-                    last_name,
-                    avatar: "",
-                });
+                const user = await UserModel.create(
+                    [
+                        {
+                            email,
+                            password,
+                            first_name,
+                            last_name,
+                            avatar: "",
+                        },
+                    ],
+                    { session },
+                );
                 const { refreshToken, accessToken } = this.generateTokens({
-                    id: user._id,
+                    id: user[0]._id,
                 });
-                await CartModel.create({
-                    user_id: user._id,
-                    orders_ids: [],
-                });
-                await RefreshModel.create({
-                    user_id: user._id,
-                    token: refreshToken,
-                });
+                await CartModel.create(
+                    [
+                        {
+                            user_id: user[0]._id,
+                            orders_ids: [],
+                        },
+                    ],
+                    { session },
+                );
+                await RefreshModel.create(
+                    [
+                        {
+                            user_id: user[0]._id,
+                            token: refreshToken,
+                        },
+                    ],
+                    { session },
+                );
+                await session.commitTransaction();
                 ResponseService.sendCookiesAsTokens(res, {
                     accessToken,
                     refreshToken,
                 });
-                ResponseService.sendResponse(res, 201, true, new UserDto(user));
+                ResponseService.sendResponse(
+                    res,
+                    201,
+                    true,
+                    new UserDto(user[0]),
+                );
             } catch (error) {
                 await session.abortTransaction();
                 next(error);
@@ -181,7 +202,7 @@ class AuthController {
         });
         await RefreshModel.findOneAndUpdate(
             { user_id: user.id },
-            { token: refreshToken, user_id: user.id }, // Use $set to update the token field
+            { token: refreshToken, user_id: user.id }, 
             { upsert: true },
         );
         ResponseService.sendCookiesAsTokens(res, { accessToken, refreshToken });

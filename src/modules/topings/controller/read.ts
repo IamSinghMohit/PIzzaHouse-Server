@@ -22,7 +22,6 @@ class TopingRead {
             ...(category ? { category } : {}),
             ...(status ? { status } : {}),
         };
-        const totalDocuments = await TopingModel.estimatedDocumentCount();
 
         if (min && max) {
             query.price = { $gte: min, $lte: max };
@@ -31,10 +30,13 @@ class TopingRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-        const topings = await TopingModel.find(query)
-            .skip((originalPage - 1) * originalLimit)
-            .limit(originalLimit);
-
+        const result = await Promise.all([
+            TopingModel.find(query)
+                .skip((originalPage - 1) * originalLimit)
+                .limit(originalLimit),
+            TopingModel.find(query).countDocuments(),
+        ]);
+        const [topings, totalDocuments] = result;
         ResponseService.sendResponse(res, 202, true, {
             topings: topings.map((product) => new AdminTopingDto(product)),
             pages: Math.ceil(totalDocuments / originalLimit),
