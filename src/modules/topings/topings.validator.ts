@@ -21,7 +21,9 @@ class TopingValidator {
     static updateToping = Validator.ReqBody(UpdateTopingSchema, (req) => {
         return {
             ...req.body,
-            categories: JSON.parse(req.body.categories_json),
+            ...(req.body.categories_json
+                ? { categories: JSON.parse(req.body.categories_json) }
+                : {}),
         };
     });
     static deleteToping = Validator.ReqParams(DeleteTopingSchema);

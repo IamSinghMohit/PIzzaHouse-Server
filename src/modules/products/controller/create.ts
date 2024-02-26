@@ -64,7 +64,7 @@ class ProductCreate {
                         attributes: attributes,
                     });
                     ProductSectionIdArray.push(patt._id.toString());
-                    patt.save({ session });
+                    patt.save({session});
                 }),
             );
 
