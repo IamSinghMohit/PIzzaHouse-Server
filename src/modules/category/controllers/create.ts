@@ -3,9 +3,7 @@ import { TCreateCategorySchema } from "../schema/create";
 import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import AdminCategoryDto from "../dto/category/admin";
-import {
-    AddToCategoryImageUploadQueue,
-} from "@/queue/categoryImageUpload.queue";
+import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
 import { CategoryModel } from "../models/category.model";
 import mongoose from "mongoose";
 import RedisClient from "@/redis";
@@ -20,6 +18,10 @@ class CategoryCreate {
     ) {
         const { name, sections } = req.body;
 
+        if (!req.file || !req.file.buffer) {
+            return next(new ErrorResponse("image is required", 422));
+        }
+
         const isExist = await CategoryModel.findOne({
             name: { $regex: new RegExp(name, "i") },
         });
@@ -27,34 +29,35 @@ class CategoryCreate {
         if (isExist) {
             return next(new ErrorResponse("Category already exist", 403));
         }
-        if (!req.file?.buffer) {
-            return next(new ErrorResponse("Image required", 403));
-        }
 
         const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await session.withTransaction(async () => {
+
             const category = new CategoryModel({
                 name,
                 image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
             });
-            const SectionIdArray: string[] = [];
-            await Promise.all(
-                sections.map(({ name, attributes }) => {
-                    const section = new CategoryPriceSectionModel({
-                        category_id: category.id,
-                        name,
-                        attributes: attributes,
-                    });
 
-                    SectionIdArray.push(section._id);
-                    section.save({ session });
-                }),
-            );
-            category.sections = SectionIdArray;
+            const sectionsToInsert = sections.map(({ name, attributes }) => ({
+                category_id: category.id,
+                name,
+                attributes: attributes,
+            }));
+            const insertedSections =
+                await CategoryPriceSectionModel.insertMany(sectionsToInsert,{session});
 
+            category.sections = insertedSections.map((sec) => sec._id);
             const CatResult = await category.save({ session });
-            await session.commitTransaction();
+
+            const key: TRedisBufferKey = `categoryId:${category._id}:buffer`;
+
+            await Promise.all([
+                RedisClient.set(key, req.file!.buffer),
+                AddToCategoryImageUploadQueue({
+                    categoryBufferRedisKey: key,
+                    categoryId: category._id,
+                }),
+            ]);
 
             ResponseService.sendResponse(
                 res,
@@ -62,19 +65,9 @@ class CategoryCreate {
                 true,
                 new AdminCategoryDto(CatResult),
             );
+        });
 
-            const key:TRedisBufferKey = `categoryId:${category._id}:buffer`;
-            await RedisClient.set(key, req.file.buffer);
-            await AddToCategoryImageUploadQueue({
-                categoryBufferRedisKey: key,
-                categoryId: category._id,
-            });
-        } catch (error) {
-            await session.abortTransaction();
-            next(error);
-        } finally {
-            await session.endSession();
-        }
+        await session.endSession()
     }
 }
 export default CategoryCreate;

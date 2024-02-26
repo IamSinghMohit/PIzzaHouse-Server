@@ -41,12 +41,6 @@ class TopingsCreate {
             image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!,
         });
 
-        ResponseService.sendResponse(
-            res,
-            202,
-            true,
-            new AdminTopingDto(toping),
-        );
         const key: TRedisBufferKey = `topingId:${toping._id}:buffer`;
 
         await Promise.all([
@@ -56,6 +50,14 @@ class TopingsCreate {
                 topingId: toping._id,
             }),
         ]);
+
+        ResponseService.sendResponse(
+            res,
+            202,
+            true,
+            new AdminTopingDto(toping),
+        );
+
     }
 }
 export default TopingsCreate;

@@ -21,23 +21,23 @@ export class Order extends TimeStamps {
     @prop({ required: true, type: String })
     name: string;
 
-    @prop({ required: true, type: String })
-    user_full_name: string;
+    @prop({ required: false, type: String })
+    user_full_name?: string;
 
     @prop({ required: true, type: String })
     image: string;
 
-    @prop({ required: true, type: String })
-    address: string;
+    @prop({ required: false, type: String })
+    address?: string;
 
     @prop({ required: true, type: String })
     description: string;
 
-    @prop({ required: true, type: String })
-    city: string;
+    @prop({ required: false, type: String })
+    city?: string;
 
-    @prop({ required: true, type: String })
-    state: string;
+    @prop({ required: false, type: String })
+    state?: string;
 
     @prop({ required: true, type: Number })
     price: number;

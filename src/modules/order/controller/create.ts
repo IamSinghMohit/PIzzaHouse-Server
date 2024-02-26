@@ -24,12 +24,13 @@ type TLineItem = {
         currency: string;
         product_data: {
             name: string;
-            images: string[]; // Array of image URLs
+            images: string[];
         };
         unit_amount: number;
     };
     quantity: number;
 }[];
+
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 class OrderCreate {
@@ -41,85 +42,83 @@ class OrderCreate {
         const { products } = req.body;
         const user = req.user as UserDto;
 
-        const lineItems: TLineItem = [];
-        products.forEach((pro) => {
-            lineItems.push({
-                price_data: {
-                    currency: "inr",
-                    product_data: {
-                        name: pro.name,
-                        images: [cloudinary.url(pro.image)],
-                    },
-                    unit_amount: pro.price * 100,
+        const lineItems: TLineItem = products.map((pro) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: pro.name,
+                    images: [cloudinary.url(pro.image)],
                 },
-                quantity: pro.quantity,
-            });
-        });
+                unit_amount: pro.price * 100,
+            },
+            quantity: pro.quantity,
+        }));
 
         const jobId = uuidV4();
+        // these are for image upload queue
         const imageArrayWithOrderIds: TOrderImageUplaodQueuePayload = [];
         const imageArrayWithTopingIds: TOrderTopingImageUplaodQueuePayload = [];
-        const orderIds = [];
-        const orderTopingIds: unknown[] = [];
+
+        // these are for delete order queue
+        const orderIds: string[] = [];
+        const orderTopingIds: string[] = [];
 
         const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            let orders = await Promise.all(
-                products.map(async (pro) => {
-                    const topings = await OrderTopingModel.insertMany(
-                        pro.topings.map((toping) => ({
-                            name: toping.name,
-                            image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
-                            price: toping.price,
-                        })),
-                        { session },
-                    );
+        await session.withTransaction(async () => {
+            const topings = await OrderTopingModel.insertMany(
+                products.map((pro) => {
+                    const obj: any = {};
+                    pro.topings.forEach((toping) => {
+                        obj.name = toping.name;
+                        obj.image =
+                            process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL;
+                        obj.price = toping.price;
+                    });
+                    return obj;
+                }),
+                {
+                    session,
+                },
+            );
 
-                    const tids: string[] = [];
-
+            const orders = await OrderModel.insertMany(
+                products.map((pro) => {
+                    const topingIds: string[] = [];
                     topings.forEach((top, index) => {
-                        tids.push(top._id.toString());
+                        topingIds.push(top._id.toString());
                         imageArrayWithTopingIds.push({
                             orderTopingId: top._id.toString(),
                             image: pro.topings[index].image,
                         });
                     });
 
-                    return OrderModel.create(
-                        [
-                            {
-                                user_full_name: `${user.first_name} ${
-                                    user.last_name || ""
-                                }`,
-                                name: pro.name,
-                                city: "sd",
-                                state: "slkd",
-                                image: process.env
-                                    .CLOUDINARY_PLACEHOLDER_IMAGE_URL,
-                                price: pro.price,
-                                description: pro.description,
-                                quantity: pro.quantity,
-                                status: OrderStatusEnum.PLACED,
-                                address: "lskd",
-                                order_topings: tids,
-                            },
-                        ],
-                        { session },
-                    );
+                    return {
+                        user_full_name: `${user.first_name} ${
+                            user.last_name || ""
+                        }`,
+                        name: pro.name,
+                        image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                        price: pro.price,
+                        description: pro.description,
+                        quantity: pro.quantity,
+                        status: OrderStatusEnum.PLACED,
+                        address: "lskd",
+                        order_topings: topingIds,
+                    };
                 }),
+                {
+                    session,
+                },
             );
 
-            for (let i = 0; i < products.length; i++) {
+            orders.forEach((order, index) => {
                 imageArrayWithOrderIds.push({
-                    orderId: orders[i][0]._id,
-                    image: products[i].image,
+                    orderId: order._id,
+                    image: products[index].image,
                 });
-                orderIds.push(orders[i][0]._id);
-                orders[i][0].order_topings.forEach((id) =>
-                    orderTopingIds.push(id),
-                );
-            }
+                orderIds.push(order._id);
+                orderTopingIds.concat(order.order_topings.toString());
+            });
 
             const stripeSessoin = await stripe.checkout.sessions.create({
                 customer_email: user.email,
@@ -159,29 +158,20 @@ class OrderCreate {
                     },
                 ],
             });
-            ResponseService.sendResponse(res, 200, true, stripeSessoin.id);
-            await session.commitTransaction();
 
+            ResponseService.sendResponse(res, 200, true, stripeSessoin.id);
             await Promise.all([
                 AddToOrderImageUploadQueue(imageArrayWithOrderIds),
                 AddToOrderTopingImageUploadQueue(imageArrayWithTopingIds),
                 AddToDeleteOrderQueue({
                     orderIds: orderIds,
                     sessionId: stripeSessoin.id,
-                    orderTopingsIds: orderTopingIds as string[],
+                    orderTopingsIds: orderTopingIds,
                     jobId,
                 }),
             ]);
-        } catch (error) {
-            console.log(error);
-            await session.abortTransaction();
-            ResponseService.sendResponse(res, 400, false, {
-                code: 400,
-                message: "something went wrong",
-            });
-        } finally {
-            await session.endSession();
-        }
+        });
+        await session.endSession();
     }
 }
 export default OrderCreate;

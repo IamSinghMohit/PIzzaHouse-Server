@@ -39,6 +39,7 @@ class OrderUpdate {
         // Handle the event
         switch (event.type) {
             case "checkout.session.completed":
+                const customer = event.data.object.customer_details!
                 const checkoutSessionCompleted = event.data.object
                     .metadata as StripeWebhookMeta;
                 const meta: WebhookMeta = {
@@ -46,6 +47,13 @@ class OrderUpdate {
                     queueJobId: checkoutSessionCompleted.queueJobId,
                     userId: checkoutSessionCompleted.userId,
                 };
+
+                await OrderModel.updateMany({_id:{$in:meta.orderIds}},{$set:{
+                    user_full_name:customer.name,
+                    city:customer.address?.city,
+                    state:customer.address?.state,
+                    address:`${customer.address?.line1} ${customer.address?.line2}`
+                }})
                 await DeleteJobFromDeleteOrderQueue(meta.queueJobId);
                 await CartModel.findOneAndUpdate(
                     { user_id: meta.userId },

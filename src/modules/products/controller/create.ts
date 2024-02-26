@@ -29,7 +29,10 @@ class ProductCreate {
             price,
         } = req.body;
 
-        if (!req.file) return next(new ErrorResponse("image is required", 422));
+        if (!req.file || !req.file.buffer){
+            return next(new ErrorResponse("image is required", 422));
+        }
+
         // checking if product already exist
         const isExist = await ProductModel.findOne({ name });
         if (isExist) {
@@ -43,8 +46,7 @@ class ProductCreate {
         }
 
         const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await session.withTransaction(async () => {
             const product = new ProductModel({
                 image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
                 category: category.name,
@@ -54,22 +56,21 @@ class ProductCreate {
                 description,
                 status,
             });
-            const ProductSectionIdArray: string[] = [];
-            // creating product price sections
-            await Promise.all(
-                sections.map(async ({ name, attributes }) => {
-                    const patt = new ProductPriceSectionModel({
-                        category: category.name,
-                        name,
-                        attributes: attributes,
-                    });
-                    ProductSectionIdArray.push(patt._id.toString());
-                    patt.save({session});
-                }),
+
+            const sectionsToinsert = sections.map(({ name, attributes }) => ({
+                category: category.name,
+                name,
+                attributes: attributes,
+            }));
+
+            const insertedSections = await ProductPriceSectionModel.insertMany(
+                sectionsToinsert,
+                { session },
             );
 
-            // creating product_default_price document
-            const productDeafultAttribute =
+            product.sections = insertedSections.map((sec) => sec._id);
+
+            product.default_attribute =
                 await ProductDefaultPriceAttributModel.create(
                     [
                         {
@@ -79,14 +80,21 @@ class ProductCreate {
                         },
                     ],
                     { session },
-                );
+                ).then((res) => res[0]._id);
 
-            // savving the product with other releated fields
-            product.sections = ProductSectionIdArray;
-            product.default_attribute = productDeafultAttribute[0]._id;
-
-            const ProductResult = await product.save({session});
+            const ProductResult = await product.save({ session });
             await session.commitTransaction();
+
+            const key: TRedisBufferKey = `productId:${product._id}:buffer`;
+
+            await Promise.all([
+                RedisClient.set(key, req.file!.buffer),
+                AddToProductImageUploadQueue({
+                    productId: product._id,
+                    categoryId: category._id,
+                    productBufferRedisKey: key,
+                }),
+            ]);
 
             ResponseService.sendResponse(
                 res,
@@ -94,19 +102,9 @@ class ProductCreate {
                 true,
                 new AdminProductDto(ProductResult),
             );
-            const key:TRedisBufferKey = `productId:${product._id}:buffer`;
-            await RedisClient.set(key, req.file.buffer);
-            await AddToProductImageUploadQueue({
-                productId: product._id,
-                categoryId: category._id,
-                productBufferRedisKey: key,
-            });
-        } catch (error) {
-            await session.abortTransaction();
-            next(new ErrorResponse("Error while creating product", 500));
-        } finally {
-            await session.endSession();
-        }
+        });
+
+        await session.endSession()
     }
 }
 export default ProductCreate;

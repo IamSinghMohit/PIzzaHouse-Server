@@ -44,50 +44,49 @@ class ProductUpdate {
         if (description) product.description = description;
         if (price) product.price = price;
 
-        product.featured = featured || false
+        product.featured = featured || false;
 
         const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await session.withTransaction(async () => {
             if (default_attributes) {
-                await ProductDefaultPriceAttributModel.deleteOne(
-                    {
-                        _id: product.default_attribute,
-                    },
-                    { session },
-                );
-                const pda = await ProductDefaultPriceAttributModel.create(
-                    [
+                const result = await Promise.all([
+                    ProductDefaultPriceAttributModel.create(
+                        [
+                            {
+                                product_id: product._id,
+                                category: product.category,
+                                attributes: default_attributes,
+                            },
+                        ],
+                        { session },
+                    ),
+                    ProductDefaultPriceAttributModel.deleteOne(
                         {
-                            product_id: product._id,
-                            category: product.category,
-                            attributes: default_attributes,
+                            _id: product.default_attribute,
                         },
-                    ],
-                    { session },
-                );
-                product.default_attribute = pda[0]._id;
+                        { session },
+                    ),
+                ]);
+
+                product.default_attribute = result[0][0]._id;
             }
 
             if (sections) {
                 const arr: any = [];
-                console.log(JSON.stringify(sections));
-                await ProductPriceSectionModel.deleteMany(
-                    { _id: { $in: product.sections } },
-                    { session },
-                );
-                await Promise.all(
-                    sections.map(async (sec) => {
-                        const patt = new ProductPriceSectionModel({
-                            category: category?.name,
-                            name: sec.name,
-                            attributes: sec.attributes,
-                        });
-                        arr.push(patt._id.toString());
-                        patt.save({ session });
-                    }),
-                );
-                product.sections = arr;
+                const sectionsToInsert = sections.map((sec) => ({
+                    category: category?.name,
+                    name: sec.name,
+                    attributes: sec.attributes,
+                }));
+
+                const result = await Promise.all([
+                    ProductPriceSectionModel.insertMany(sectionsToInsert),
+                    ProductPriceSectionModel.deleteMany(
+                        { _id: { $in: product.sections } },
+                        { session },
+                    ),
+                ]);
+                product.sections = result[0].map((sec) => sec._id);
             }
 
             if (req.file?.buffer) {
@@ -95,7 +94,6 @@ class ProductUpdate {
             }
 
             await product.save({ session });
-            await session.commitTransaction();
             ResponseService.sendResponse(
                 res,
                 200,
@@ -104,22 +102,22 @@ class ProductUpdate {
             );
             if (!req.file?.buffer) return;
 
-            await AddToDeleteImageQueue({
-                tag: `productId:${product._id}`,
-            });
             const key: TRedisBufferKey = `productId:${product._id}:buffer`;
-            await RedisClient.set(key, req.file.buffer);
-            await AddToProductImageUploadQueue({
-                productBufferRedisKey: key,
-                categoryId: category._id,
-                productId: product._id,
-            });
-        } catch (error) {
-            await session.abortTransaction();
-            next(error);
-        } finally {
-            await session.endSession();
-        }
+            await Promise.all([
+                AddToDeleteImageQueue({
+                    tag: `productId:${product._id}`,
+                }),
+                RedisClient.set(key, req.file.buffer),
+                AddToProductImageUploadQueue({
+                    productBufferRedisKey: key,
+                    categoryId: category._id,
+                    productId: product._id,
+                }),
+            ]);
+
+        });
+       await session.endSession() 
+
     }
 }
 export default ProductUpdate;

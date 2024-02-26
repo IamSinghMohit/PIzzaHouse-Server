@@ -13,8 +13,10 @@ class CartController {
     static getProducts = this.wrapper(
         async (req: Request, res: Response, next: NextFunction) => {
             const user = req.user as UserDto;
-            const cart = await CartModel.findOne({ user_id: user.id }).populate("orders_ids");
-            console.log(JSON.stringify(cart))
+            const cart = await CartModel.findOne({ user_id: user.id }).populate(
+                "orders_ids",
+            );
+            console.log(JSON.stringify(cart));
             ResponseService.sendResponse(
                 res,
                 200,
@@ -23,6 +25,7 @@ class CartController {
             );
         },
     );
+
     static deleteItem = this.wrapper(
         async (
             req: Request<TValidateParamsId>,
@@ -31,7 +34,7 @@ class CartController {
         ) => {
             const { id } = req.params;
             const user = req.user as UserDto;
-            const cart = await CartModel.findOneAndUpdate(
+            await CartModel.findOneAndUpdate(
                 { user_id: user.id },
                 { $pull: { orders_ids: new Types.ObjectId(id) } },
             );
