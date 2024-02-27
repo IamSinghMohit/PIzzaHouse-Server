@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorResponse } from "@/utils";
 import { CategoryModel } from "../models/category.model";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { ResponseService } from "@/services";
 import { TUpdateCategorySchema } from "../schema/update";
 import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";

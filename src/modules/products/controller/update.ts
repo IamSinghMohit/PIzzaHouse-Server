@@ -6,7 +6,7 @@ import { ProductDefaultPriceAttributModel } from "../models/productDefaultAttrib
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { TUpdateProductSchema } from "../schema/update";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
 import mongoose from "mongoose";
 import { TRedisBufferKey } from "@/queue/types";
@@ -28,7 +28,7 @@ class ProductUpdate {
             description,
             sections,
         } = req.body;
-        console.log(req.body);
+
         const product = await ProductModel.findOne({ _id: id });
         if (!product) {
             return next(new ErrorResponse("product not found", 404));

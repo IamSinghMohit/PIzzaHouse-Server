@@ -62,7 +62,6 @@ class OrderUpdate {
                 break;
             // ... handle other event types
             default:
-                console.log(`Unhandled event type ${event.type}`);
         }
 
         res.send();

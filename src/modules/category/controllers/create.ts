@@ -6,7 +6,7 @@ import AdminCategoryDto from "../dto/category/admin";
 import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
 import { CategoryModel } from "../models/category.model";
 import mongoose from "mongoose";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { CategoryPriceSectionModel } from "../models/categoryPriceSection";
 import { TRedisBufferKey } from "@/queue/types";
 

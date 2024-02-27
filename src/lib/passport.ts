@@ -2,11 +2,11 @@ import { Request } from "express";
 import passport from "passport";
 import passportJWT from "passport-jwt";
 import PassportGoogle from "passport-google-oauth20";
-import UserDto from "./modules/auth/dto/user.dto";
-import ErrorResponse from "./utils/error-response";
-import { UserModel } from "./modules/auth/models/user.model";
-import { IdJwtResponse } from "./modules/auth/schema/jwt.schema";
-import { CartModel } from "./modules/auth/models/cart.model";
+import UserDto from "../modules/auth/dto/user.dto";
+import ErrorResponse from "../utils/error-response";
+import { UserModel } from "../modules/auth/models/user.model";
+import { IdJwtResponse } from "../modules/auth/schema/jwt.schema";
+import { CartModel } from "../modules/auth/models/cart.model";
 const JWTStrategy = passportJWT.Strategy;
 const GoogleStrategy = PassportGoogle.Strategy;
 
@@ -42,8 +42,8 @@ passport.use(
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.CLIENT_ID as string,
-            clientSecret: process.env.CLIENT_SECRET as string,
+            clientID: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             callbackURL: "http://localhost:3001/auth/google/callback",
             passReqToCallback: true,
         },

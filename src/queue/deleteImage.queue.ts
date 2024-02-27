@@ -1,6 +1,6 @@
 import { Job, Queue, Worker } from "bullmq";
 import { QueueEnum } from "./types";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { ImageService } from "@/services";
 
 type TDeleteImageQueuePayload = {

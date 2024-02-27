@@ -4,6 +4,7 @@ import {
     index,
     modelOptions,
     prop,
+    plugin
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 

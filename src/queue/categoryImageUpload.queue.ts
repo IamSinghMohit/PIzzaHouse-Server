@@ -1,8 +1,9 @@
 import { Job, Queue, Worker } from "bullmq";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { ImageService } from "@/services";
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { TRedisBufferKey,QueueEnum  } from "./types";
+import Logger from "@/lib/logger";
 
 type TCategoryImageUploadQueuePayload = {
     categoryBufferRedisKey:TRedisBufferKey;
@@ -42,7 +43,7 @@ export const CategoryImageUploadQueueWorker =
                     { image: result.public_id },
                 );
             } catch (error) {
-                console.log(error);
+                Logger.error(error)
             }
         },
         {

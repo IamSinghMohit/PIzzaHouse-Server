@@ -169,7 +169,6 @@ class ProductRead {
         next: NextFunction,
     ) {
         const { category, min, max, limit, name, cursor } = req.query;
-        console.log(req.query);
 
         const originalLimit = limit || 10;
         let categories: string[] = [];
@@ -199,7 +198,6 @@ class ProductRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-        console.log(query);
         const products = await ProductModel.find(query).limit(originalLimit);
 
         ResponseService.sendResponse(

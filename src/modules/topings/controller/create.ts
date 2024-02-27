@@ -6,7 +6,7 @@ import AdminTopingDto from "../dto/admin";
 import { TCreateTopingSchema } from "../schema/create";
 import { TopingModel } from "../topings.model";
 import { TRedisBufferKey } from "@/queue/types";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { AddToTopingImageUploadQueue } from "@/queue/topingImageUpload.queue";
 import { CategoryModel } from "@/modules/category/models/category.model";
 

@@ -4,6 +4,7 @@ import { asyncHandler, Validator } from "@/middlewares";
 import AuthController from "./auth.controller";
 import CartController from "./cart.controller";
 import CartValidator from "./cartValidator";
+import RateLimitter from "@/middlewares/rate-limmiter";
 
 const router = Router();
 
@@ -23,8 +24,8 @@ router.get(
     asyncHandler(AuthController.google),
 );
 
-router.post("/signin", Validator.signin, AuthController.signin);
-router.post("/login", Validator.login, AuthController.login);
+router.post("/signin", Validator.signin, RateLimitter, AuthController.signin);
+router.post("/login", Validator.login, RateLimitter, AuthController.login);
 
 router.get("/logout", AuthController.logout);
 router.get("/refresh", AuthController.refresh);

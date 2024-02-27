@@ -195,7 +195,6 @@ class AuthController {
 
     static google = this.wrapper(async (req: Request, res: Response) => {
         const user = req.user as UserDto;
-        console.log(req.user);
         const { refreshToken, accessToken } = this.generateTokens({
             id: user.id,
         });
@@ -211,7 +210,7 @@ class AuthController {
     static async logout(_req: Request, res: Response) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
-        res.status(200).json("logout successfull");
+        ResponseService.sendResponse(res,200,true,"logout successfull")
     }
 }
 export default AuthController;

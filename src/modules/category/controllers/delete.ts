@@ -6,7 +6,6 @@ import { ErrorResponse } from "@/utils";
 import { ProductModel } from "@/modules/products/models/product.model";
 import { ProductDefaultPriceAttributModel } from "@/modules/products/models/productDefaultAttribute.model";
 import { ProductPriceSectionModel } from "@/modules/products/models/productPriceSection.model.ts";
-import { TopingModel } from "@/modules/topings/topings.model";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 import { CategoryModel } from "../models/category.model";
 
@@ -33,9 +32,6 @@ class CategoryDelete {
                 category: category.name,
             }),
             ProductPriceSectionModel.deleteMany({
-                category: category.name,
-            }),
-            TopingModel.deleteMany({
                 category: category.name,
             }),
         ]);

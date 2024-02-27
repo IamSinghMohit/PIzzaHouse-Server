@@ -3,9 +3,10 @@ declare namespace NodeJS {
         JWT_ACCESS_TOKEN_SECRET: string;
         JWT_REFRESH_TOKEN_SECRET: string;
         MONGODB_URL: string;
-        CLIENT_ID: string;
-        CLIENT_SECRET: string;
-        FRONTEND_URL: string;
+        GOOGLE_CLIENT_ID: string;
+        GOOGLE_CLIENT_SECRET: string;
+        FRONTEND_URL_CLIENT: string;
+        FRONTEND_URL_ADMIN: string;
         REDIS_URL: string;
         PORT: string;
         CLOUDINARY_CLOUD_NAME: string;

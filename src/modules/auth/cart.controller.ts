@@ -14,14 +14,14 @@ class CartController {
         async (req: Request, res: Response, next: NextFunction) => {
             const user = req.user as UserDto;
             const cart = await CartModel.findOne({ user_id: user.id }).populate(
-                "orders_ids",
+                "orders",
             );
-            console.log(JSON.stringify(cart));
+
             ResponseService.sendResponse(
                 res,
                 200,
                 true,
-                cart?.orders_ids.map((ord) => new CartDto(ord as Order)),
+                cart?.orders.map((ord) => new CartDto(ord as Order)),
             );
         },
     );

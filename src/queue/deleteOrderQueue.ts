@@ -1,10 +1,11 @@
 import { Queue, Worker } from "bullmq";
-import RedisClient from "../redis";
+import RedisClient from "../lib/redis";
 import { QueueEnum } from "./types";
 import { OrderModel } from "@/modules/order/model/order";
 import { ImageService } from "@/services";
 import Stripe from "stripe";
 import { OrderTopingModel } from "@/modules/order/model/orderTopings";
+import Logger from "@/lib/logger";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 export type TDeleteOrderQueuePayload = {
@@ -22,7 +23,6 @@ export const DeleteOrderQueueWorker = new Worker<TDeleteOrderQueuePayload>(
     QueueEnum.DELETE_ORDER_QUEUE,
     async (job) => {
         try {
-            console.log("inside delete order queue");
             await Promise.allSettled([
                 OrderModel.deleteMany({
                     _id: { $in: job.data.orderIds },
@@ -44,7 +44,7 @@ export const DeleteOrderQueueWorker = new Worker<TDeleteOrderQueuePayload>(
                 ),
             ]);
         } catch (error) {
-            console.log(error);
+            Logger.error(error)
         }
     },
     {

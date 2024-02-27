@@ -1,6 +1,6 @@
 import { Queue, Worker } from "bullmq";
 import { QueueEnum, TRedisBufferKey } from "./types";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { ImageService } from "@/services";
 import { TopingModel } from "@/modules/topings/topings.model";
 
@@ -17,7 +17,6 @@ export const TopingImageUploadQueueWorker =
     new Worker<TTopingImageQueuePayload>(
         QueueEnum.TOPING_IMAGE_UPLOAD_QUEUE,
         async (payload) => {
-            console.log(payload.data);
 
             const { topingId, topingBufferRedisKey } = payload.data;
             const buffer = await RedisClient.getBuffer(topingBufferRedisKey);

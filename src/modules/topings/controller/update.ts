@@ -5,7 +5,7 @@ import { ErrorResponse } from "@/utils";
 import { ResponseService } from "@/services";
 import AdminTopingDto from "../dto/admin";
 import { TRedisBufferKey } from "@/queue/types";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { AddToTopingImageUploadQueue } from "@/queue/topingImageUpload.queue";
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";

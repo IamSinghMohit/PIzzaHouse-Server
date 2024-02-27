@@ -1,6 +1,6 @@
 import { Job, Queue, Worker } from "bullmq";
 import { QueueEnum ,TRedisBufferKey} from "./types";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { ImageService } from "@/services";
 import { ProductModel } from "@/modules/products/models/product.model";
 

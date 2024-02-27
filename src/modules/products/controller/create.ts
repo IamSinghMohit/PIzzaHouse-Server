@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import { CategoryModel } from "@/modules/category/models/category.model";
 import { ResponseService } from "@/services";
 import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
-import RedisClient from "@/redis";
+import RedisClient from "@/lib/redis";
 import { TRedisBufferKey } from "@/queue/types";
 
 class ProductCreate {

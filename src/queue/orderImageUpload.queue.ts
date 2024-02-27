@@ -1,10 +1,11 @@
 import { Queue, Worker, Job } from "bullmq";
-import RedisClient from "../redis";
+import RedisClient from "../lib/redis";
 import { QueueEnum } from "./types";
 import cloudinary from "@/helper/cloudinary";
 import axios from "axios";
 import { ImageService } from "@/services";
 import { OrderModel } from "@/modules/order/model/order";
+import Logger from "@/lib/logger";
 
 export type TOrderImageUplaodQueuePayload = Array<{
     orderId: string;
@@ -63,7 +64,7 @@ export const OrderImageUploadQueueWorker =
                     }),
                 ]);
             } catch (error) {
-                console.log(error);
+                Logger.error(error);
             }
         },
         {
