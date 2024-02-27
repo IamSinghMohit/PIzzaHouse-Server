@@ -1,4 +1,4 @@
-// import 'module-alias/register';
+import 'module-alias/register';
 import dotenv from "dotenv";
 import ValidateConfig from "./config";
 dotenv.config();
