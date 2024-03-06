@@ -25,11 +25,13 @@ class OrderRead {
         const result = await Promise.all([
             OrderModel.find(query)
                 .limit(originalLimit)
-                .skip((originalPage - 1) * originalLimit),
+                .skip((originalPage - 1) * originalLimit)
+                .cacheQuery(),
             OrderModel.find(query).countDocuments(),
         ]);
 
         const [orders, totalDocument] = result;
+
         ResponseService.sendResponse(res, 200, true, {
             orders: orders.map((order) => new OrderDto(order)),
             pages: Math.ceil(totalDocument / originalLimit),
@@ -38,9 +40,9 @@ class OrderRead {
     }
 
     static async getOrder(req: Request, res: Response, next: NextFunction) {
-        const order = await OrderModel.findOne({ _id: req.params.id }).populate(
-            "order_topings",
-        );
+        const order = await OrderModel.findOne({ _id: req.params.id })
+            .populate("order_topings")
+            .cacheQuery();
         if (!order) {
             return next(new ErrorResponse("Order not found", 404));
         }

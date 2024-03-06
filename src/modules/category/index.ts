@@ -1,12 +1,13 @@
 import { Router } from "express";
 import CategoryController from "./controllers";
-import { upload } from "@/middlewares";
+import { Validator, upload } from "@/middlewares";
 import { CategoryValidator } from "./category.validator";
 const router = Router();
 
 router.post(
     "/admin/create",
     upload.single("image"),
+    Validator.admin,
     CategoryValidator.createCategory,
     CategoryController.createCategory
 );
@@ -19,6 +20,7 @@ router.get(
 
 router.delete(
     "/admin/delete/:id",
+    Validator.admin,
     CategoryValidator.deleteCategory,
     CategoryController.deleteCategory
 );
@@ -31,6 +33,7 @@ router.get(
 router.patch(
     "/admin/update",
     upload.single("image"),
+    Validator.admin,
     CategoryController.updateCategory
 );
 

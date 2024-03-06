@@ -18,5 +18,6 @@ class ProductController {
     static updateProduct = this.wrapper(ProductUpdate.update);
     static getProductStats = this.wrapper(ProductRead.stats);
     static getCursorPaginatedProducts = this.wrapper(ProductRead.CursorPaginated)
+    static getMinimalInfo = this.wrapper(ProductRead.minimalInfo)
 }
 export default ProductController;

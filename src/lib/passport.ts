@@ -32,7 +32,14 @@ passport.use(
             }
             let user = await UserModel.findOne({ _id: id });
             if (user) {
-                return done(null, new UserDto(user));
+                return done(null, {
+                    id: user._id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    avatar: user.avatar,
+                    email: user.email,
+                    role: user.role,
+                });
             }
             return done(new ErrorResponse("User not found", 404), false);
         },

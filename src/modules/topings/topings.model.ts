@@ -3,10 +3,13 @@ import {
     prop,
     DocumentType,
     modelOptions,
+    plugin,
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { StatusEnum } from "../schema";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
+@plugin(SpeedGooseCacheAutoCleaner)
 @modelOptions({
     schemaOptions: {
         timestamps: true,

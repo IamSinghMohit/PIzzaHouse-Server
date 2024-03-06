@@ -1,4 +1,4 @@
-import { upload } from "@/middlewares";
+import { Validator, upload } from "@/middlewares";
 import { Router } from "express";
 import ProductValidator from "./product.validator";
 import ProductController from "./controller";
@@ -8,11 +8,13 @@ const router = Router();
 router.post(
     "/admin/create",
     upload.single("image"),
+    Validator.admin,
     ProductValidator.createProduct,
     ProductController.createProduct,
 );
 router.delete(
     "/admin/:id",
+    Validator.admin,
     ProductValidator.deleteProduct,
     ProductController.deleteProduct,
 );
@@ -24,6 +26,7 @@ router.get(
 router.patch(
     "/admin",
     upload.single("image"),
+    Validator.admin,
     ProductValidator.updateProduct,
     ProductController.updateProduct,
 );
@@ -44,8 +47,13 @@ router.get(
     ProductValidator.getCursorPaginatedProducts,
     ProductController.getCursorPaginatedProducts,
 );
+router.get(
+    "/minimal-info/:id?",
+    ProductValidator.minimalInfo,
+    ProductController.getMinimalInfo,
+);
 router.get("/stats", ProductController.getProductStats);
 
-router.get("/:id", ProductValidator.getProduct, ProductController.getProduct);
+router.get("/product/:id", ProductValidator.getProduct, ProductController.getProduct);
 
 export default router;

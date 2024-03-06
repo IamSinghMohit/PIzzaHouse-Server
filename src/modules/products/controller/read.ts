@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
     TGetCursorPaginatedProducts,
     TGetFromatedProductsSchema,
+    TGetMinimalInfoSchema,
     TGetProductPriceSectionSchema,
     TGetProductSchema,
     TGetProductsSchema,
@@ -44,7 +45,8 @@ class ProductRead {
         const result = await Promise.all([
             ProductModel.find(query)
                 .limit(originalLimit)
-                .skip((originalPage - 1) * originalLimit),
+                .skip((originalPage - 1) * originalLimit)
+                .cacheQuery(),
             ProductModel.find(query).countDocuments(),
         ]);
         const [products, totalDocument] = result;
@@ -66,14 +68,15 @@ class ProductRead {
         if (!product) {
             return next(new ErrorResponse("product not found", 404));
         }
-        const sections = await ProductPriceSectionModel.find({
-            _id: { $in: product.sections },
-        });
-        const defaultPriceAttribute =
-            await ProductDefaultPriceAttributModel.findOne({
+        const result = await Promise.all([
+            ProductPriceSectionModel.find({
+                _id: { $in: product.sections },
+            }).cacheQuery(),
+            ProductDefaultPriceAttributModel.findOne({
                 _id: product.default_attribute,
-            });
-
+            }).cacheQuery(),
+        ]);
+        const [sections, defaultPriceAttribute] = result;
         ResponseService.sendResponse(res, 200, true, {
             sections: sections.map((sec) => new ProductPriceSectionDto(sec)),
             default_attributes: defaultPriceAttribute?.attributes || [],
@@ -127,7 +130,7 @@ class ProductRead {
             {
                 $limit: categoryLimit,
             },
-        ]);
+        ]).cachePipeline();
 
         ResponseService.sendResponse(res, 200, true, products);
     }
@@ -137,17 +140,18 @@ class ProductRead {
         res: Response,
         next: NextFunction,
     ) {
-        const product = await ProductModel.findOne({ _id: req.params.id });
-        if (product) {
-            ResponseService.sendResponse(
-                res,
-                200,
-                true,
-                new BaseProductDto(product),
-            );
-        } else {
+        const product = await ProductModel.findOne({
+            _id: req.params.id,
+        }).cacheQuery();
+        if (!product) {
             return next(new ErrorResponse("Product does not exist", 404));
         }
+        ResponseService.sendResponse(
+            res,
+            200,
+            true,
+            new BaseProductDto(product),
+        );
     }
 
     static async stats(
@@ -157,7 +161,7 @@ class ProductRead {
     ) {
         const product = await ProductModel.findOne({})
             .sort({ price: -1 })
-            .limit(1);
+            .limit(1).cacheQuery();
         ResponseService.sendResponse(res, 200, true, {
             max_price: (product?.price || 0) + 10,
         });
@@ -198,13 +202,38 @@ class ProductRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-        const products = await ProductModel.find(query).limit(originalLimit);
+        const products = await ProductModel.find(query).limit(originalLimit).cacheQuery();
 
         ResponseService.sendResponse(
             res,
             202,
             true,
             products.map((pro) => new BaseProductDto(pro)),
+        );
+    }
+
+    static async minimalInfo(
+        req: Request<TGetMinimalInfoSchema>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        const id = req.params.id;
+        let query = {};
+        if (id) {
+            query = { _id: { $gt: id } };
+        }
+        const products = await ProductModel.find(query)
+            .limit(20)
+            .select("name category").cacheQuery();
+        return ResponseService.sendResponse(
+            res,
+            200,
+            true,
+            products.map((pro) => ({
+                id: pro._id,
+                name: pro.name,
+                category: pro.category,
+            })),
         );
     }
 }

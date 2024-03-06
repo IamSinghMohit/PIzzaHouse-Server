@@ -1,6 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import CategoryService from "../service/category.service";
-import CategoryAttributeService from "../service/categoryPriceSection.service";
 import { ResponseService } from "@/services";
 import {
     TSearchCategorySchema,
@@ -10,6 +8,7 @@ import {
 import AdminCategoryDto from "../dto/category/admin";
 import AdminCategoryPriceSectionDto from "../dto/categoryPriceSection.dto";
 import { CategoryModel } from "../models/category.model";
+import { CategoryPriceSectionModel } from "../models/categoryPriceSection";
 
 class CategoryRead {
     static async getCategories(
@@ -24,12 +23,14 @@ class CategoryRead {
         const query = {
             ...(name ? { name: new RegExp(name, "i") } : {}),
         };
+
         const result = await Promise.all([
             CategoryModel.find(query)
                 .limit(originalLimit)
-                .skip((originalPage - 1) * originalLimit),
+                .skip((originalPage - 1) * originalLimit)
+                .cacheQuery(),
 
-            CategoryModel.find(query).countDocuments(),
+            CategoryModel.find(query).count(),
         ]);
         const [categories, totalDocument] = result;
 
@@ -54,7 +55,8 @@ class CategoryRead {
             ...(cursor ? { _id: { $lt: cursor } } : {}),
         })
             .sort({ _id: -1 })
-            .limit(limit);
+            .limit(limit)
+            .cacheQuery();
 
         ResponseService.sendResponse(
             res,
@@ -69,28 +71,14 @@ class CategoryRead {
         res: Response,
         next: NextFunction,
     ) {
-        const priceAtt = await CategoryAttributeService.getSections({
+        const priceAtt = await CategoryPriceSectionModel.find({
             category_id: req.params.id,
-        });
+        }).cacheQuery()
         ResponseService.sendResponse(
             res,
             202,
             true,
             priceAtt.map((at) => new AdminCategoryPriceSectionDto(at)),
-        );
-    }
-
-    static async getCategoriesAdmin(
-        req: Request<{}, {}, {}, TSearchCategorySchema>,
-        res: Response,
-        next: NextFunction,
-    ) {
-        const categories = await CategoryService.find({}, "FIND");
-        ResponseService.sendResponse(
-            res,
-            200,
-            true,
-            categories.map((cat) => new AdminCategoryDto(cat)),
         );
     }
 }

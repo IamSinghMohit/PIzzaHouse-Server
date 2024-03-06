@@ -3,6 +3,7 @@ import Validator from "@/utils/validatorWrapper.";
 import {
     GetCursorPaginatedProducts,
     GetFormatedProductsSchema,
+    GetMinimalInfoSchema,
     GetProductPriceSectionSchema,
     GetProductSchema,
     GetProductsSchema,
@@ -54,5 +55,6 @@ class ProductValidator {
     );
     static getProduct = Validator.ReqParams(GetProductSchema);
     static getCursorPaginatedProducts = Validator.ReqQuery(GetCursorPaginatedProducts)
+    static minimalInfo = Validator.ReqParams(GetMinimalInfoSchema)
 }
 export default ProductValidator;

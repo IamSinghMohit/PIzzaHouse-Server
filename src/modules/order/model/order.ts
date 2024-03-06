@@ -3,11 +3,14 @@ import {
     prop,
     modelOptions,
     Ref,
+    plugin
 } from "@typegoose/typegoose";
 import { OrderStatusEnum } from "../schema/main";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { OrderTopings } from "./orderTopings";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
+@plugin(SpeedGooseCacheAutoCleaner)
 @modelOptions({
     options: { allowMixed: 0 },
     schemaOptions: {

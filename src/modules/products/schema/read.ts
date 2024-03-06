@@ -75,4 +75,11 @@ export const GetCursorPaginatedProducts = z.object({
     category: z.string().optional(),
     cursor: z.string().optional(),
 });
-export type TGetCursorPaginatedProducts = TypeOf<typeof GetCursorPaginatedProducts>
+export const GetMinimalInfoSchema = z.object({
+    id: z.string().optional(),
+});
+export type TGetMinimalInfoSchema = TypeOf<typeof GetMinimalInfoSchema>;
+
+export type TGetCursorPaginatedProducts = TypeOf<
+    typeof GetCursorPaginatedProducts
+>;

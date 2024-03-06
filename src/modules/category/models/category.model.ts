@@ -4,9 +4,11 @@ import {
     index,
     modelOptions,
     prop,
+    pre,
     plugin
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
 @index({ name: 1 }, { unique: true })
 @modelOptions({
@@ -14,8 +16,9 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
         timestamps: true,
     },
 })
+@plugin(SpeedGooseCacheAutoCleaner)
 export class Category extends TimeStamps {
-    _id:string
+    _id: string;
 
     @prop({ required: true })
     name: string;

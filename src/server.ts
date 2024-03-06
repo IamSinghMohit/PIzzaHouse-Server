@@ -1,4 +1,4 @@
-import 'module-alias/register';
+// import 'module-alias/register';
 import dotenv from "dotenv";
 import ValidateConfig from "./config";
 dotenv.config();
@@ -14,6 +14,7 @@ import http from "http";
 import SocketInitilizer from "./socket";
 import morganMiddleware from "./middlewares/morganMiddleware";
 import Logger from "./lib/logger";
+import { applySpeedGooseCacheLayer } from "speedgoose";
 const PORT = process.env.PORT;
 
 export const app = express();
@@ -26,7 +27,7 @@ app.use(
             process.env.FRONTEND_URL_ADMIN!,
         ],
         credentials: true,
-    })
+    }),
 );
 
 app.use(morganMiddleware());
@@ -61,6 +62,13 @@ app.use(errorHandler);
 const server = http.createServer(app);
 SocketInitilizer(server);
 
+applySpeedGooseCacheLayer(mongoose, {
+    redisUri: "redis://localhost:6379",
+    defaultTtl: 1000,
+    debugConfig: {
+        enabled: true,
+    },
+});
 mongoose
     .connect(process.env.MONGODB_URL as string)
     .then(() => {

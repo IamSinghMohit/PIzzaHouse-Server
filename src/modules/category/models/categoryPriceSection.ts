@@ -4,13 +4,16 @@ import {
     prop,
     modelOptions,
     index,
+    plugin
 } from "@typegoose/typegoose";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
 export interface Attributes {
     id: string;
     name: string;
 }
 
+@plugin(SpeedGooseCacheAutoCleaner)
 @modelOptions({ options: { allowMixed: 0 } })
 @index({ category_id: 1 })
 export class CategoryPriceSection {
