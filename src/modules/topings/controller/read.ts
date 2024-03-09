@@ -35,7 +35,7 @@ class TopingRead {
                 .skip((originalPage - 1) * originalLimit)
                 .limit(originalLimit)
                 .cacheQuery(),
-            TopingModel.find(query).count(),
+            TopingModel.find(query).count().cacheQuery(),
         ]);
         const [topings, totalDocuments] = result;
         ResponseService.sendResponse(res, 202, true, {

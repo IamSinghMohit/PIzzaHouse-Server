@@ -30,10 +30,9 @@ class CategoryRead {
                 .skip((originalPage - 1) * originalLimit)
                 .cacheQuery(),
 
-            CategoryModel.find(query).count(),
+            CategoryModel.find(query).count().cacheQuery(),
         ]);
         const [categories, totalDocument] = result;
-
         ResponseService.sendResponse(res, 202, true, {
             page: originalPage,
             pages: Math.ceil(totalDocument / originalLimit),
@@ -73,7 +72,7 @@ class CategoryRead {
     ) {
         const priceAtt = await CategoryPriceSectionModel.find({
             category_id: req.params.id,
-        }).cacheQuery()
+        }).cacheQuery();
         ResponseService.sendResponse(
             res,
             202,

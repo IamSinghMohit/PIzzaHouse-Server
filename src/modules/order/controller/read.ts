@@ -27,7 +27,7 @@ class OrderRead {
                 .limit(originalLimit)
                 .skip((originalPage - 1) * originalLimit)
                 .cacheQuery(),
-            OrderModel.find(query).countDocuments(),
+            OrderModel.find(query).countDocuments().cacheQuery(),
         ]);
 
         const [orders, totalDocument] = result;

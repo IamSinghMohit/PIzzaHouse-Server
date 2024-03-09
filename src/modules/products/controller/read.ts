@@ -47,7 +47,7 @@ class ProductRead {
                 .limit(originalLimit)
                 .skip((originalPage - 1) * originalLimit)
                 .cacheQuery(),
-            ProductModel.find(query).countDocuments(),
+            ProductModel.find(query).count().cacheQuery(),
         ]);
         const [products, totalDocument] = result;
 
@@ -203,7 +203,6 @@ class ProductRead {
             query.price = { $lte: max };
         }
         const products = await ProductModel.find(query).limit(originalLimit).cacheQuery();
-
         ResponseService.sendResponse(
             res,
             202,
