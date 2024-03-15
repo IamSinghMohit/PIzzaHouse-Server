@@ -30,7 +30,7 @@ export const ProductCategorySchema = z.object({
     category: z.string().min(1),
 });
 export const ProductDescriptionSchema = z.object({
-    description: z.string().min(1).max(120),
+    description: z.string().min(1).max(230),
 });
 export const ProductFeaturedSchema = z.object({
     featured: z.string().transform((str) => str.toLowerCase() === "true"),
