@@ -41,7 +41,6 @@ class ProductRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-
         const result = await Promise.all([
             ProductModel.find(query)
                 .limit(originalLimit)
@@ -161,7 +160,8 @@ class ProductRead {
     ) {
         const product = await ProductModel.findOne({})
             .sort({ price: -1 })
-            .limit(1).cacheQuery();
+            .limit(1)
+            .cacheQuery();
         ResponseService.sendResponse(res, 200, true, {
             max_price: (product?.price || 0) + 10,
         });
@@ -202,7 +202,9 @@ class ProductRead {
         } else if (max) {
             query.price = { $lte: max };
         }
-        const products = await ProductModel.find(query).limit(originalLimit).cacheQuery();
+        const products = await ProductModel.find(query)
+            .limit(originalLimit)
+            .cacheQuery();
         ResponseService.sendResponse(
             res,
             202,
@@ -223,7 +225,8 @@ class ProductRead {
         }
         const products = await ProductModel.find(query)
             .limit(20)
-            .select("name category").cacheQuery();
+            .select("name category")
+            .cacheQuery();
         return ResponseService.sendResponse(
             res,
             200,

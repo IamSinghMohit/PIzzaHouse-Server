@@ -32,7 +32,6 @@ class CategoryCreate {
 
         const session = await mongoose.startSession();
         await session.withTransaction(async () => {
-
             const category = new CategoryModel({
                 name,
                 image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
@@ -43,12 +42,13 @@ class CategoryCreate {
                 name,
                 attributes: attributes,
             }));
-            const insertedSections =
-                await CategoryPriceSectionModel.insertMany(sectionsToInsert,{session});
+            const insertedSections = await CategoryPriceSectionModel.insertMany(
+                sectionsToInsert,
+                { session },
+            );
 
             category.sections = insertedSections.map((sec) => sec._id);
             const CatResult = await category.save({ session });
-
             const key: TRedisBufferKey = `categoryId:${category._id}:buffer`;
 
             await Promise.all([
@@ -67,7 +67,7 @@ class CategoryCreate {
             );
         });
 
-        await session.endSession()
+        await session.endSession();
     }
 }
 export default CategoryCreate;

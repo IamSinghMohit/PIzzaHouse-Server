@@ -8,6 +8,9 @@ import { ProductDefaultPriceAttributModel } from "@/modules/products/models/prod
 import { ProductPriceSectionModel } from "@/modules/products/models/productPriceSection.model.ts";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 import { CategoryModel } from "../models/category.model";
+import mongoose from "mongoose";
+import { TopingModel } from "@/modules/topings/topings.model";
+import { CategoryPriceSectionModel } from "../models/categoryPriceSection";
 
 class CategoryDelete {
     static async deleteCategory(
@@ -21,24 +24,49 @@ class CategoryDelete {
         if (!category) {
             return new ErrorResponse("category not found", 404);
         }
-        await Promise.all([
-            CategoryModel.deleteOne({
-                _id: category._id,
-            }),
-            ProductModel.deleteMany({
-                category: category.name,
-            }),
-            ProductDefaultPriceAttributModel.deleteOne({
-                category: category.name,
-            }),
-            ProductPriceSectionModel.deleteMany({
-                category: category.name,
-            }),
-        ]);
-        ResponseService.sendResponse(res, 200, true, "Category deleted");
-        await AddToDeleteImageQueue({
-            tag: `categoryId:${category._id}`,
+        const session = await mongoose.startSession();
+        await session.withTransaction(async () => {
+            await Promise.all([
+                CategoryModel.deleteOne(
+                    {
+                        _id: category._id,
+                    },
+                    { session },
+                ),
+                CategoryPriceSectionModel.deleteMany({
+                    category_id: category._id,
+                }),
+                ProductModel.deleteMany(
+                    {
+                        category: category.name,
+                    },
+                    { session },
+                ),
+                ProductDefaultPriceAttributModel.deleteOne(
+                    {
+                        category: category.name,
+                    },
+                    { session },
+                ),
+                ProductPriceSectionModel.deleteMany(
+                    {
+                        category: category.name,
+                    },
+                    { session },
+                ),
+                TopingModel.updateMany(
+                    { category: category.name },
+                    { $pull: { category: category.name } },
+                    { session },
+                ),
+            ]);
+
+            ResponseService.sendResponse(res, 200, true, "Category deleted");
+            await AddToDeleteImageQueue({
+                tag: `categoryId:${category._id}`,
+            });
         });
+        await session.endSession();
     }
 }
 export default CategoryDelete;

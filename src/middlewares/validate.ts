@@ -16,7 +16,6 @@ class AuthValidator {
             "jwt",
             { session: false },
             (err: Error, user: TUser) => {
-                console.log(user)
                 if (!user || user.role !== "admin") {
                     return res.status(401).json({
                         success: false,

@@ -8,7 +8,6 @@ const errorHandler = (
     next: NextFunction,
 ) => {
     let error = { ...err };
-
     error.message = err.message;
 
     if (err.name === "CastError") {
