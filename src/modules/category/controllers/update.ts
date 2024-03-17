@@ -7,6 +7,7 @@ import { TUpdateCategorySchema } from "../schema/update";
 import { AddToCategoryImageUploadQueue } from "@/queue/categoryImageUpload.queue";
 import { AddToDeleteImageQueue } from "@/queue/deleteImage.queue";
 import { TRedisBufferKey } from "@/queue/types";
+import AdminCategoryDto from "../dto/category/admin";
 
 class CategoryUpdate {
     static async category(
@@ -24,10 +25,15 @@ class CategoryUpdate {
 
         category.image = process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL!;
         await category.save();
-        ResponseService.sendResponse(res, 200, true, "image updated");
+        ResponseService.sendResponse(
+            res,
+            200,
+            true,
+            new AdminCategoryDto(category),
+        );
 
         await AddToDeleteImageQueue({ tag: `categoryId:${category._id}` });
-        const key:TRedisBufferKey = `categoryId:${category._id}:buffer`;
+        const key: TRedisBufferKey = `categoryId:${category._id}:buffer`;
         await RedisClient.set(key, req.file.buffer);
         await AddToCategoryImageUploadQueue({
             categoryBufferRedisKey: key,

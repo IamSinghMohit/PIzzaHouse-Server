@@ -5,8 +5,9 @@ import { DeleteJobFromDeleteOrderQueue } from "@/queue/deleteOrderQueue";
 import { CartModel } from "@/modules/auth/models/cart.model";
 import { OrderModel } from "../model/order";
 import { ResponseService } from "@/services";
-import {  TOrderStatusSchema } from "../schema/update";
+import { TOrderStatusSchema } from "../schema/update";
 import { TOrderParamIdSchema } from "../schema/main";
+import mongoose from "mongoose";
 const stripe = new Stripe(`${process.env.STRIPE_SECRETKEY}`);
 
 type WebhookMeta = {
@@ -39,7 +40,7 @@ class OrderUpdate {
         // Handle the event
         switch (event.type) {
             case "checkout.session.completed":
-                const customer = event.data.object.customer_details!
+                const customer = event.data.object.customer_details!;
                 const checkoutSessionCompleted = event.data.object
                     .metadata as StripeWebhookMeta;
                 const meta: WebhookMeta = {
@@ -47,18 +48,35 @@ class OrderUpdate {
                     queueJobId: checkoutSessionCompleted.queueJobId,
                     userId: checkoutSessionCompleted.userId,
                 };
-
-                await OrderModel.updateMany({_id:{$in:meta.orderIds}},{$set:{
-                    user_full_name:customer.name,
-                    city:customer.address?.city,
-                    state:customer.address?.state,
-                    address:`${customer.address?.line1} ${customer.address?.line2}`
-                }})
-                await DeleteJobFromDeleteOrderQueue(meta.queueJobId);
-                await CartModel.findOneAndUpdate(
-                    { user_id: meta.userId },
-                    { $push: { orders_ids: { $each: meta.orderIds } } }, // Using $push with $each to push multiple items
-                );
+                console.log(meta)
+                const session = await mongoose.startSession();
+                await session.withTransaction(async () => {
+                    await Promise.all([
+                        OrderModel.updateMany(
+                            { _id: { $in: meta.orderIds } },
+                            {
+                                $set: {
+                                    user_full_name: customer.name,
+                                    city: customer.address?.city,
+                                    state: customer.address?.state,
+                                    address: `${customer.address?.line1} ${customer.address?.line2}`,
+                                },
+                            },
+                            {
+                                session,
+                            },
+                        ),
+                        DeleteJobFromDeleteOrderQueue(meta.queueJobId),
+                        CartModel.findOneAndUpdate(
+                            { user_id: meta.userId },
+                            { $push: { orders_ids: { $each: meta.orderIds } } }, // Using $push with $each to push multiple items
+                            {
+                                session,
+                            },
+                        ),
+                    ]);
+                });
+                await session.endSession();
                 break;
             // ... handle other event types
             default:

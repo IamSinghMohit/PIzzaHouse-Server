@@ -13,11 +13,12 @@ import { AddToDeleteOrderQueue } from "@/queue/deleteOrderQueue";
 import UserDto from "@/modules/auth/dto/user.dto";
 import { v4 as uuidV4 } from "uuid";
 import mongoose from "mongoose";
-import { OrderTopingModel } from "../model/orderTopings";
+import { OrderTopingModel, OrderTopings } from "../model/orderTopings";
 import {
     AddToOrderTopingImageUploadQueue,
     TOrderTopingImageUplaodQueuePayload,
 } from "@/queue/orderTopingImageUpload.queue";
+import { DocumentType } from "@typegoose/typegoose";
 
 type TLineItem = {
     price_data: {
@@ -41,7 +42,8 @@ class OrderCreate {
     ) {
         const { products } = req.body;
         const user = req.user as UserDto;
-
+        console.log(user.id)
+        return;
         const lineItems: TLineItem = products.map((pro) => ({
             price_data: {
                 currency: "inr",
@@ -65,21 +67,24 @@ class OrderCreate {
 
         const session = await mongoose.startSession();
         await session.withTransaction(async () => {
-            const topings = await OrderTopingModel.insertMany(
-                products.map((pro) => {
-                    const obj: any = {};
-                    pro.topings.forEach((toping) => {
-                        obj.name = toping.name;
-                        obj.image =
-                            process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL;
-                        obj.price = toping.price;
-                    });
-                    return obj;
-                }),
-                {
-                    session,
-                },
-            );
+            let topings: DocumentType<OrderTopings>[] = [];
+            if (topings.length > 0) {
+                topings = await OrderTopingModel.insertMany(
+                    products.map((pro) => {
+                        const obj: any = {};
+                        pro.topings.forEach((toping) => {
+                            obj.name = toping.name;
+                            obj.image =
+                                process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL;
+                            obj.price = toping.price;
+                        });
+                        return obj;
+                    }),
+                    {
+                        session,
+                    },
+                );
+            }
 
             const orders = await OrderModel.insertMany(
                 products.map((pro) => {
@@ -128,8 +133,8 @@ class OrderCreate {
                 },
                 line_items: lineItems as any,
                 mode: "payment",
-                success_url: process.env.FRONTEND_URL,
-                cancel_url: process.env.FRONTEND_URL,
+                success_url: process.env.FRONTEND_URL_CLIENT,
+                cancel_url: process.env.FRONTEND_URL_CLIENT,
                 metadata: {
                     orderIds: JSON.stringify(orderIds),
                     userId: user.id,

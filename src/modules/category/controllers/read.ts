@@ -26,8 +26,9 @@ class CategoryRead {
 
         const result = await Promise.all([
             CategoryModel.find(query)
-                .limit(originalLimit)
                 .skip((originalPage - 1) * originalLimit)
+                .limit(originalLimit)
+                .lean()
                 .cacheQuery(),
 
             CategoryModel.find(query).count().cacheQuery(),
@@ -55,6 +56,7 @@ class CategoryRead {
         })
             .sort({ _id: -1 })
             .limit(limit)
+            .lean()
             .cacheQuery();
 
         ResponseService.sendResponse(
@@ -72,7 +74,9 @@ class CategoryRead {
     ) {
         const priceAtt = await CategoryPriceSectionModel.find({
             category_id: req.params.id,
-        }).cacheQuery();
+        })
+            .lean()
+            .cacheQuery();
         ResponseService.sendResponse(
             res,
             202,

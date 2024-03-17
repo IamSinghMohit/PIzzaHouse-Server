@@ -1,4 +1,4 @@
-import { Request, Response} from "express";
+import { Request, Response } from "express";
 import { ResponseService } from "@/services";
 import {
     TGetAllTopingsSchema,
@@ -34,6 +34,7 @@ class TopingRead {
             TopingModel.find(query)
                 .skip((originalPage - 1) * originalLimit)
                 .limit(originalLimit)
+                .lean()
                 .cacheQuery(),
             TopingModel.find(query).count().cacheQuery(),
         ]);
@@ -51,7 +52,9 @@ class TopingRead {
     ) {
         let topings = await TopingModel.find({
             categories: req.params.category,
-        }).cacheQuery();
+        })
+            .lean()
+            .cacheQuery();
         if (topings.length <= 0) {
             topings = await TopingModel.find({}).limit(10).cacheQuery();
         }
@@ -70,6 +73,7 @@ class TopingRead {
         const toping = await TopingModel.findOne()
             .sort({ price: -1 })
             .limit(1)
+            .lean()
             .cacheQuery();
         ResponseService.sendResponse(res, 200, true, {
             max_price: (toping?.price || 0) + 10,

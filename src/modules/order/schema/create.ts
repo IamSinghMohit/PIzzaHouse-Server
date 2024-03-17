@@ -4,16 +4,16 @@ export const CreateOrderSchema = z.object({
     products: z
         .array(
             z.object({
-                name: z.string().nonempty(),
-                image: z.string().nonempty(),
+                name: z.string().nonempty('name is required'),
+                image: z.string().nonempty('image is required'),
                 price: z.number().gt(0),
                 quantity: z.number().gt(0),
-                description: z.string(),
+                description: z.string().nonempty('description is required'),
                 topings: z.array(
                     z.object({
-                        name: z.string(),
-                        image: z.string(),
-                        price: z.number(),
+                        name: z.string().nonempty('name is required'),
+                        image: z.string().nonempty('image is required'),
+                        price: z.number().gt(0),
                     }),
                 ),
             }),

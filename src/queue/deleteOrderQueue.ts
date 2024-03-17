@@ -54,7 +54,7 @@ export const DeleteOrderQueueWorker = new Worker<TDeleteOrderQueuePayload>(
 
 export async function AddToDeleteOrderQueue(payload: TDeleteOrderQueuePayload) {
     await DeleteOrderQueue.add("delete order queue", payload, {
-        delay: 3600000,
+        delay: 300000,
         jobId: payload.jobId,
     });
 }

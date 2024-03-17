@@ -30,10 +30,12 @@ passport.use(
             if (Date.now() > exp * 1000) {
                 done("Unauthorized", false);
             }
-            let user = await UserModel.findOne({ _id: id });
+            let user = await UserModel.findOne({ _id: id })
+                .lean()
+                .cacheQuery({ ttl: 600 });
             if (user) {
                 return done(null, {
-                    id: user._id,
+                    id: user._id.toString(),
                     first_name: user.first_name,
                     last_name: user.last_name,
                     avatar: user.avatar,
@@ -71,7 +73,9 @@ passport.use(
             /* LOGING HERE  */
             let user = await UserModel.findOne({
                 email: defaultUser.email,
-            });
+            })
+                .lean()
+                .cacheQuery({ ttl: 600 });
             if (!user) {
                 user = await UserModel.create(defaultUser);
                 await CartModel.create({ user_id: user._id, orders_ids: [] });

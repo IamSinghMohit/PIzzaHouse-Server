@@ -45,6 +45,7 @@ class ProductRead {
             ProductModel.find(query)
                 .limit(originalLimit)
                 .skip((originalPage - 1) * originalLimit)
+                .lean()
                 .cacheQuery(),
             ProductModel.find(query).count().cacheQuery(),
         ]);
@@ -63,17 +64,21 @@ class ProductRead {
         next: NextFunction,
     ) {
         const { id } = req.params;
-        const product = await ProductModel.findOne({ _id: id });
+        const product = await ProductModel.findOne({ _id: id }).lean();
         if (!product) {
             return next(new ErrorResponse("product not found", 404));
         }
         const result = await Promise.all([
             ProductPriceSectionModel.find({
                 _id: { $in: product.sections },
-            }).cacheQuery(),
+            })
+                .lean()
+                .cacheQuery(),
             ProductDefaultPriceAttributModel.findOne({
                 _id: product.default_attribute,
-            }).cacheQuery(),
+            })
+                .lean()
+                .cacheQuery(),
         ]);
         const [sections, defaultPriceAttribute] = result;
         ResponseService.sendResponse(res, 200, true, {
@@ -141,7 +146,9 @@ class ProductRead {
     ) {
         const product = await ProductModel.findOne({
             _id: req.params.id,
-        }).cacheQuery();
+        })
+            .lean()
+            .cacheQuery();
         if (!product) {
             return next(new ErrorResponse("Product does not exist", 404));
         }
@@ -161,6 +168,7 @@ class ProductRead {
         const product = await ProductModel.findOne({})
             .sort({ price: -1 })
             .limit(1)
+            .lean()
             .cacheQuery();
         ResponseService.sendResponse(res, 200, true, {
             max_price: (product?.price || 0) + 10,
@@ -204,6 +212,7 @@ class ProductRead {
         }
         const products = await ProductModel.find(query)
             .limit(originalLimit)
+            .lean()
             .cacheQuery();
         ResponseService.sendResponse(
             res,
@@ -226,6 +235,7 @@ class ProductRead {
         const products = await ProductModel.find(query)
             .limit(20)
             .select("name category")
+            .lean()
             .cacheQuery();
         return ResponseService.sendResponse(
             res,

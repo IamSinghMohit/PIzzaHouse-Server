@@ -11,6 +11,7 @@ import { AddToProductImageUploadQueue } from "@/queue/productImageUPload.queue";
 import mongoose from "mongoose";
 import { TRedisBufferKey } from "@/queue/types";
 import { ProductPriceSectionModel } from "../models/productPriceSection.model.ts";
+import AdminProductDto from "../dto/product/admin";
 
 class ProductUpdate {
     static async update(
@@ -98,7 +99,7 @@ class ProductUpdate {
                 res,
                 200,
                 true,
-                "product updated successfully",
+                new AdminProductDto(product),
             );
             if (!req.file?.buffer) return;
 
@@ -114,10 +115,8 @@ class ProductUpdate {
                     productId: product._id,
                 }),
             ]);
-
         });
-       await session.endSession() 
-
+        await session.endSession();
     }
 }
 export default ProductUpdate;
