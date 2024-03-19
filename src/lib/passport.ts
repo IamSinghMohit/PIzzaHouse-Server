@@ -10,6 +10,15 @@ import { CartModel } from "../modules/auth/models/cart.model";
 const JWTStrategy = passportJWT.Strategy;
 const GoogleStrategy = PassportGoogle.Strategy;
 
+export type TPassportUserRes = {
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar: string;
+    email: string;
+    role: string;
+};
+
 const cookieExtractor = function (req: Request) {
     let token = null;
     if (req && req.cookies) {
@@ -33,15 +42,17 @@ passport.use(
             let user = await UserModel.findOne({ _id: id })
                 .lean()
                 .cacheQuery({ ttl: 600 });
+
             if (user) {
-                return done(null, {
+                const obj: TPassportUserRes = {
                     id: user._id.toString(),
                     first_name: user.first_name,
                     last_name: user.last_name,
                     avatar: user.avatar,
                     email: user.email,
                     role: user.role,
-                });
+                };
+                return done(null, obj);
             }
             return done(new ErrorResponse("User not found", 404), false);
         },

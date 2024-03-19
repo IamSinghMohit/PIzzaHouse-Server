@@ -3,6 +3,8 @@ declare namespace NodeJS {
         JWT_ACCESS_TOKEN_SECRET: string;
         JWT_REFRESH_TOKEN_SECRET: string;
         MONGODB_URL: string;
+        PAYMENT_SCCESS_URL: string;
+        PAYMENT_FAILED_URL: string;
         GOOGLE_CLIENT_ID: string;
         GOOGLE_CLIENT_SECRET: string;
         FRONTEND_URL_CLIENT: string;

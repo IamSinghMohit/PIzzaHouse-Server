@@ -10,6 +10,7 @@ import { asyncHandler } from "@/middlewares";
 import { CartModel } from "./models/cart.model";
 import mongoose from "mongoose";
 import { TLoginSchema, TSigninSchema } from "./schema/auth.schema";
+import { TPassportUserRes } from "@/lib/passport";
 
 const accessTokenSecret = process.env.JWT_ACCESS_TOKEN_SECRET!;
 const refreshTokenSecret = process.env.JWT_REFRESH_TOKEN_SECRET!;
@@ -94,7 +95,7 @@ class AuthController {
                     new UserDto(user[0]),
                 );
             });
-            await session.endSession()
+            await session.endSession();
         },
     );
 
@@ -189,12 +190,12 @@ class AuthController {
     );
 
     static me(req: Request, res: Response, next: NextFunction) {
-        const user = req.user as UserDto;
+        const user = req.user as TPassportUserRes;
         ResponseService.sendResponse(res, 200, true, user);
     }
 
     static google = this.wrapper(async (req: Request, res: Response) => {
-        const user = req.user as UserDto;
+        const user = req.user as TPassportUserRes;
         const { refreshToken, accessToken } = this.generateTokens({
             id: user.id,
         });
@@ -210,7 +211,7 @@ class AuthController {
     static async logout(_req: Request, res: Response) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
-        ResponseService.sendResponse(res,200,true,"logout successfull")
+        ResponseService.sendResponse(res, 200, true, "logout successfull");
     }
 }
 export default AuthController;

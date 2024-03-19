@@ -48,7 +48,6 @@ class OrderUpdate {
                     queueJobId: checkoutSessionCompleted.queueJobId,
                     userId: checkoutSessionCompleted.userId,
                 };
-                console.log(meta)
                 const session = await mongoose.startSession();
                 await session.withTransaction(async () => {
                     await Promise.all([
@@ -69,7 +68,7 @@ class OrderUpdate {
                         DeleteJobFromDeleteOrderQueue(meta.queueJobId),
                         CartModel.findOneAndUpdate(
                             { user_id: meta.userId },
-                            { $push: { orders_ids: { $each: meta.orderIds } } }, // Using $push with $each to push multiple items
+                            { $push: { orders: { $each: meta.orderIds } } }, 
                             {
                                 session,
                             },
@@ -78,7 +77,6 @@ class OrderUpdate {
                 });
                 await session.endSession();
                 break;
-            // ... handle other event types
             default:
         }
 

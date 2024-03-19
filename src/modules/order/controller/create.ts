@@ -12,13 +12,12 @@ import {
 import { AddToDeleteOrderQueue } from "@/queue/deleteOrderQueue";
 import UserDto from "@/modules/auth/dto/user.dto";
 import { v4 as uuidV4 } from "uuid";
-import mongoose from "mongoose";
-import { OrderTopingModel, OrderTopings } from "../model/orderTopings";
+import mongoose, {  Types } from "mongoose";
+import { OrderTopingModel} from "../model/orderTopings";
 import {
     AddToOrderTopingImageUploadQueue,
     TOrderTopingImageUplaodQueuePayload,
 } from "@/queue/orderTopingImageUpload.queue";
-import { DocumentType } from "@typegoose/typegoose";
 
 type TLineItem = {
     price_data: {
@@ -42,8 +41,7 @@ class OrderCreate {
     ) {
         const { products } = req.body;
         const user = req.user as UserDto;
-        console.log(user.id)
-        return;
+
         const lineItems: TLineItem = products.map((pro) => ({
             price_data: {
                 currency: "inr",
@@ -51,7 +49,7 @@ class OrderCreate {
                     name: pro.name,
                     images: [cloudinary.url(pro.image)],
                 },
-                unit_amount: pro.price * 100,
+                unit_amount: Math.round(pro.price * 100)
             },
             quantity: pro.quantity,
         }));
@@ -60,109 +58,101 @@ class OrderCreate {
         // these are for image upload queue
         const imageArrayWithOrderIds: TOrderImageUplaodQueuePayload = [];
         const imageArrayWithTopingIds: TOrderTopingImageUplaodQueuePayload = [];
-
-        // these are for delete order queue
+        const topingIdsForOrder: Types.ObjectId[][] = [];
         const orderIds: string[] = [];
         const orderTopingIds: string[] = [];
 
+        const topingsToInsert = products
+            .map((pro) => {
+                const topings = pro.topings.map((top) => {
+                    const id = new Types.ObjectId();
+                    imageArrayWithTopingIds.push({
+                        orderTopingId: id.toString(),
+                        image: top.image,
+                    });
+                    orderTopingIds.push(id.toString());
+                    return {
+                        _id: id,
+                        name: top.name,
+                        image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                        price: top.price,
+                    };
+                });
+                topingIdsForOrder.push(topings.map((top) => top._id));
+                return topings;
+            })
+            .flat();
+
+        const ordersToInsert = products.map((pro, index) => {
+            const id = new Types.ObjectId();
+            imageArrayWithOrderIds.push({
+                image: pro.image,
+                orderId: id.toString(),
+            });
+            orderIds.push(id.toString());
+            return {
+                _id: id,
+                name: pro.name,
+                image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
+                price: pro.price,
+                description: pro.description,
+                quantity: pro.quantity,
+                status: OrderStatusEnum.PLACED,
+                address: "lskd",
+                order_topings: topingIdsForOrder[index],
+            };
+        });
+
         const session = await mongoose.startSession();
         await session.withTransaction(async () => {
-            let topings: DocumentType<OrderTopings>[] = [];
-            if (topings.length > 0) {
-                topings = await OrderTopingModel.insertMany(
-                    products.map((pro) => {
-                        const obj: any = {};
-                        pro.topings.forEach((toping) => {
-                            obj.name = toping.name;
-                            obj.image =
-                                process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL;
-                            obj.price = toping.price;
-                        });
-                        return obj;
-                    }),
-                    {
-                        session,
+
+            const result = await Promise.all([
+                stripe.checkout.sessions.create({
+                    customer_email: user.email,
+                    payment_method_types: ["card"],
+                    shipping_address_collection: {
+                        allowed_countries: ["IN"],
                     },
-                );
-            }
-
-            const orders = await OrderModel.insertMany(
-                products.map((pro) => {
-                    const topingIds: string[] = [];
-                    topings.forEach((top, index) => {
-                        topingIds.push(top._id.toString());
-                        imageArrayWithTopingIds.push({
-                            orderTopingId: top._id.toString(),
-                            image: pro.topings[index].image,
-                        });
-                    });
-
-                    return {
-                        user_full_name: `${user.first_name} ${
-                            user.last_name || ""
-                        }`,
-                        name: pro.name,
-                        image: process.env.CLOUDINARY_PLACEHOLDER_IMAGE_URL,
-                        price: pro.price,
-                        description: pro.description,
-                        quantity: pro.quantity,
-                        status: OrderStatusEnum.PLACED,
-                        address: "lskd",
-                        order_topings: topingIds,
-                    };
-                }),
-                {
-                    session,
-                },
-            );
-
-            orders.forEach((order, index) => {
-                imageArrayWithOrderIds.push({
-                    orderId: order._id,
-                    image: products[index].image,
-                });
-                orderIds.push(order._id);
-                orderTopingIds.concat(order.order_topings.toString());
-            });
-
-            const stripeSessoin = await stripe.checkout.sessions.create({
-                customer_email: user.email,
-                payment_method_types: ["card"],
-                shipping_address_collection: {
-                    allowed_countries: ["IN"],
-                },
-                line_items: lineItems as any,
-                mode: "payment",
-                success_url: process.env.FRONTEND_URL_CLIENT,
-                cancel_url: process.env.FRONTEND_URL_CLIENT,
-                metadata: {
-                    orderIds: JSON.stringify(orderIds),
-                    userId: user.id,
-                    queueJobId: jobId,
-                },
-                shipping_options: [
-                    {
-                        shipping_rate_data: {
-                            type: "fixed_amount",
-                            fixed_amount: {
-                                amount: 1000,
-                                currency: "inr",
-                            },
-                            display_name: "Next day air",
-                            delivery_estimate: {
-                                minimum: {
-                                    unit: "business_day",
-                                    value: 1,
+                    line_items: lineItems as any,
+                    mode: "payment",
+                    success_url: process.env.PAYMENT_SCCESS_URL,
+                    cancel_url: process.env.PAYMENT_FAILED_URL,
+                    metadata: {
+                        orderIds: JSON.stringify(orderIds),
+                        userId: user.id,
+                        queueJobId: jobId,
+                    },
+                    shipping_options: [
+                        {
+                            shipping_rate_data: {
+                                type: "fixed_amount",
+                                fixed_amount: {
+                                    amount: 1000,
+                                    currency: "inr",
                                 },
-                                maximum: {
-                                    unit: "business_day",
-                                    value: 1,
+                                display_name: "Next day air",
+                                delivery_estimate: {
+                                    minimum: {
+                                        unit: "business_day",
+                                        value: 1,
+                                    },
+                                    maximum: {
+                                        unit: "business_day",
+                                        value: 1,
+                                    },
                                 },
                             },
                         },
-                    },
-                ],
-            });
+                    ],
+                }),
+                OrderTopingModel.insertMany(topingsToInsert, {
+                    session,
+                }),
+                OrderModel.insertMany(ordersToInsert, {
+                    session,
+                }),
+            ]);
+            const [stripeSessoin] = result;
 
             ResponseService.sendResponse(res, 200, true, stripeSessoin.id);
             await Promise.all([

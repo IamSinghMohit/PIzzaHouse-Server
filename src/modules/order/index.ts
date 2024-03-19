@@ -25,11 +25,17 @@ router.get("/stripe-publish-key", async (req, res) => {
     );
 });
 router.get("/admin", OrderController.getOrdersForAdmin);
-router.get("/:id", OrderValidator.getOrder, OrderController.getOrder);
+router.get(
+    "/:id",
+    Validator.authenticate,
+    OrderValidator.getOrder,
+    OrderController.getOrder,
+);
 router.patch(
     "/:id",
     OrderValidator.paramId,
     OrderValidator.status,
+    Validator.admin,
     OrderController.upateOrderStatus,
 );
 

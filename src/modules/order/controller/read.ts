@@ -4,9 +4,11 @@ import { ResponseService } from "@/services";
 import OrderDto from "../order.dto";
 import { ErrorResponse } from "@/utils";
 import { TGetAdminOrders } from "../schema/read";
-import { OrderStatusEnum } from "../schema/main";
+import { OrderStatusEnum, TOrderParamIdSchema } from "../schema/main";
 import { BaseOrderDto, OrderTopingDto } from "../base.dto";
 import { OrderTopings } from "../model/orderTopings";
+import { CartModel } from "@/modules/auth/models/cart.model";
+import { TPassportUserRes } from "@/lib/passport";
 
 class OrderRead {
     static async getOrdersAdmin(
@@ -26,12 +28,12 @@ class OrderRead {
             OrderModel.find(query)
                 .limit(originalLimit)
                 .skip((originalPage - 1) * originalLimit)
+                .lean()
                 .cacheQuery(),
             OrderModel.find(query).countDocuments().cacheQuery(),
         ]);
 
         const [orders, totalDocument] = result;
-
         ResponseService.sendResponse(res, 200, true, {
             orders: orders.map((order) => new OrderDto(order)),
             pages: Math.ceil(totalDocument / originalLimit),
@@ -39,9 +41,25 @@ class OrderRead {
         });
     }
 
-    static async getOrder(req: Request, res: Response, next: NextFunction) {
-        const order = await OrderModel.findOne({ _id: req.params.id })
+    static async getOrder(
+        req: Request<TOrderParamIdSchema>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        const user = req.user as TPassportUserRes;
+        const cart = await CartModel.findOne({
+            user_id: user.id,
+            orders: req.params.id, 
+        })
+            .select("orders")
+            .lean()
+            .cacheQuery();
+
+        const order = await OrderModel.findOne({
+            _id: cart?.orders.find((item) => item === req.params.id),
+        })
             .populate("order_topings")
+            .lean()
             .cacheQuery();
         if (!order) {
             return next(new ErrorResponse("Order not found", 404));

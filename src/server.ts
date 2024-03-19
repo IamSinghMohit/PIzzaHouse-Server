@@ -66,7 +66,7 @@ applySpeedGooseCacheLayer(mongoose, {
     redisUri: "redis://localhost:6379",
     defaultTtl: 1000,
     debugConfig: {
-        enabled: true,
+        enabled: false,
     },
 });
 mongoose
