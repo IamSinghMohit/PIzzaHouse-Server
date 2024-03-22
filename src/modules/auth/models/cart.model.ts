@@ -4,8 +4,11 @@ import {
     Ref,
     getModelForClass,
     prop,
+    plugin,
 } from "@typegoose/typegoose";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
+@plugin(SpeedGooseCacheAutoCleaner)
 class Cart {
     _id: string;
 

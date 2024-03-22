@@ -21,7 +21,7 @@ class OrderRead {
         const originalPage = page || 1;
 
         const query = {
-            status: { $ne: OrderStatusEnum.COMPLETED },
+            // status: { $ne: OrderStatusEnum.COMPLETED },
         };
 
         const result = await Promise.all([

@@ -64,9 +64,9 @@ SocketInitilizer(server);
 
 applySpeedGooseCacheLayer(mongoose, {
     redisUri: "redis://localhost:6379",
-    defaultTtl: 1000,
+    defaultTtl: 100,
     debugConfig: {
-        enabled: false,
+        enabled: true,
     },
 });
 mongoose

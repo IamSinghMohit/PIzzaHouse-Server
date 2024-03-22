@@ -6,9 +6,12 @@ import {
     getModelForClass,
     index,
     modelOptions,
+    plugin
 } from "@typegoose/typegoose";
 import { UserRole } from "../schema/auth.schema";
+import { SpeedGooseCacheAutoCleaner } from "speedgoose";
 
+@plugin(SpeedGooseCacheAutoCleaner)
 @pre<User>("save", async function (next) {
     // only hash the password if it has been modified (or is new)
     if (!this.isModified("password")) return next();

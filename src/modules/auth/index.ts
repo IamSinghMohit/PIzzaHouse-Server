@@ -33,7 +33,7 @@ router.get("/refresh", AuthController.refresh);
 router.get("/me", Validator.authenticate, AuthController.me);
 
 router.get("/cart", Validator.authenticate, CartController.getProducts);
-router.delete(
+router.patch(
     "/cart/:id",
     Validator.authenticate,
     CartValidator.deleteItem,
