@@ -9,7 +9,9 @@ declare namespace NodeJS {
         GOOGLE_CLIENT_SECRET: string;
         FRONTEND_URL_CLIENT: string;
         FRONTEND_URL_ADMIN: string;
-        REDIS_URL: string;
+        REDIS_HOST: string;
+        REDIS_PORT: string;
+        REDIS_PASSWORD: string;
         PORT: string;
         CLOUDINARY_CLOUD_NAME: string;
         CLOUDINARY_API_SECRET: string;

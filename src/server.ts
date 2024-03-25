@@ -15,6 +15,7 @@ import SocketInitilizer from "./socket";
 import morganMiddleware from "./middlewares/morganMiddleware";
 import Logger from "./lib/logger";
 import { applySpeedGooseCacheLayer } from "speedgoose";
+import RedisClient from "./lib/redis";
 const PORT = process.env.PORT;
 
 export const app = express();
@@ -63,7 +64,7 @@ const server = http.createServer(app);
 SocketInitilizer(server);
 
 applySpeedGooseCacheLayer(mongoose, {
-    redisUri: "redis://localhost:6379",
+    redisUri: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PASSWORD}`,
     defaultTtl: 100,
     debugConfig: {
         enabled: false,
@@ -72,6 +73,9 @@ applySpeedGooseCacheLayer(mongoose, {
 mongoose
     .connect(process.env.MONGODB_URL as string)
     .then(() => {
+        if (!RedisClient) {
+            new Error("Redis is not connected");
+        }
         server.listen(PORT, () => Logger.info(`Listening on port ${PORT}`));
 
         process.on("SIGINT", () => {
