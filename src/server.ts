@@ -12,10 +12,10 @@ import errorHandler from "./middlewares/error-handler";
 import routes from "./modules";
 import http from "http";
 import SocketInitilizer from "./socket";
-import morganMiddleware from "./middlewares/morganMiddleware";
 import Logger from "./lib/logger";
 import { applySpeedGooseCacheLayer } from "speedgoose";
 import RedisClient from "./lib/redis";
+import morgan from "morgan";
 const PORT = process.env.PORT;
 
 export const app = express();
@@ -31,7 +31,10 @@ app.use(
     }),
 );
 
-app.use(morganMiddleware());
+// morgan without logger
+// app.use(morganMiddleware());
+app.use(morgan("common"));
+
 app.use((req, res, next) => {
     if (req.originalUrl === "/order/payment-result") {
         next();
@@ -64,7 +67,11 @@ const server = http.createServer(app);
 SocketInitilizer(server);
 
 applySpeedGooseCacheLayer(mongoose, {
-    redisUri: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PASSWORD}`,
+    redisOptions: {
+        host: process.env.REDIS_HOST,
+        password: process.env.REDIS_PASSWORD,
+        port: parseInt(process.env.REDIS_PASSWORD!),
+    },
     defaultTtl: 100,
     debugConfig: {
         enabled: false,
