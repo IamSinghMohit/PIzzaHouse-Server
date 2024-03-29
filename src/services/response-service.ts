@@ -8,13 +8,11 @@ class ResponseService {
         res.cookie("refreshToken", data.refreshToken, {
             maxAge: 1000 * 60 * 60 * 24 * 30,
             httpOnly: true,
-            domain:process.env.FRONTEND_URL_CLIENT!
         });
 
         res.cookie("accessToken", data.accessToken, {
             maxAge: 1000 * 60 * 60 * 24 * 30,
             httpOnly: true,
-            domain:process.env.FRONTEND_URL_CLIENT!
         });
     }
 
