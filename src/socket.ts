@@ -5,8 +5,10 @@ import { EventEmitter } from "./eventEmitter";
 function SocketInitilizer(httpServer: HTTPServer): Server {
     const io = new Server(httpServer, {
         cors: {
-            origin: ["http://localhost:5173", "http://localhost:3000"],
-            credentials: true,
+            origin: [
+                process.env.FRONTEND_URL_CLIENT!,
+                process.env.FRONTEND_URL_ADMIN!,
+            ],
         },
     });
 
@@ -14,9 +16,9 @@ function SocketInitilizer(httpServer: HTTPServer): Server {
         socket.on("join_room", (roomId) => {
             socket.join(roomId);
         });
-        socket.on('leave_room',(roomId) => {
-            socket.leave(roomId)
-        })
+        socket.on("leave_room", (roomId) => {
+            socket.leave(roomId);
+        });
     });
     EventEmitter.on("update_status", ({ roomId, data }) => {
         io.to(roomId).emit("status_updated", data);

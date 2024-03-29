@@ -34,6 +34,7 @@ app.use(
 // morgan without logger
 // app.use(morganMiddleware());
 app.use(morgan("common"));
+app.set("trust proxy", 1);
 
 app.use((req, res, next) => {
     if (req.originalUrl === "/order/payment-result") {
